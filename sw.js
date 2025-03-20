@@ -1,4 +1,5 @@
-const CACHE_NAME = "apa-app-v1.0";
+const CACHE_VERSION = "1.0.0";
+const CACHE_NAME = `apa-app-${CACHE_VERSION}`;
 const STATIC_ASSETS = [
   "/",
   "/index.html",
@@ -6,17 +7,21 @@ const STATIC_ASSETS = [
   "/script.js",
   "/manifest.json",
   "/icons/icon-192.png",
-  "/icons/icon-512.png"
+  "/icons/icon-512.png",
+  "/offline.html"
 ];
 
-// Install Service Worker
+// Install Service Worker & Cache Assets
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(STATIC_ASSETS);
+    })
   );
+  self.skipWaiting();
 });
 
-// Activate Service Worker
+// Activate Service Worker & Cleanup Old Caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -29,13 +34,14 @@ self.addEventListener("activate", (event) => {
       )
     )
   );
+  self.clients.claim();
 });
 
-// Fetch Event (Serve Cached Files)
+// Fetch & Serve Cached Content (Offline Support)
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+    caches.match(event.request).then((cachedResponse) => {
+      return cachedResponse || fetch(event.request).catch(() => caches.match("/offline.html"));
     })
   );
 });
