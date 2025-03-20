@@ -47,8 +47,11 @@ document.addEventListener("DOMContentLoaded", function () {
             const [lat, lon] = selectedValue.split(",").map(Number);
             map.setView([lat, lon], 8);
             
-            // Show APA Panel
-            apaPanel.classList.remove("hidden");
+            // Ensure APA Panel is shown and remains visible
+            if (apaPanel.classList.contains("hidden")) {
+                apaPanel.classList.remove("hidden");
+                toggleApaBtn.textContent = "Hide APA Table";
+            }
 
             // Calculate and Display APA Data
             calculateAPA(lat, lon);
