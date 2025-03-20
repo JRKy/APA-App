@@ -47,8 +47,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const [lat, lon] = selectedValue.split(",").map(Number);
             map.setView([lat, lon], 8);
             
-            // Ensure APA Panel is shown and remains visible
+            // Ensure APA Panel is permanently shown
             if (apaPanel.classList.contains("hidden")) {
+                console.log("Showing APA Panel...");
                 apaPanel.classList.remove("hidden");
                 toggleApaBtn.textContent = "Hide APA Table";
             }
@@ -60,8 +61,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Handle APA Panel Toggle Button
     toggleApaBtn.addEventListener("click", () => {
-        apaPanel.classList.toggle("hidden");
-        toggleApaBtn.textContent = apaPanel.classList.contains("hidden") ? "Show APA Table" : "Hide APA Table";
+        if (apaPanel.classList.contains("hidden")) {
+            console.log("Opening APA Panel...");
+            apaPanel.classList.remove("hidden");
+            toggleApaBtn.textContent = "Hide APA Table";
+        } else {
+            console.log("Hiding APA Panel...");
+            apaPanel.classList.add("hidden");
+            toggleApaBtn.textContent = "Show APA Table";
+        }
     });
 
     function calculateAPA(userLat, userLon) {
