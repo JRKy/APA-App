@@ -17,21 +17,32 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         map.addLayer(markers);
+    } else {
+        console.error("Satellite data not found in data.js");
     }
 
     // Location Selection Logic
     const locationSelect = document.getElementById("location-select");
-    const apaTableBody = document.querySelector("#apa-table tbody");
-    const apaPanel = document.getElementById("apa-panel");
-    const toggleApaBtn = document.getElementById("toggle-apa");
 
-    toggleApaBtn.addEventListener("click", () => {
-        apaPanel.classList.toggle("hidden");
-        toggleApaBtn.textContent = apaPanel.classList.contains("hidden") ? "Show APA Table" : "Hide APA Table";
-    });
+    if (typeof LOCATIONS !== "undefined" && Array.isArray(LOCATIONS) && LOCATIONS.length > 0) {
+        console.log("Populating dropdown with locations...");
+        LOCATIONS.forEach((loc) => {
+            const option = document.createElement("option");
+            option.value = `${loc.latitude},${loc.longitude}`;
+            option.textContent = loc.name;
+            locationSelect.appendChild(option);
+        });
+    } else {
+        console.error("Location data not found or empty in data.js");
+    }
 
     locationSelect.addEventListener("change", function () {
-        const [lat, lon] = this.value.split(",").map(Number);
-        map.setView([lat, lon], 8);
+        const selectedValue = this.value;
+        if (selectedValue) {
+            const [lat, lon] = selectedValue.split(",").map(Number);
+            map.setView([lat, lon], 8);
+        }
     });
+
+    console.log("Map and Location Selection Initialized.");
 });
