@@ -1,11 +1,11 @@
-const CACHE_VERSION = "v1.1.5"; // Increment for new updates
+const CACHE_VERSION = "v1.1.6"; // Increment for new updates
 const CACHE_NAME = `apa-app-${CACHE_VERSION}`;
 const STATIC_ASSETS = [
   "/APA-App/",
-  "/APA-App/index.html?v=1.1.5",
-  "/APA-App/styles.css?v=1.1.5",
-  "/APA-App/script.js?v=1.1.5",
-  "/APA-App/data.js?v=1.1.5",
+  "/APA-App/index.html?v=1.1.6",
+  "/APA-App/styles.css?v=1.1.6",
+  "/APA-App/script.js?v=1.1.6",
+  "/APA-App/data.js?v=1.1.6",
   "/APA-App/manifest.json",
   "/APA-App/icons/icon-192.png",
   "/APA-App/icons/icon-512.png",
