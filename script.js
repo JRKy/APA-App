@@ -1,32 +1,14 @@
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js?v=1.1.4").then((registration) => {
+    navigator.serviceWorker.register("sw.js?v=1.1.5").then((registration) => {
         console.log("Service Worker registered with scope:", registration.scope);
 
-        const storedVersion = localStorage.getItem("APA_App_Version");
-        const currentVersion = "1.1.4";
-        const isDevelopment = window.location.hostname === "localhost"; // Detects local development
-
+        // Ensure new updates apply immediately without user prompts
         registration.onupdatefound = () => {
             const installingWorker = registration.installing;
             installingWorker.onstatechange = () => {
-                if (
-                    installingWorker.state === "installed" &&
-                    navigator.serviceWorker.controller &&
-                    storedVersion !== currentVersion
-                ) {
-                    console.log("New version detected.");
-                    localStorage.setItem("APA_App_Version", currentVersion);
-
-                    if (isDevelopment) {
-                        // Show prompt in development mode
-                        if (confirm("A new version is available. Reload now?")) {
-                            window.location.reload();
-                        }
-                    } else {
-                        // Silent update in production
-                        console.log("New version loaded in the background.");
-                        installingWorker.postMessage({ action: "skipWaiting" });
-                    }
+                if (installingWorker.state === "installed" && navigator.serviceWorker.controller) {
+                    console.log("New version detected. Updating silently...");
+                    installingWorker.postMessage({ action: "skipWaiting" });
                 }
             };
         };
@@ -34,13 +16,8 @@ if ("serviceWorker" in navigator) {
         console.error("Service Worker registration failed:", error);
     });
 
-    // Ensure immediate update but prevent infinite loops
+    // Reload when a new service worker takes control (without user interaction)
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-        const storedVersion = localStorage.getItem("APA_App_Version");
-        const currentVersion = "1.1.4";
-
-        if (storedVersion !== currentVersion) {
-            window.location.reload();
-        }
+        window.location.reload();
     });
 }
