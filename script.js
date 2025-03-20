@@ -1,8 +1,8 @@
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js?v=1.1.5").then((registration) => {
+    navigator.serviceWorker.register("sw.js?v=1.1.6").then((registration) => {
         console.log("Service Worker registered with scope:", registration.scope);
 
-        // Ensure new updates apply immediately without user prompts
+        // Ensure new updates apply without looping
         registration.onupdatefound = () => {
             const installingWorker = registration.installing;
             installingWorker.onstatechange = () => {
@@ -16,8 +16,17 @@ if ("serviceWorker" in navigator) {
         console.error("Service Worker registration failed:", error);
     });
 
-    // Reload when a new service worker takes control (without user interaction)
+    // Prevent infinite reload loops
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-        window.location.reload();
+        const lastReload = localStorage.getItem("lastSWUpdate");
+        const now = Date.now();
+
+        if (!lastReload || now - lastReload > 5000) { // 5 seconds between reloads
+            console.log("Reloading page for new service worker...");
+            localStorage.setItem("lastSWUpdate", now);
+            window.location.reload();
+        } else {
+            console.log("Preventing infinite reload loop.");
+        }
     });
 }
