@@ -1,3 +1,5 @@
+let map; // Define map globally
+
 document.addEventListener("DOMContentLoaded", function () {
     if (typeof LOCATIONS === "undefined" || !Array.isArray(LOCATIONS)) {
         console.error("Location data is missing! Check if data.js is loaded.");
@@ -9,6 +11,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const apaTableBody = document.querySelector("#apa-table tbody");
     const apaPanel = document.getElementById("apa-panel");
     const toggleApaBtn = document.getElementById("toggle-apa-btn");
+
+    // Initialize the map (Assign to Global Variable)
+    map = L.map("map").setView([20, 0], 2); 
+
+    // Load Tile Layer (OpenStreetMap)
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(map);
 
     // Populate Location Dropdown
     LOCATIONS.forEach((loc) => {
@@ -23,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const selectedValue = this.value;
         if (selectedValue) {
             const [lat, lon] = selectedValue.split(",").map(Number);
-            map.setView([lat, lon], 8);
+            map.setView([lat, lon], 8); // ✅ Now `map` is properly defined
             calculateAPA(lat, lon);
         }
     });
