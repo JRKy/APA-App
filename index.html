@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antenna Pointing Angles (APA) App</title>
+    <meta name="description" content="A tool for calculating and visualizing antenna pointing angles for satellite communication.">
+    
+    <!-- Link to PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- PWA Support -->
+    <meta name="theme-color" content="#003087">
+
+    <!-- Leaflet Map Styles -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <!-- App Versioning -->
+    <script>
+        const APP_VERSION = "1.0.0";
+        console.log(`APA App Version: ${APP_VERSION}`);
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Antenna Pointing Angles (APA) App</h1>
+        <p>Version: <span id="app-version">1.0.0</span></p>
+    </header>
+
+    <!-- Map Container -->
+    <div id="map" style="height: 500px;"></div>
+
+    <!-- JavaScript Files -->
+    <script src="script.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+</body>
+</html>
