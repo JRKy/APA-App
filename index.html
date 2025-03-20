@@ -24,14 +24,14 @@
 
     <!-- App Versioning -->
     <script>
-        const APP_VERSION = "1.0.3";
+        const APP_VERSION = "1.0.4";
         console.log(`APA App Version: ${APP_VERSION}`);
     </script>
 </head>
 <body>
     <header>
         <h1>Antenna Pointing Angles (APA) App</h1>
-        <p>Version: <span id="app-version">1.0.3</span></p>
+        <p>Version: <span id="app-version">1.0.4</span></p>
     </header>
 
     <!-- Location Selection -->
@@ -45,8 +45,9 @@
     <!-- Map Container -->
     <div id="map"></div>
 
-    <!-- APA Table -->
-    <div id="apa-container">
+    <!-- APA Panel (Floating) -->
+    <div id="apa-panel" class="hidden">
+        <button id="toggle-apa">Hide APA Table</button>
         <h2>Antenna Pointing Angles</h2>
         <table id="apa-table">
             <thead>
