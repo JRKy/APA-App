@@ -7,4 +7,12 @@ const SATELLITES = [
     { name: "INTELSAT-39", longitude: 105 }
 ];
 
-console.log(`Satellite Data Loaded: ${SATELLITES.length} satellites`);
+const LOCATIONS = [
+    { name: "Busan", latitude: 35.1796, longitude: 129.0756 },
+    { name: "Cape Canaveral", latitude: 28.3922, longitude: -80.6077 },
+    { name: "Los Angeles", latitude: 34.0522, longitude: -118.2437 },
+    { name: "London", latitude: 51.5074, longitude: -0.1278 },
+    { name: "Sydney", latitude: -33.8688, longitude: 151.2093 }
+];
+
+console.log(`Data Loaded: ${SATELLITES.length} satellites, ${LOCATIONS.length} locations`);
