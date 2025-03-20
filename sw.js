@@ -1,21 +1,24 @@
 const CACHE_VERSION = "1.0.0";
 const CACHE_NAME = `apa-app-${CACHE_VERSION}`;
 const STATIC_ASSETS = [
-  "/",
-  "/index.html",
-  "/styles.css",
-  "/script.js",
-  "/manifest.json",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-  "/offline.html"
+  "/APA-App/",
+  "/APA-App/index.html",
+  "/APA-App/styles.css",
+  "/APA-App/script.js",
+  "/APA-App/manifest.json",
+  "/APA-App/icons/icon-192.png",
+  "/APA-App/icons/icon-512.png",
+  "/APA-App/favicon.ico",
+  "/APA-App/offline.html"
 ];
 
 // Install Service Worker & Cache Assets
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+      return cache.addAll(STATIC_ASSETS).catch((err) => {
+        console.error("Cache error:", err);
+      });
     })
   );
   self.skipWaiting();
@@ -41,7 +44,9 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request).catch(() => caches.match("/offline.html"));
+      return cachedResponse || fetch(event.request).catch(() => {
+        return caches.match("/APA-App/offline.html");
+      });
     })
   );
 });
