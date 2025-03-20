@@ -1,11 +1,11 @@
-const CACHE_VERSION = "v1.1.2"; // Increment this to force refresh
+const CACHE_VERSION = "v1.1.5"; // Increment for new updates
 const CACHE_NAME = `apa-app-${CACHE_VERSION}`;
 const STATIC_ASSETS = [
   "/APA-App/",
-  "/APA-App/index.html?v=1.1.2",
-  "/APA-App/styles.css?v=1.1.2",
-  "/APA-App/script.js?v=1.1.2",
-  "/APA-App/data.js?v=1.1.2",
+  "/APA-App/index.html?v=1.1.5",
+  "/APA-App/styles.css?v=1.1.5",
+  "/APA-App/script.js?v=1.1.5",
+  "/APA-App/data.js?v=1.1.5",
   "/APA-App/manifest.json",
   "/APA-App/icons/icon-192.png",
   "/APA-App/icons/icon-512.png",
@@ -13,19 +13,15 @@ const STATIC_ASSETS = [
   "/APA-App/offline.html"
 ];
 
-// Install Service Worker & Cache New Version
+// Install and cache new version
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.error("Cache error:", err);
-      });
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
-  self.skipWaiting();
+  self.skipWaiting(); // Activate new worker immediately
 });
 
-// Activate Service Worker & Delete Old Caches
+// Activate and remove old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -42,7 +38,7 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Fetch Handler: Always Check Network First
+// Fetch fresh content when online, fallback to cache when offline
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
@@ -52,13 +48,13 @@ self.addEventListener("fetch", (event) => {
           return response;
         });
       })
-      .catch(() => caches.match(event.request)) // If offline, use cache
+      .catch(() => caches.match(event.request))
   );
 });
 
-// Notify Users When a New Version is Available
+// Ensure new service worker activates immediately
 self.addEventListener("message", (event) => {
-  if (event.data === "skipWaiting") {
+  if (event.data.action === "skipWaiting") {
     self.skipWaiting();
   }
 });
