@@ -1,4 +1,4 @@
-/* APA App Styles - v1.0.4 */
+/* APA App Styles - v1.0.9 */
 
 body {
     font-family: Arial, sans-serif;
@@ -31,6 +31,25 @@ header {
     border: 2px solid #003087;
 }
 
+/* APA Toggle Button */
+#toggle-apa-btn {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: #003087;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+}
+
+#toggle-apa-btn:hover {
+    background: #002060;
+}
+
 /* APA Panel - Floating */
 #apa-panel {
     position: absolute;
@@ -45,9 +64,9 @@ header {
     transition: transform 0.3s ease-in-out;
 }
 
-/* Hide Panel */
+/* Hide Panel Initially */
 .hidden {
-    transform: translateX(110%);
+    display: none;
 }
 
 /* APA Table */
@@ -69,17 +88,5 @@ th {
 
 .negative {
     color: red;
-    font-weight: bold;
-}
-
-/* APA Toggle Button */
-#toggle-apa {
-    background: white;
-    color: #003087;
-    border: none;
-    padding: 5px;
-    width: 100%;
-    cursor: pointer;
-    margin-bottom: 5px;
     font-weight: bold;
 }
