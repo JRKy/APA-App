@@ -1,4 +1,4 @@
-/* APA App Styles - v1.0.1 */
+/* APA App Styles - v1.0.2 */
 
 body {
     font-family: Arial, sans-serif;
@@ -12,6 +12,16 @@ header {
     background-color: #003087;
     color: white;
     padding: 15px;
+}
+
+/* Location Selection Controls */
+.controls {
+    margin: 10px 0;
+}
+
+#location-select {
+    font-size: 16px;
+    padding: 5px;
 }
 
 #map {
