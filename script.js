@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Location Selection Logic
     const locationSelect = document.getElementById("location-select");
+    const apaTableBody = document.querySelector("#apa-table tbody");
 
     if (typeof LOCATIONS !== "undefined") {
         LOCATIONS.forEach((loc) => {
@@ -37,11 +38,39 @@ document.addEventListener("DOMContentLoaded", function () {
             if (selectedValue) {
                 const [lat, lon] = selectedValue.split(",").map(Number);
                 map.setView([lat, lon], 8);
+                calculateAPA(lat, lon);
             }
         });
     } else {
         console.error("Location data not found in data.js");
     }
 
-    console.log("Map and Location Selection Initialized.");
+    function calculateAPA(userLat, userLon) {
+        apaTableBody.innerHTML = "";
+
+        SATELLITES.forEach((sat) => {
+            const satLon = sat.longitude;
+
+            // Calculate Azimuth
+            const azimuth = ((satLon - userLon + 360) % 360).toFixed(2);
+
+            // Calculate Elevation (Simplified Formula)
+            const elevation = (90 - Math.abs(userLat) - Math.abs(satLon - userLon)).toFixed(2);
+
+            // Create Table Row
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${sat.name}</td>
+                <td>${satLon}°</td>
+                <td class="${elevation < 0 ? "negative" : ""}">${elevation}°</td>
+                <td>${azimuth}°</td>
+            `;
+
+            apaTableBody.appendChild(row);
+        });
+
+        console.log("APA calculations updated.");
+    }
+
+    console.log("Map and APA Calculations Initialized.");
 });
