@@ -1,4 +1,4 @@
-/* APA App Styles - v1.0.0 */
+/* APA App Styles - v1.0.1 */
 
 body {
     font-family: Arial, sans-serif;
@@ -18,4 +18,5 @@ header {
     width: 100%;
     height: 500px;
     margin-top: 10px;
+    border: 2px solid #003087;
 }
