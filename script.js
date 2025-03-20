@@ -1,20 +1,18 @@
 document.addEventListener("DOMContentLoaded", function () {
     // Initialize Map
-    const map = L.map("map").setView([20, 0], 2); // Centered at lat 20, lon 0
+    const map = L.map("map").setView([20, 0], 2); // Default view
 
     // Load Tile Layer (OpenStreetMap)
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; OpenStreetMap contributors',
     }).addTo(map);
 
-    // Marker Cluster Group
+    // Marker Cluster Group for satellites
     const markers = L.markerClusterGroup();
 
-    // Check if satellite data is available
     if (typeof SATELLITES !== "undefined") {
         SATELLITES.forEach((sat) => {
-            const { name, longitude } = sat;
-            const marker = L.marker([0, longitude]).bindPopup(`<b>${name}</b><br>Longitude: ${longitude}°`);
+            const marker = L.marker([0, sat.longitude]).bindPopup(`<b>${sat.name}</b><br>Longitude: ${sat.longitude}°`);
             markers.addLayer(marker);
         });
 
@@ -23,5 +21,27 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("Satellite data not found in data.js");
     }
 
-    console.log("Map initialized.");
+    // Location Selection Logic
+    const locationSelect = document.getElementById("location-select");
+
+    if (typeof LOCATIONS !== "undefined") {
+        LOCATIONS.forEach((loc) => {
+            const option = document.createElement("option");
+            option.value = `${loc.latitude},${loc.longitude}`;
+            option.textContent = loc.name;
+            locationSelect.appendChild(option);
+        });
+
+        locationSelect.addEventListener("change", (event) => {
+            const selectedValue = event.target.value;
+            if (selectedValue) {
+                const [lat, lon] = selectedValue.split(",").map(Number);
+                map.setView([lat, lon], 8);
+            }
+        });
+    } else {
+        console.error("Location data not found in data.js");
+    }
+
+    console.log("Map and Location Selection Initialized.");
 });
