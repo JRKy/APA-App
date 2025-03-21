@@ -7,7 +7,7 @@
   <meta name="description" content="A tool for calculating and visualizing antenna pointing angles for satellite communication.">
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css?v=1.4.4" />
+  <link rel="stylesheet" href="styles.css?v=1.4.5" />
   <meta name="theme-color" content="#003087" />
 
   <!-- Leaflet -->
@@ -22,22 +22,22 @@
   <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/smoothness/jquery-ui.css" />
 
-  <script>const APP_VERSION = "1.4.4"; console.log(`APA App Version: ${APP_VERSION}`);</script>
+  <script>const APP_VERSION = "1.4.5"; console.log(`APA App Version: ${APP_VERSION}`);</script>
 </head>
 <body>
   <header>
     <h1>Antenna Pointing Angles (APA) App</h1>
-    <p>Version: <span id="app-version">1.4.4</span></p>
+    <p>Version: <span id="app-version">1.4.5</span></p>
   </header>
 
   <div id="map"></div>
 
-  <script src="data.js?v=1.4.4"></script>
-  <script src="script.js?v=1.4.4"></script>
+  <script src="data.js?v=1.4.5"></script>
+  <script src="script.js?v=1.4.5"></script>
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.4.4").then(reg => {
+      navigator.serviceWorker.register("sw.js?v=1.4.5").then(reg => {
         console.log("Service Worker registered with scope:", reg.scope);
       }).catch(err => {
         console.error("Service Worker registration failed:", err);
