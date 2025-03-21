@@ -1,7 +1,7 @@
 let map; // Ensure map is global
 
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js?v=1.2.1").then((registration) => {
+    navigator.serviceWorker.register("sw.js?v=1.2.2").then((registration) => {
         console.log("Service Worker registered with scope:", registration.scope);
     }).catch((error) => {
         console.error("Service Worker registration failed:", error);
