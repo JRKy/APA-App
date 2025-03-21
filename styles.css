@@ -1,4 +1,4 @@
-/* APA App Styles - v1.3.12 */
+/* APA App Styles - v1.4.1 */
 
 body, html {
   height: 100%;
@@ -18,69 +18,36 @@ header {
 #map {
   height: calc(100vh - 100px);
   width: 100%;
-  position: relative;
 }
 
-/* Map Controls */
-.map-controls {
-  position: absolute;
-  top: 10px;
-  left: 50px;
-  background: white;
-  padding: 10px;
-  border-radius: 5px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 14px;
-}
-
-.map-controls select,
-.map-controls button {
-  padding: 6px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 200px;
-}
-
-/* APA Floating Panel */
-.apa-floating {
-  position: fixed;
+/* APA Leaflet Control */
+.leaflet-control.apa-control {
   background-color: rgba(0, 48, 135, 0.95);
   color: white;
-  padding: 12px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  z-index: 1001;
-  overflow: auto;
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
   min-width: 320px;
-  max-width: 400px;
-  max-height: 90vh;
-}
-
-.apa-floating.hidden {
-  display: none !important;
+  max-width: 380px;
+  max-height: 70vh;
+  overflow: auto;
+  font-size: 13px;
 }
 
 .apa-panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
 }
 
-#close-apa-panel {
+.apa-panel-header button {
   background: none;
   border: none;
   color: white;
-  font-size: 20px;
+  font-size: 16px;
   cursor: pointer;
 }
 
-/* APA Table */
 #apa-table {
   width: 100%;
   table-layout: fixed;
