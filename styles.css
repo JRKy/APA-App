@@ -1,4 +1,4 @@
-/* APA App Styles - v1.2.6 */
+/* APA App Styles - v1.2.7 */
 
 body, html {
     height: 100%;
@@ -16,16 +16,16 @@ header {
 }
 
 #map {
-    height: calc(100vh - 100px); /* fill the rest of the screen */
+    height: calc(100vh - 100px);
     width: 100%;
     position: relative;
 }
 
-/* Floating Map Controls (Top Left) */
+/* Floating Map Controls (Aligned with Leaflet Zoom) */
 .map-controls {
     position: absolute;
-    top: 60px; /* previously 10px */
-    left: 10px;
+    top: 60px;       /* below zoom control (default is 10px) */
+    left: 50px;      /* aligned to zoom control (default left: 10px, button is ~30px wide) */
     background: white;
     padding: 10px;
     border-radius: 5px;
@@ -47,6 +47,7 @@ header {
     font-size: 14px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    width: 200px;
 }
 
 /* APA Bottom Overlay Panel */
