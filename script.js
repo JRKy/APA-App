@@ -1,7 +1,4 @@
 let map;
-let apaControl;
-const positions = ["topright", "topleft", "bottomleft", "bottomright"];
-let currentPositionIndex = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
   map = L.map("map").setView([20, 0], 2);
@@ -17,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="apa-panel-header">
           <h4 style="margin:0;">APA Table</h4>
           <span style="margin-left:auto;">
-            <button id="reposition-apa" title="Move APA Panel">⇄</button>
+            <button id="reposition-apa" title="Reset Position">↺</button>
             <button id="toggle-apa-collapse" title="Collapse">−</button>
           </span>
         </div>
@@ -37,34 +34,63 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `;
 
-      L.DomEvent.disableClickPropagation(container);
+      // Restore state
+      const saved = JSON.parse(localStorage.getItem("apaState"));
+      if (saved) {
+        if (saved.left && saved.top) {
+          container.style.left = saved.left + "px";
+          container.style.top = saved.top + "px";
+        }
+        if (saved.collapsed) {
+          container.querySelector("#apa-table-wrapper").style.display = "none";
+          container.querySelector("#toggle-apa-collapse").textContent = "+";
+        }
+      } else {
+        container.style.top = "80px";
+        container.style.left = "80px";
+      }
+
+      $(container).draggable({
+        handle: ".apa-panel-header",
+        stop: function (event, ui) {
+          const pos = ui.position;
+          saveState(pos.left, pos.top);
+        }
+      });
+
       return container;
     }
   });
 
-  // Initial control add
-  apaControl = new L.Control.APA({ position: positions[currentPositionIndex] });
+  function saveState(left, top) {
+    const isCollapsed = document.getElementById("apa-table-wrapper")?.style.display === "none";
+    localStorage.setItem("apaState", JSON.stringify({
+      left,
+      top,
+      collapsed: isCollapsed
+    }));
+  }
+
+  const apaControl = new L.Control.APA({ position: "topright" });
   map.addControl(apaControl);
 
-  // Event delegation
   document.addEventListener("click", (e) => {
-    if (e.target.id === "toggle-apa-collapse") {
-      const wrapper = document.getElementById("apa-table-wrapper");
-      const btn = e.target;
+    const wrapper = document.getElementById("apa-table-wrapper");
+    const btn = e.target;
+
+    if (btn.id === "toggle-apa-collapse") {
       const isCollapsed = wrapper.style.display === "none";
       wrapper.style.display = isCollapsed ? "block" : "none";
       btn.textContent = isCollapsed ? "−" : "+";
-      btn.title = isCollapsed ? "Collapse" : "Expand";
+      saveState(
+        parseInt(btn.closest(".apa-control").style.left),
+        parseInt(btn.closest(".apa-control").style.top)
+      );
     }
 
-    if (e.target.id === "reposition-apa") {
-      map.removeControl(apaControl);
-      currentPositionIndex = (currentPositionIndex + 1) % positions.length;
-      apaControl = new L.Control.APA({ position: positions[currentPositionIndex] });
-      map.addControl(apaControl);
-      console.log(`APA panel moved to ${positions[currentPositionIndex]}`);
+    if (btn.id === "reposition-apa") {
+      localStorage.removeItem("apaState");
+      location.reload();
     }
   });
-
-  // Optional: load satellite/location data here later
 });
