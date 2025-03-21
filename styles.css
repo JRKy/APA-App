@@ -1,4 +1,4 @@
-/* APA App Styles - v1.2.2 */
+/* APA App Styles - v1.2.3 */
 
 body, html {
     height: 100%;
@@ -34,4 +34,64 @@ header {
     display: block;
 }
 
-/* APA Toggle Button - Ensu
+/* APA Toggle Button - Ensure it's Always Visible */
+#toggle-apa-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #003087;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+    z-index: 1000; /* Keeps button above map */
+}
+
+#toggle-apa-btn:hover {
+    background: #002060;
+}
+
+/* APA Panel - Floating and Toggleable */
+#apa-panel {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    background: rgba(0, 48, 135, 0.9);
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Hide APA Panel Initially */
+.hidden {
+    display: none;
+}
+
+/* APA Table */
+#apa-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    border: 1px solid white;
+    padding: 5px;
+    text-align: center;
+}
+
+th {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.negative {
+    color: red;
+    font-weight: bold;
+}
