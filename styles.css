@@ -1,4 +1,4 @@
-/* APA App Styles - v1.3.1 */
+/* APA App Styles - v1.3.2 */
 
 body, html {
   height: 100%;
@@ -56,6 +56,9 @@ header {
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
   overflow-y: auto;
   z-index: 1001;
+  max-width: 400px;
+  min-width: 320px;
+  max-height: 400px;
 }
 
 .apa-floating.hidden {
