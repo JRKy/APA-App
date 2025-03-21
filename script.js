@@ -34,30 +34,43 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `;
 
-      // Restore state
       const saved = JSON.parse(localStorage.getItem("apaState"));
-      if (saved) {
-        if (saved.left && saved.top) {
-          container.style.left = saved.left + "px";
-          container.style.top = saved.top + "px";
+      const viewportW = window.innerWidth;
+      const viewportH = window.innerHeight;
+      const panelW = 360;
+      const panelH = 300;
+
+      let left = 80;
+      let top = 80;
+
+      if (saved && typeof saved.left === "number" && typeof saved.top === "number") {
+        const fitsX = saved.left >= 0 && saved.left + panelW <= viewportW;
+        const fitsY = saved.top >= 0 && saved.top + panelH <= viewportH;
+
+        if (fitsX && fitsY) {
+          left = saved.left;
+          top = saved.top;
+        } else {
+          console.warn("Saved APA panel position was offscreen. Resetting to default.");
         }
-        if (saved.collapsed) {
-          container.querySelector("#apa-table-wrapper").style.display = "none";
-          container.querySelector("#toggle-apa-collapse").textContent = "+";
-        }
-      } else {
-        container.style.top = "80px";
-        container.style.left = "80px";
+      }
+
+      container.style.left = `${left}px`;
+      container.style.top = `${top}px`;
+
+      if (saved?.collapsed) {
+        container.querySelector("#apa-table-wrapper").style.display = "none";
+        container.querySelector("#toggle-apa-collapse").textContent = "+";
       }
 
       $(container).draggable({
         handle: ".apa-panel-header",
-        stop: function (event, ui) {
-          const pos = ui.position;
-          saveState(pos.left, pos.top);
+        stop: function (_, ui) {
+          saveState(ui.position.left, ui.position.top);
         }
       });
 
+      console.log(`APA panel positioned at left: ${left}px, top: ${top}px`);
       return container;
     }
   });
@@ -82,10 +95,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const isCollapsed = wrapper.style.display === "none";
       wrapper.style.display = isCollapsed ? "block" : "none";
       btn.textContent = isCollapsed ? "−" : "+";
-      saveState(
-        parseInt(btn.closest(".apa-control").style.left),
-        parseInt(btn.closest(".apa-control").style.top)
-      );
+      const container = btn.closest(".apa-control");
+      saveState(parseInt(container.style.left), parseInt(container.style.top));
     }
 
     if (btn.id === "reposition-apa") {
