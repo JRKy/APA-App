@@ -107,17 +107,25 @@ $(function () {
     function loadPanelState() {
         const saved = JSON.parse(localStorage.getItem("apaPanelState"));
         if (saved) {
-            const maxLeft = window.innerWidth - 100;
-            const maxTop = window.innerHeight - 100;
-            const safeLeft = Math.min(saved.left, maxLeft);
-            const safeTop = Math.min(saved.top, maxTop);
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
 
-            panel.css({
-                left: safeLeft,
-                top: safeTop,
-                width: saved.width,
-                height: saved.height
-            });
+            const left = Math.min(saved.left, viewportWidth - 100);
+            const top = Math.min(saved.top, viewportHeight - 100);
+            const width = saved.width;
+            const height = saved.height;
+
+            const isOffscreen = left + width < 0 || top + height < 0 || left > viewportWidth || top > viewportHeight;
+
+            if (!isOffscreen) {
+                panel.css({ left, top, width, height });
+            } else {
+                panel.css({ left: "", top: "", width: "", height: "" });
+                panel.removeClass("hidden");
+                $("#toggle-apa-btn").text("Hide APA Table");
+            }
+        }
+    });
         }
     }
 
