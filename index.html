@@ -53,7 +53,10 @@
 
     <!-- APA Panel Floating in Bottom Right -->
     <div id="apa-panel" class="apa-floating hidden">
-        <h2>Antenna Pointing Angles</h2>
+        <div class="apa-panel-header">
+            <h2>Antenna Pointing Angles</h2>
+            <button id="close-apa-panel" title="Close">×</button>
+        </div>
         <table id="apa-table">
             <thead>
                 <tr>
@@ -83,11 +86,22 @@
         }
     </script>
 
-    <!-- Enable Draggable/Resizable Panel -->
+    <!-- Enable Draggable/Resizable Panel with Snap and Close -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             $(function () {
-                $("#apa-panel").draggable({ handle: "h2" }).resizable();
+                $("#apa-panel").draggable({
+                    handle: ".apa-panel-header",
+                    containment: "body",
+                    snap: true,
+                    snapMode: "both",
+                    snapTolerance: 20
+                }).resizable();
+
+                $("#close-apa-panel").on("click", function () {
+                    $("#apa-panel").addClass("hidden");
+                    $("#toggle-apa-btn").text("Show APA Table");
+                });
             });
         });
     </script>
