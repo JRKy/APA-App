@@ -1,152 +1,105 @@
-let map;
-let apaLines = {}; // Stores L.LayerGroup keyed by satellite name
+/* APA App Styles - v1.3.1 */
 
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js?v=1.3.0").then((registration) => {
-        console.log("Service Worker registered with scope:", registration.scope);
-    }).catch((error) => {
-        console.error("Service Worker registration failed:", error);
-    });
+body, html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    console.log("Initializing map...");
+header {
+  background-color: #003087;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
 
-    if (typeof L === "undefined") {
-        console.error("Leaflet library is not loading.");
-        return;
-    }
+#map {
+  height: calc(100vh - 100px);
+  width: 100%;
+  position: relative;
+}
 
-    const mapElement = document.getElementById("map");
-    if (!mapElement || mapElement.clientHeight === 0) {
-        console.error("Map div has no height. Check CSS.");
-        return;
-    }
+/* Map Control Box */
+.map-controls {
+  position: absolute;
+  top: 10px;
+  left: 50px;
+  background: white;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+}
 
-    map = L.map("map").setView([20, 0], 2);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(map);
-    console.log("Map initialized successfully.");
+.map-controls select,
+.map-controls button {
+  padding: 6px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 200px;
+}
 
-    const locationSelect = document.getElementById("location-select");
-    const apaPanel = document.getElementById("apa-panel");
-    const toggleApaBtn = document.getElementById("toggle-apa-btn");
-    const apaTableBody = document.querySelector("#apa-table tbody");
+/* APA Floating Panel */
+.apa-floating {
+  position: absolute;
+  background-color: rgba(0, 48, 135, 0.95);
+  color: white;
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  overflow-y: auto;
+  z-index: 1001;
+}
 
-    if (typeof LOCATIONS === "undefined" || !Array.isArray(LOCATIONS)) {
-        console.error("Location data is missing!");
-        return;
-    }
+.apa-floating.hidden {
+  display: none !important;
+}
 
-    console.log("Populating location dropdown...");
-    LOCATIONS.forEach((loc) => {
-        const option = document.createElement("option");
-        option.value = `${loc.latitude},${loc.longitude}`;
-        option.textContent = loc.name;
-        locationSelect.appendChild(option);
-    });
+.apa-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-    toggleApaBtn.addEventListener("click", () => {
-        apaPanel.classList.toggle("hidden");
-        toggleApaBtn.textContent = apaPanel.classList.contains("hidden") ? "Show APA Table" : "Hide APA Table";
-    });
+#close-apa-panel {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+}
 
-    locationSelect.addEventListener("change", function () {
-        const selectedValue = this.value;
-        if (selectedValue) {
-            const [lat, lon] = selectedValue.split(",").map(Number);
-            console.log(`Zooming to location: ${lat}, ${lon}`);
-            map.setView([lat, lon], 8);
-            clearApaLines();
-            calculateAPA(lat, lon);
-        }
-    });
+/* APA Table */
+#apa-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
 
-    function clearApaLines() {
-        Object.values(apaLines).forEach(group => group.remove());
-        apaLines = {};
-    }
+#apa-table th,
+#apa-table td {
+  border: 1px solid white;
+  padding: 6px;
+  text-align: center;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-size: 13px;
+}
 
-    function calculateAPA(lat, lon) {
-        if (!Array.isArray(SATELLITES)) {
-            console.error("Satellite data is missing!");
-            return;
-        }
+#apa-table th {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+}
 
-        apaTableBody.innerHTML = "";
-
-        SATELLITES.forEach((sat) => {
-            const azimuth = ((sat.longitude - lon + 360) % 360).toFixed(2);
-            const elevation = (90 - Math.abs(lat) - Math.abs(sat.longitude - lon)).toFixed(2);
-            const isNegative = elevation < 0;
-
-            const row = document.createElement("tr");
-
-            // Checkbox
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.checked = true;
-            checkbox.dataset.satId = sat.name;
-
-            const checkboxCell = document.createElement("td");
-            checkboxCell.appendChild(checkbox);
-
-            const nameCell = document.createElement("td");
-            nameCell.textContent = sat.name;
-
-            const lonCell = document.createElement("td");
-            lonCell.textContent = `${sat.longitude}°`;
-
-            const elCell = document.createElement("td");
-            elCell.textContent = `${elevation}°`;
-            if (isNegative) elCell.classList.add("negative");
-
-            const azCell = document.createElement("td");
-            azCell.textContent = `${azimuth}°`;
-
-            row.appendChild(checkboxCell);
-            row.appendChild(nameCell);
-            row.appendChild(lonCell);
-            row.appendChild(elCell);
-            row.appendChild(azCell);
-            apaTableBody.appendChild(row);
-
-            // Draw line and label
-            const from = [lat, lon];
-            const to = [0, sat.longitude];
-            const color = isNegative ? "#FF5252" : "#4CAF50";
-
-            const line = L.polyline([from, to], {
-                color,
-                weight: 2,
-                opacity: 0.8
-            });
-
-            const label = L.marker(to, {
-                icon: L.divIcon({
-                    className: 'apa-label',
-                    html: `<span style="color:${color}; font-size:12px;">${sat.name}</span>`,
-                    iconSize: [100, 20]
-                }),
-                interactive: false
-            });
-
-            const group = L.layerGroup([line, label]).addTo(map);
-            apaLines[sat.name] = group;
-
-            checkbox.addEventListener("change", function () {
-                const key = this.dataset.satId;
-                if (apaLines[key]) {
-                    if (this.checked) {
-                        apaLines[key].addTo(map);
-                    } else {
-                        apaLines[key].remove();
-                    }
-                }
-            });
-        });
-
-        console.log("APA table and satellite lines updated.");
-    }
-});
+.negative {
+  color: #FF5252;
+  font-weight: bold;
+}
