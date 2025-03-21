@@ -1,4 +1,4 @@
-/* APA App Styles - v1.3.3 */
+/* APA App Styles - v1.3.4 */
 
 body, html {
   height: 100%;
@@ -21,7 +21,6 @@ header {
   position: relative;
 }
 
-/* Map Control Box */
 .map-controls {
   position: absolute;
   top: 10px;
@@ -49,6 +48,8 @@ header {
 /* APA Floating Panel */
 .apa-floating {
   position: fixed;
+  bottom: 20px;
+  right: 20px;
   background-color: rgba(0, 48, 135, 0.95);
   color: white;
   padding: 12px;
