@@ -7,7 +7,7 @@
   <meta name="description" content="A tool for calculating and visualizing antenna pointing angles for satellite communication.">
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css?v=1.3.12" />
+  <link rel="stylesheet" href="styles.css?v=1.4.1" />
   <meta name="theme-color" content="#003087" />
 
   <!-- Leaflet -->
@@ -20,99 +20,27 @@
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-  <script>const APP_VERSION = "1.3.12"; console.log(`APA App Version: ${APP_VERSION}`);</script>
+  <script>const APP_VERSION = "1.4.1"; console.log(`APA App Version: ${APP_VERSION}`);</script>
 </head>
 <body>
   <header>
     <h1>Antenna Pointing Angles (APA) App</h1>
-    <p>Version: <span id="app-version">1.3.12</span></p>
+    <p>Version: <span id="app-version">1.4.1</span></p>
   </header>
 
-  <div id="map">
-    <div class="map-controls leaflet-bar">
-      <label for="location-select">Select a Location:</label>
-      <select id="location-select">
-        <option value="" selected>Choose a location...</option>
-      </select>
-      <button id="toggle-apa-btn">Show APA Table</button>
-    </div>
-  </div>
+  <div id="map"></div>
 
-  <div id="apa-panel" class="apa-floating hidden">
-    <div class="apa-panel-header">
-      <h2>Antenna Pointing Angles</h2>
-      <button id="close-apa-panel" title="Close">×</button>
-    </div>
-    <table id="apa-table">
-      <thead>
-        <tr>
-          <th>Show</th>
-          <th>Satellite</th>
-          <th>Longitude (°)</th>
-          <th>Elevation (°)</th>
-          <th>Azimuth (°)</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <script src="data.js?v=1.3.12"></script>
-  <script src="script.js?v=1.3.12"></script>
+  <script src="data.js?v=1.4.1"></script>
+  <script src="script.js?v=1.4.1"></script>
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.3.12").then(reg => {
+      navigator.serviceWorker.register("sw.js?v=1.4.1").then(reg => {
         console.log("Service Worker registered with scope:", reg.scope);
       }).catch(err => {
         console.error("Service Worker registration failed:", err);
       });
     }
-
-    window.addEventListener("load", () => {
-      const panel = document.getElementById("apa-panel");
-      const toggleBtn = document.getElementById("toggle-apa-btn");
-      const controlsBox = document.querySelector(".map-controls");
-
-      function positionPanelBelowControls() {
-        const rect = controlsBox.getBoundingClientRect();
-        const left = rect.left + window.scrollX;
-        const top = rect.bottom + 10 + window.scrollY;
-
-        panel.style.left = `${left}px`;
-        panel.style.top = `${top}px`;
-        panel.style.width = "360px";
-        panel.style.height = "320px";
-
-        console.log(`APA panel aligned to map-controls at left: ${left}px, top: ${top}px`);
-      }
-
-      function showPanel() {
-        positionPanelBelowControls();
-        panel.classList.remove("hidden");
-        toggleBtn.textContent = "Hide APA Table";
-      }
-
-      function hidePanel() {
-        panel.classList.add("hidden");
-        toggleBtn.textContent = "Show APA Table";
-      }
-
-      toggleBtn.addEventListener("click", () => {
-        if (panel.classList.contains("hidden")) {
-          showPanel();
-        } else {
-          hidePanel();
-        }
-      });
-
-      document.getElementById("close-apa-panel").addEventListener("click", () => {
-        hidePanel();
-      });
-
-      // Show on load
-      showPanel();
-    });
   </script>
 </body>
 </html>
