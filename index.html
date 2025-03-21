@@ -143,6 +143,12 @@
                 });
 
                 loadPanelState();
+
+                $("#toggle-apa-btn").on("click", function () {
+                    panel.toggleClass("hidden");
+                    const isVisible = !panel.hasClass("hidden");
+                    $(this).text(isVisible ? "Hide APA Table" : "Show APA Table");
+                });
             });
         });
     </script>
