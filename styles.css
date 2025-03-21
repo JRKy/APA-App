@@ -24,7 +24,7 @@ header {
 /* Floating Map Controls (Top Left) */
 .map-controls {
     position: absolute;
-    top: 10px;
+    top: 60px; /* previously 10px */
     left: 10px;
     background: white;
     padding: 10px;
