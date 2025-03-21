@@ -1,4 +1,4 @@
-/* APA App Styles - v1.4.4 */
+/* APA App Styles - v1.4.5 */
 
 body, html {
   height: 100%;
@@ -33,6 +33,8 @@ header {
   overflow: auto;
   font-size: 13px;
   position: absolute !important;
+  border: 2px dashed limegreen; /* diagnostic visual aid */
+  z-index: 9999;
 }
 
 .apa-panel-header {
