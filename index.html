@@ -125,6 +125,12 @@ $(function () {
                 $("#toggle-apa-btn").text("Hide APA Table");
             }
         }
+    } else {
+                panel.css({ left: "", top: "", width: "", height: "" });
+                panel.removeClass("hidden");
+                $("#toggle-apa-btn").text("Hide APA Table");
+            }
+        }
     });
         }
     }
