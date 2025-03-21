@@ -89,68 +89,66 @@
 
     <!-- Enable Draggable/Resizable Panel with Snap, Close, Save, and Reset -->
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const panel = $("#apa-panel");
+$(function () {
+    const panel = $("#apa-panel");
 
-            function savePanelState() {
-                const offset = panel.offset();
-                const width = panel.width();
-                const height = panel.height();
-                localStorage.setItem("apaPanelState", JSON.stringify({
-                    left: offset.left,
-                    top: offset.top,
-                    width,
-                    height
-                }));
-            }
+    function savePanelState() {
+        const offset = panel.offset();
+        const width = panel.width();
+        const height = panel.height();
+        localStorage.setItem("apaPanelState", JSON.stringify({
+            left: offset.left,
+            top: offset.top,
+            width,
+            height
+        }));
+    }
 
-            function loadPanelState() {
-                const saved = JSON.parse(localStorage.getItem("apaPanelState"));
-                if (saved) {
-                    panel.css({
-                        left: saved.left,
-                        top: saved.top,
-                        width: saved.width,
-                        height: saved.height
-                    });
-                }
-            }
-
-            function resetPanelState() {
-                localStorage.removeItem("apaPanelState");
-                panel.css({ left: "", top: "", width: "", height: "" });
-                panel.removeClass("hidden");
-                $("#toggle-apa-btn").text("Hide APA Table");
-            }
-
-            $(function () {
-                panel.draggable({
-                    handle: ".apa-panel-header",
-                    containment: "body",
-                    snap: true,
-                    snapMode: "both",
-                    snapTolerance: 20,
-                    stop: savePanelState
-                }).resizable({ stop: savePanelState });
-
-                $("#close-apa-panel").on("click", function () {
-                    panel.addClass("hidden");
-                    $("#toggle-apa-btn").text("Show APA Table");
-                });
-
-                $("#reset-apa-panel").on("click", function () {
-                    resetPanelState();
-                });
-
-                loadPanelState();
-
-                $("#toggle-apa-btn").on("click", function () {
-                    panel.toggleClass("hidden");
-                    const isVisible = !panel.hasClass("hidden");
-                    $(this).text(isVisible ? "Hide APA Table" : "Show APA Table");
-                });
+    function loadPanelState() {
+        const saved = JSON.parse(localStorage.getItem("apaPanelState"));
+        if (saved) {
+            panel.css({
+                left: saved.left,
+                top: saved.top,
+                width: saved.width,
+                height: saved.height
             });
-        });
-    </script>
+        }
+    }
+
+    function resetPanelState() {
+        localStorage.removeItem("apaPanelState");
+        panel.css({ left: "", top: "", width: "", height: "" });
+        panel.removeClass("hidden");
+        $("#toggle-apa-btn").text("Hide APA Table");
+    }
+
+    panel.draggable({
+        handle: ".apa-panel-header",
+        containment: "body",
+        snap: true,
+        snapMode: "both",
+        snapTolerance: 20,
+        stop: savePanelState
+    }).resizable({ stop: savePanelState });
+
+    $("#close-apa-panel").on("click", function () {
+        panel.addClass("hidden");
+        $("#toggle-apa-btn").text("Show APA Table");
+    });
+
+    $("#reset-apa-panel").on("click", function () {
+        resetPanelState();
+    });
+
+    $("#toggle-apa-btn").on("click", function () {
+        panel.toggleClass("hidden");
+        const isVisible = !panel.hasClass("hidden");
+        $(this).text(isVisible ? "Hide APA Table" : "Show APA Table");
+    });
+
+    loadPanelState();
+});
+</script>
 </body>
 </html>
