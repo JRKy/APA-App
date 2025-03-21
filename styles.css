@@ -17,7 +17,7 @@ header {
 
 .app-container {
     display: flex;
-    height: calc(100vh - 100px); /* Subtract header height */
+    height: calc(100vh - 100px); /* Adjust based on header height */
 }
 
 .sidebar {
@@ -57,10 +57,11 @@ header {
 
 /* APA Docked Side Panel */
 #apa-panel {
-    width: 300px;
+    width: 360px; /* wider to fit content */
     background-color: #003087;
     color: white;
     padding: 15px;
+    overflow-x: auto;
     overflow-y: auto;
     border-left: 1px solid #002060;
     transition: transform 0.3s ease;
@@ -73,15 +74,18 @@ header {
 /* APA Table */
 #apa-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     margin-top: 10px;
 }
 
 #apa-table th,
 #apa-table td {
-    border: 1px solid white;
     padding: 6px;
     text-align: center;
+    border: 1px solid white;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 #apa-table th {
