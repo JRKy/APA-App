@@ -27,6 +27,11 @@
         const APP_VERSION = "1.3.0";
         console.log(`APA App Version: ${APP_VERSION}`);
     </script>
+
+    <!-- Draggable & Resizable Support -->
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/smoothness/jquery-ui.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <header>
@@ -76,6 +81,15 @@
                 console.error("Service Worker registration failed:", error);
             });
         }
+    </script>
+
+    <!-- Enable Draggable/Resizable Panel -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            $(function () {
+                $("#apa-panel").draggable({ handle: "h2" }).resizable();
+            });
+        });
     </script>
 </body>
 </html>
