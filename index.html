@@ -106,10 +106,10 @@ $(function () {
 
     function loadPanelState() {
         const saved = JSON.parse(localStorage.getItem("apaPanelState"));
-        if (saved) {
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
 
+        if (saved) {
             const left = Math.min(saved.left, viewportWidth - 100);
             const top = Math.min(saved.top, viewportHeight - 100);
             const width = saved.width;
@@ -119,6 +119,17 @@ $(function () {
 
             if (!isOffscreen) {
                 panel.css({ left, top, width, height });
+                panel.removeClass("hidden");
+                $("#toggle-apa-btn").text("Hide APA Table");
+                return;
+            }
+        }
+
+        // Fallback: reset to defaults
+        panel.css({ left: "", top: "", width: "", height: "" });
+        panel.removeClass("hidden");
+        $("#toggle-apa-btn").text("Hide APA Table");
+    });
             } else {
                 panel.css({ left: "", top: "", width: "", height: "" });
                 panel.removeClass("hidden");
