@@ -1,20 +1,37 @@
-/* APA Button - Ensure it's always visible */
-#toggle-apa-btn {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: #003087;
-    color: white;
-    border: none;
-    padding: 10px;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 5px;
-    font-weight: bold;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
-    z-index: 1000; /* Ensure it is above the map */
+/* APA App Styles - v1.2.2 */
+
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
 }
 
-#toggle-apa-btn:hover {
-    background: #002060;
+header {
+    background-color: #003087;
+    color: white;
+    padding: 15px;
+    text-align: center;
 }
+
+/* Location Selection Controls */
+.controls {
+    margin: 10px 0;
+}
+
+#location-select {
+    font-size: 16px;
+    padding: 5px;
+}
+
+/* Map Container - Ensures Visibility */
+#map {
+    width: 100%;
+    height: 500px; /* Fixed height to prevent collapse */
+    margin-top: 10px;
+    border: 2px solid #003087;
+    display: block;
+}
+
+/* APA Toggle Button - Ensu
