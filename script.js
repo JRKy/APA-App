@@ -1,7 +1,7 @@
 let map; // Ensure map is global
 
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js?v=1.2.2").then((registration) => {
+    navigator.serviceWorker.register("sw.js?v=1.2.3").then((registration) => {
         console.log("Service Worker registered with scope:", registration.scope);
     }).catch((error) => {
         console.error("Service Worker registration failed:", error);
@@ -57,4 +57,24 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     console.log("Location dropdown populated.");
+
+    // Handle location selection
+    locationSelect.addEventListener("change", function () {
+        const selectedValue = this.value;
+        if (selectedValue) {
+            const [lat, lon] = selectedValue.split(",").map(Number);
+            console.log(`Zooming to location: ${lat}, ${lon}`);
+            map.setView([lat, lon], 8);
+        }
+    });
+
+    // APA Button Toggle
+    const apaPanel = document.getElementById("apa-panel");
+    const toggleApaBtn = document.getElementById("toggle-apa-btn");
+
+    toggleApaBtn.addEventListener("click", () => {
+        apaPanel.classList.toggle("hidden");
+        toggleApaBtn.textContent = apaPanel.classList.contains("hidden") ? "Show APA Table" : "Hide APA Table";
+        console.log("APA Table toggled:", !apaPanel.classList.contains("hidden"));
+    });
 });
