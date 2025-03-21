@@ -1,8 +1,8 @@
 let map;
-let apaLines = {}; // Store satellite lines by name
+let apaLines = {}; // Stores L.LayerGroup keyed by satellite name
 
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js?v=1.2.9").then((registration) => {
+    navigator.serviceWorker.register("sw.js?v=1.3.0").then((registration) => {
         console.log("Service Worker registered with scope:", registration.scope);
     }).catch((error) => {
         console.error("Service Worker registration failed:", error);
@@ -46,7 +46,6 @@ document.addEventListener("DOMContentLoaded", function () {
         option.textContent = loc.name;
         locationSelect.appendChild(option);
     });
-    console.log("Location dropdown populated.");
 
     toggleApaBtn.addEventListener("click", () => {
         apaPanel.classList.toggle("hidden");
@@ -65,9 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function clearApaLines() {
-        for (const key in apaLines) {
-            map.removeLayer(apaLines[key]);
-        }
+        Object.values(apaLines).forEach(group => group.remove());
         apaLines = {};
     }
 
@@ -84,14 +81,15 @@ document.addEventListener("DOMContentLoaded", function () {
             const elevation = (90 - Math.abs(lat) - Math.abs(sat.longitude - lon)).toFixed(2);
             const isNegative = elevation < 0;
 
-            // Table row
             const row = document.createElement("tr");
 
-            const checkboxCell = document.createElement("td");
+            // Checkbox
             const checkbox = document.createElement("input");
             checkbox.type = "checkbox";
             checkbox.checked = true;
-            checkbox.dataset.satName = sat.name;
+            checkbox.dataset.satId = sat.name;
+
+            const checkboxCell = document.createElement("td");
             checkboxCell.appendChild(checkbox);
 
             const nameCell = document.createElement("td");
@@ -114,35 +112,41 @@ document.addEventListener("DOMContentLoaded", function () {
             row.appendChild(azCell);
             apaTableBody.appendChild(row);
 
-            // Plot line
+            // Draw line and label
             const from = [lat, lon];
             const to = [0, sat.longitude];
-            const lineColor = isNegative ? "red" : "white";
+            const color = isNegative ? "#FF5252" : "#4CAF50";
+
             const line = L.polyline([from, to], {
-                color: lineColor,
+                color,
                 weight: 2,
                 opacity: 0.8
-            }).addTo(map);
+            });
 
             const label = L.marker(to, {
                 icon: L.divIcon({
                     className: 'apa-label',
-                    html: `<span style="color:${lineColor}; font-size:12px;">${sat.name}</span>`,
+                    html: `<span style="color:${color}; font-size:12px;">${sat.name}</span>`,
                     iconSize: [100, 20]
-                })
-            }).addTo(map);
+                }),
+                interactive: false
+            });
 
-            apaLines[sat.name] = L.layerGroup([line, label]);
+            const group = L.layerGroup([line, label]).addTo(map);
+            apaLines[sat.name] = group;
 
             checkbox.addEventListener("change", function () {
-                if (this.checked) {
-                    apaLines[this.dataset.satName].addTo(map);
-                } else {
-                    apaLines[this.dataset.satName].removeFrom(map);
+                const key = this.dataset.satId;
+                if (apaLines[key]) {
+                    if (this.checked) {
+                        apaLines[key].addTo(map);
+                    } else {
+                        apaLines[key].remove();
+                    }
                 }
             });
         });
 
-        console.log("APA table and lines updated.");
+        console.log("APA table and satellite lines updated.");
     }
 });
