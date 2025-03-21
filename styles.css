@@ -1,4 +1,4 @@
-/* APA App Styles - v1.2.8 */
+/* APA App Styles - v1.3.0 */
 
 body, html {
     height: 100%;
@@ -21,11 +21,11 @@ header {
     position: relative;
 }
 
-/* Floating Map Controls (Aligned Vertically with Zoom Buttons) */
+/* Floating Map Controls */
 .map-controls {
     position: absolute;
-    top: 10px;      /* back in line with zoom buttons */
-    left: 50px;     /* to the right of zoom buttons */
+    top: 10px;
+    left: 50px;
     background: white;
     padding: 10px;
     border-radius: 5px;
@@ -50,24 +50,25 @@ header {
     width: 200px;
 }
 
-/* APA Bottom Overlay Panel */
-.apa-bottom {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    max-height: 300px;
+/* APA Floating Panel */
+.apa-floating {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 360px;
+    max-height: 320px;
     background-color: rgba(0, 48, 135, 0.95);
     color: white;
-    padding: 15px;
+    padding: 12px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     overflow-y: auto;
-    box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.4);
     z-index: 1001;
     transition: transform 0.3s ease;
 }
 
-.apa-bottom.hidden {
-    transform: translateY(100%);
+.apa-floating.hidden {
+    display: none;
 }
 
 /* APA Table */
@@ -85,13 +86,15 @@ header {
     text-align: center;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    font-size: 13px;
 }
 
 #apa-table th {
     background-color: rgba(255, 255, 255, 0.2);
+    font-weight: bold;
 }
 
 .negative {
-    color: red;
+    color: #FF5252;
     font-weight: bold;
 }
