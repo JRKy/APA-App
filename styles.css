@@ -1,4 +1,4 @@
-/* APA App Styles - v1.4.1 */
+/* APA App Styles - v1.4.2 */
 
 body, html {
   height: 100%;
@@ -38,6 +38,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 6px;
 }
 
 .apa-panel-header button {
