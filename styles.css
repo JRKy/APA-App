@@ -1,4 +1,4 @@
-/* APA App Styles - v1.2.7 */
+/* APA App Styles - v1.2.8 */
 
 body, html {
     height: 100%;
@@ -21,11 +21,11 @@ header {
     position: relative;
 }
 
-/* Floating Map Controls (Aligned with Leaflet Zoom) */
+/* Floating Map Controls (Aligned Vertically with Zoom Buttons) */
 .map-controls {
     position: absolute;
-    top: 60px;       /* below zoom control (default is 10px) */
-    left: 50px;      /* aligned to zoom control (default left: 10px, button is ~30px wide) */
+    top: 10px;      /* back in line with zoom buttons */
+    left: 50px;     /* to the right of zoom buttons */
     background: white;
     padding: 10px;
     border-radius: 5px;
