@@ -1,4 +1,4 @@
-/* APA App Styles - v1.2.3 */
+/* APA App Styles - v1.2.5 */
 
 body, html {
     height: 100%;
@@ -15,63 +15,59 @@ header {
     text-align: center;
 }
 
-/* Location Selection Controls */
-.controls {
-    margin: 10px 0;
+.app-container {
+    display: flex;
+    height: calc(100vh - 100px); /* Subtract header height */
 }
 
-#location-select {
-    font-size: 16px;
-    padding: 5px;
-}
-
-/* Map Container - Ensures Visibility */
-#map {
-    width: 100%;
-    height: 500px; /* Fixed height to prevent collapse */
-    margin-top: 10px;
-    border: 2px solid #003087;
-    display: block;
-}
-
-/* APA Toggle Button - Ensure it's Always Visible */
-#toggle-apa-btn {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: #003087;
-    color: white;
-    border: none;
+.sidebar {
     padding: 10px;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 5px;
+    width: 220px;
+    background-color: #ffffff;
+    border-right: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar label {
     font-weight: bold;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
-    z-index: 1000; /* Keeps button above map */
 }
 
-#toggle-apa-btn:hover {
-    background: #002060;
+.sidebar select,
+.sidebar button {
+    padding: 8px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
 }
 
-/* APA Panel - Floating and Toggleable */
+.main-content {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+#map {
+    flex: 1;
+    height: 100%;
+}
+
+/* APA Docked Side Panel */
 #apa-panel {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
     width: 300px;
-    background: rgba(0, 48, 135, 0.9);
+    background-color: #003087;
     color: white;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-    transition: transform 0.3s ease-in-out;
+    padding: 15px;
+    overflow-y: auto;
+    border-left: 1px solid #002060;
+    transition: transform 0.3s ease;
 }
 
-/* Hide APA Panel Initially */
-.hidden {
-    display: none;
+#apa-panel.hidden {
+    transform: translateX(100%);
 }
 
 /* APA Table */
@@ -81,13 +77,14 @@ header {
     margin-top: 10px;
 }
 
-th, td {
+#apa-table th,
+#apa-table td {
     border: 1px solid white;
-    padding: 5px;
+    padding: 6px;
     text-align: center;
 }
 
-th {
+#apa-table th {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
