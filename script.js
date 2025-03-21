@@ -1,6 +1,8 @@
 let map;
 
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("Initializing APA App...");
+
   map = L.map("map").setView([20, 0], 2);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; OpenStreetMap contributors',
@@ -57,10 +59,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       container.style.left = `${left}px`;
       container.style.top = `${top}px`;
+      console.log(`APA panel added at left: ${left}, top: ${top}`);
 
       if (saved?.collapsed) {
-        container.querySelector("#apa-table-wrapper").style.display = "none";
-        container.querySelector("#toggle-apa-collapse").textContent = "+";
+        const wrapper = container.querySelector("#apa-table-wrapper");
+        const toggleBtn = container.querySelector("#toggle-apa-collapse");
+        wrapper.style.display = "none";
+        toggleBtn.textContent = "+";
+        console.log("APA panel loaded in collapsed state");
       }
 
       $(container).draggable({
@@ -70,7 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-      console.log(`APA panel positioned at left: ${left}px, top: ${top}px`);
       return container;
     }
   });
@@ -82,6 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
       top,
       collapsed: isCollapsed
     }));
+    console.log(`APA panel state saved: left=${left}, top=${top}, collapsed=${isCollapsed}`);
   }
 
   const apaControl = new L.Control.APA({ position: "topright" });
