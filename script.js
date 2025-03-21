@@ -1,105 +1,77 @@
-/* APA App Styles - v1.3.1 */
+<script>
+$(function () {
+    const panel = $("#apa-panel");
 
-body, html {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-  background-color: #f0f0f0;
-}
+    function savePanelState() {
+        const offset = panel.offset();
+        const width = panel.width();
+        const height = panel.height();
+        localStorage.setItem("apaPanelState", JSON.stringify({
+            left: offset.left,
+            top: offset.top,
+            width,
+            height
+        }));
+    }
 
-header {
-  background-color: #003087;
-  color: white;
-  padding: 15px;
-  text-align: center;
-}
+    function loadPanelState() {
+        const saved = JSON.parse(localStorage.getItem("apaPanelState"));
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
 
-#map {
-  height: calc(100vh - 100px);
-  width: 100%;
-  position: relative;
-}
+        if (saved) {
+            const left = Math.min(saved.left, viewportWidth - 100);
+            const top = Math.min(saved.top, viewportHeight - 100);
+            const width = saved.width;
+            const height = saved.height;
 
-/* Map Control Box */
-.map-controls {
-  position: absolute;
-  top: 10px;
-  left: 50px;
-  background: white;
-  padding: 10px;
-  border-radius: 5px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 14px;
-}
+            const isOffscreen = left + width < 0 || top + height < 0 || left > viewportWidth || top > viewportHeight;
 
-.map-controls select,
-.map-controls button {
-  padding: 6px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 200px;
-}
+            if (!isOffscreen) {
+                panel.css({ left, top, width, height });
+                panel.removeClass("hidden");
+                $("#toggle-apa-btn").text("Hide APA Table");
+                return;
+            }
+        }
 
-/* APA Floating Panel */
-.apa-floating {
-  position: absolute;
-  background-color: rgba(0, 48, 135, 0.95);
-  color: white;
-  padding: 12px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  overflow-y: auto;
-  z-index: 1001;
-}
+        // Fallback to default
+        panel.css({ left: "", top: "", width: "", height: "" });
+        panel.removeClass("hidden");
+        $("#toggle-apa-btn").text("Hide APA Table");
+    }
 
-.apa-floating.hidden {
-  display: none !important;
-}
+    function resetPanelState() {
+        localStorage.removeItem("apaPanelState");
+        panel.css({ left: "", top: "", width: "", height: "" });
+        panel.removeClass("hidden");
+        $("#toggle-apa-btn").text("Hide APA Table");
+    }
 
-.apa-panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+    panel.draggable({
+        handle: ".apa-panel-header",
+        containment: "body",
+        snap: true,
+        snapMode: "both",
+        snapTolerance: 20,
+        stop: savePanelState
+    }).resizable({ stop: savePanelState });
 
-#close-apa-panel {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
-}
+    $("#close-apa-panel").on("click", function () {
+        panel.addClass("hidden");
+        $("#toggle-apa-btn").text("Show APA Table");
+    });
 
-/* APA Table */
-#apa-table {
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
+    $("#reset-apa-panel").on("click", function () {
+        resetPanelState();
+    });
 
-#apa-table th,
-#apa-table td {
-  border: 1px solid white;
-  padding: 6px;
-  text-align: center;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  font-size: 13px;
-}
+    $("#toggle-apa-btn").on("click", function () {
+        panel.toggleClass("hidden");
+        const isVisible = !panel.hasClass("hidden");
+        $(this).text(isVisible ? "Hide APA Table" : "Show APA Table");
+    });
 
-#apa-table th {
-  background-color: rgba(255, 255, 255, 0.2);
-  font-weight: bold;
-}
-
-.negative {
-  color: #FF5252;
-  font-weight: bold;
-}
+    loadPanelState();
+});
+</script>
