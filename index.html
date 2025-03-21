@@ -7,7 +7,7 @@
   <meta name="description" content="A tool for calculating and visualizing antenna pointing angles for satellite communication.">
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css?v=1.3.7" />
+  <link rel="stylesheet" href="styles.css?v=1.3.8" />
   <meta name="theme-color" content="#003087" />
 
   <!-- Leaflet -->
@@ -22,12 +22,12 @@
   <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/smoothness/jquery-ui.css" />
 
-  <script>const APP_VERSION = "1.3.7"; console.log(`APA App Version: ${APP_VERSION}`);</script>
+  <script>const APP_VERSION = "1.3.8"; console.log(`APA App Version: ${APP_VERSION}`);</script>
 </head>
 <body>
   <header>
     <h1>Antenna Pointing Angles (APA) App</h1>
-    <p>Version: <span id="app-version">1.3.7</span></p>
+    <p>Version: <span id="app-version">1.3.8</span></p>
   </header>
 
   <div id="map">
@@ -60,12 +60,12 @@
     </table>
   </div>
 
-  <script src="data.js?v=1.3.7"></script>
-  <script src="script.js?v=1.3.7"></script>
+  <script src="data.js?v=1.3.8"></script>
+  <script src="script.js?v=1.3.8"></script>
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.3.7").then(reg => {
+      navigator.serviceWorker.register("sw.js?v=1.3.8").then(reg => {
         console.log("Service Worker registered with scope:", reg.scope);
       }).catch(err => {
         console.error("Service Worker registration failed:", err);
@@ -76,102 +76,58 @@
   <script>
     $(window).on("load", function () {
       const panel = $("#apa-panel");
-      const toggleBtn = document.getElementById("toggle-apa-btn");
+      const fixedPosition = { left: 62, top: 250, width: 360, height: 320 };
 
-      function getPositionUnderButton() {
-        const rect = toggleBtn.getBoundingClientRect();
-        return {
-          left: rect.left + window.scrollX,
-          top: rect.bottom + window.scrollY + 8,
-          width: 360,
-          height: 320
-        };
-      }
-
-      function getValidSavedPosition(saved) {
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-        const width = saved.width || 360;
-        const height = saved.height || 320;
-        const left = saved.left;
-        const top = saved.top;
-
-        const isOffscreen =
-          left + width < 0 || top + height < 0 ||
-          left > vw - 50 || top > vh - 50;
-
-        return isOffscreen ? null : { left, top, width, height };
-      }
-
-      function applyPosition({ left, top, width, height }) {
+      function applyPosition(pos) {
         panel.css({
-          left: left + "px",
-          top: top + "px",
+          left: pos.left + "px",
+          top: pos.top + "px",
+          width: pos.width + "px",
+          height: pos.height + "px",
           right: "",
-          bottom: "",
-          width: width + "px",
-          height: height + "px"
+          bottom: ""
         });
       }
 
-      function savePanelState() {
-        const offset = panel.offset();
-        const width = panel.width();
-        const height = panel.height();
-        localStorage.setItem("apaPanelState", JSON.stringify({
-          left: offset.left,
-          top: offset.top,
-          width,
-          height
-        }));
-      }
-
-      function loadPanelState() {
-        const saved = JSON.parse(localStorage.getItem("apaPanelState"));
-        const pos = saved ? getValidSavedPosition(saved) : null;
-        const finalPos = pos || getPositionUnderButton();
-        applyPosition(finalPos);
+      function showPanel() {
+        applyPosition(fixedPosition);
         panel.removeClass("hidden");
         $("#toggle-apa-btn").text("Hide APA Table");
       }
 
-      function resetPanelState() {
-        localStorage.removeItem("apaPanelState");
-        const pos = getPositionUnderButton();
-        applyPosition(pos);
-        panel.removeClass("hidden");
-        $("#toggle-apa-btn").text("Hide APA Table");
+      function hidePanel() {
+        panel.addClass("hidden");
+        $("#toggle-apa-btn").text("Show APA Table");
+      }
+
+      function resetPanel() {
+        localStorage.removeItem("apaPanelState"); // No longer used, but just in case
+        showPanel();
       }
 
       panel.draggable({
         handle: ".apa-panel-header",
-        containment: "window",
-        stop: savePanelState
-      }).resizable({ stop: savePanelState });
+        containment: "window"
+      }).resizable();
 
-      $("#close-apa-panel").on("click", function () {
-        panel.addClass("hidden");
-        $("#toggle-apa-btn").text("Show APA Table");
+      $("#toggle-apa-btn").on("click", function () {
+        if (panel.hasClass("hidden")) {
+          showPanel();
+        } else {
+          hidePanel();
+        }
       });
 
       $("#reset-apa-panel").on("click", function () {
-        resetPanelState();
+        resetPanel();
       });
 
-      $("#toggle-apa-btn").on("click", function () {
-        const isHidden = panel.hasClass("hidden");
-        if (isHidden) {
-          const saved = JSON.parse(localStorage.getItem("apaPanelState"));
-          const pos = saved ? getValidSavedPosition(saved) : null;
-          const finalPos = pos || getPositionUnderButton();
-          applyPosition(finalPos);
-        }
-
-        panel.toggleClass("hidden");
-        $(this).text(panel.hasClass("hidden") ? "Show APA Table" : "Hide APA Table");
+      $("#close-apa-panel").on("click", function () {
+        hidePanel();
       });
 
-      loadPanelState();
+      // Show on load (optional: comment this out if you want it hidden initially)
+      showPanel();
     });
   </script>
 </body>
