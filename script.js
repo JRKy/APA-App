@@ -1,7 +1,7 @@
-let map; // Ensure map is declared globally
+let map; // Ensure map is global
 
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js?v=1.2.0").then((registration) => {
+    navigator.serviceWorker.register("sw.js?v=1.2.1").then((registration) => {
         console.log("Service Worker registered with scope:", registration.scope);
     }).catch((error) => {
         console.error("Service Worker registration failed:", error);
@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    // Initialize the map (Set it to global `map` variable)
+    // Initialize the map
     map = L.map("map").setView([20, 0], 2);
 
     // Load Tile Layer (OpenStreetMap)
@@ -39,4 +39,22 @@ document.addEventListener("DOMContentLoaded", function () {
     }).addTo(map);
 
     console.log("Map initialized successfully.");
+
+    // Ensure the location dropdown is populated
+    const locationSelect = document.getElementById("location-select");
+
+    if (typeof LOCATIONS === "undefined" || !Array.isArray(LOCATIONS)) {
+        console.error("Location data is missing! Check if data.js is loading before script.js.");
+        return;
+    }
+
+    console.log("Populating location dropdown...");
+    LOCATIONS.forEach((loc) => {
+        const option = document.createElement("option");
+        option.value = `${loc.latitude},${loc.longitude}`;
+        option.textContent = loc.name;
+        locationSelect.appendChild(option);
+    });
+
+    console.log("Location dropdown populated.");
 });
