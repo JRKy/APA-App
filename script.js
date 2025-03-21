@@ -57,9 +57,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      container.style.left = `${left}px`;
-      container.style.top = `${top}px`;
-      console.log(`APA panel added at left: ${left}, top: ${top}`);
+      // Apply corrected positioning style manually
+      Object.assign(container.style, {
+        position: "absolute",
+        left: `${left}px`,
+        top: `${top}px`,
+        zIndex: 9999
+      });
+
+      console.log(`APA panel injected at left: ${left}, top: ${top}`);
 
       if (saved?.collapsed) {
         const wrapper = container.querySelector("#apa-table-wrapper");
