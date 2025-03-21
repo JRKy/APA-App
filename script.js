@@ -1,4 +1,7 @@
 let map;
+let apaControl;
+const positions = ["topright", "topleft", "bottomleft", "bottomright"];
+let currentPositionIndex = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
   map = L.map("map").setView([20, 0], 2);
@@ -6,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
     attribution: '&copy; OpenStreetMap contributors',
   }).addTo(map);
 
-  // Custom APA Leaflet Control
   L.Control.APA = L.Control.extend({
     onAdd: function () {
       const container = L.DomUtil.create("div", "leaflet-control apa-control");
@@ -14,7 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
       container.innerHTML = `
         <div class="apa-panel-header">
           <h4 style="margin:0;">APA Table</h4>
-          <button id="toggle-apa-collapse" title="Collapse">−</button>
+          <span style="margin-left:auto;">
+            <button id="reposition-apa" title="Move APA Panel">⇄</button>
+            <button id="toggle-apa-collapse" title="Collapse">−</button>
+          </span>
         </div>
         <div id="apa-table-wrapper">
           <table id="apa-table">
@@ -37,19 +42,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  map.addControl(new L.Control.APA({ position: "topright" }));
+  // Initial control add
+  apaControl = new L.Control.APA({ position: positions[currentPositionIndex] });
+  map.addControl(apaControl);
 
-  // Collapse button behavior
+  // Event delegation
   document.addEventListener("click", (e) => {
     if (e.target.id === "toggle-apa-collapse") {
-      const tableWrapper = document.getElementById("apa-table-wrapper");
+      const wrapper = document.getElementById("apa-table-wrapper");
       const btn = e.target;
-      const collapsed = tableWrapper.style.display === "none";
-      tableWrapper.style.display = collapsed ? "block" : "none";
-      btn.textContent = collapsed ? "−" : "+";
-      btn.title = collapsed ? "Collapse" : "Expand";
+      const isCollapsed = wrapper.style.display === "none";
+      wrapper.style.display = isCollapsed ? "block" : "none";
+      btn.textContent = isCollapsed ? "−" : "+";
+      btn.title = isCollapsed ? "Collapse" : "Expand";
+    }
+
+    if (e.target.id === "reposition-apa") {
+      map.removeControl(apaControl);
+      currentPositionIndex = (currentPositionIndex + 1) % positions.length;
+      apaControl = new L.Control.APA({ position: positions[currentPositionIndex] });
+      map.addControl(apaControl);
+      console.log(`APA panel moved to ${positions[currentPositionIndex]}`);
     }
   });
 
-  // Load locations into map later here (optional)
+  // Optional: load satellite/location data here later
 });
