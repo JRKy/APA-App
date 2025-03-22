@@ -1,4 +1,4 @@
-/* APA App Styles - v1.5.1 */
+/* APA App Styles - v1.5.3 */
 
 body, html {
   height: 100%;
@@ -48,8 +48,8 @@ header {
   padding: 10px;
   border-radius: 6px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-  min-width: 320px;
-  max-width: 380px;
+  min-width: 340px;
+  max-width: 420px;
   max-height: 70vh;
   overflow: auto;
   font-size: 13px;
@@ -70,25 +70,35 @@ header {
   cursor: pointer;
 }
 
+/* APA Table */
 #apa-table {
   width: 100%;
-  table-layout: fixed;
   border-collapse: collapse;
   margin-top: 10px;
+  table-layout: fixed;
 }
 
 #apa-table th,
 #apa-table td {
   border: 1px solid white;
-  padding: 6px;
+  padding: 6px 8px;
   text-align: center;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
   font-size: 13px;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 #apa-table th {
   background-color: rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+}
+
+#apa-table td:first-child {
+  width: 50px;
+}
+
+#apa-table td:nth-child(2) {
+  text-align: left;
   font-weight: bold;
 }
 
@@ -97,7 +107,7 @@ header {
   font-weight: bold;
 }
 
-/* APA Line Label Styling */
+/* APA Line Label */
 .leaflet-tooltip.apa-line-label {
   background: #003087;
   color: white;
