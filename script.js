@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <tr>
                 <th>Show</th>
                 <th data-sort="1">Satellite</th>
-                <th>Lon (°)</th>
+                <th data-sort="2">Lon (°)</th>
                 <th data-sort="3">El (°)</th>
                 <th data-sort="4">Az (°)</th>
               </tr>
