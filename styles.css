@@ -1,4 +1,4 @@
-/* APA App Styles - v1.5.4 */
+/* APA App Styles - v1.5.5 */
 
 body, html {
   height: 100%;
@@ -24,7 +24,7 @@ header {
 /* Map Controls */
 .map-controls {
   position: absolute;
-  top: 10px;
+  top: 80px;
   left: 10px;
   background: white;
   padding: 10px;
