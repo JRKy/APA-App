@@ -1,4 +1,4 @@
-/* APA App Styles - v1.4.8 */
+/* APA App Styles - v1.5.1 */
 
 body, html {
   height: 100%;
@@ -95,4 +95,16 @@ header {
 .negative {
   color: #FF5252;
   font-weight: bold;
+}
+
+/* APA Line Label Styling */
+.leaflet-tooltip.apa-line-label {
+  background: #003087;
+  color: white;
+  border: 1px solid #ccc;
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 4px;
+  font-weight: bold;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 }
