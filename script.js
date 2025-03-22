@@ -1,4 +1,5 @@
 let map;
+let siteMarker;
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Initializing APA App...");
@@ -8,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     attribution: '&copy; OpenStreetMap contributors',
   }).addTo(map);
 
-  // Create APA panel as Leaflet control
+  // === Leaflet APA Control ===
   L.Control.APA = L.Control.extend({
     onAdd: function () {
       const container = L.DomUtil.create("div", "leaflet-control apa-control");
@@ -34,7 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `;
 
-      // Collapse toggle
       container.querySelector("#toggle-apa-collapse").addEventListener("click", () => {
         const wrapper = container.querySelector("#apa-table-wrapper");
         const btn = container.querySelector("#toggle-apa-collapse");
@@ -47,11 +47,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Add to map
-  const apaControl = new L.Control.APA({ position: "topright" });
-  map.addControl(apaControl);
+  map.addControl(new L.Control.APA({ position: "topright" }));
 
-  // Mock: Populate table (for now)
+  // === Populate APA Table (Mock Data) ===
   const tbody = document.querySelector("#apa-table tbody");
   const sats = [
     { name: "SAT-A", lon: 10, el: 25, az: 135 },
@@ -69,5 +67,27 @@ document.addEventListener("DOMContentLoaded", () => {
       <td>${sat.az}</td>
     `;
     tbody.appendChild(row);
+  });
+
+  // === Location Dropdown Logic ===
+  const locationSelect = document.getElementById("location-select");
+
+  if (typeof LOCATIONS !== "undefined") {
+    LOCATIONS.forEach(loc => {
+      const opt = document.createElement("option");
+      opt.value = `${loc.latitude},${loc.longitude}`;
+      opt.textContent = loc.name;
+      locationSelect.appendChild(opt);
+    });
+  }
+
+  locationSelect.addEventListener("change", function () {
+    const [lat, lon] = this.value.split(",").map(Number);
+    if (siteMarker) {
+      map.removeLayer(siteMarker);
+    }
+    siteMarker = L.marker([lat, lon]).addTo(map);
+    map.setView([lat, lon], 8);
+    console.log(`Zoomed to location: ${lat}, ${lon}`);
   });
 });
