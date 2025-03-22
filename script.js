@@ -1,5 +1,6 @@
 let map;
 let siteMarker;
+let lineLayers = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Initializing APA App...");
@@ -52,7 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const tbody = document.querySelector("#apa-table tbody");
   const locationSelect = document.getElementById("location-select");
 
-  // Populate dropdown
   if (typeof LOCATIONS !== "undefined") {
     LOCATIONS.forEach(loc => {
       const opt = document.createElement("option");
@@ -64,9 +64,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   locationSelect.addEventListener("change", function () {
     const [lat, lon] = this.value.split(",").map(Number);
-    if (siteMarker) {
-      map.removeLayer(siteMarker);
-    }
+    if (siteMarker) map.removeLayer(siteMarker);
+    clearLines();
+
     siteMarker = L.marker([lat, lon]).addTo(map);
     map.setView([lat, lon], 8);
     console.log(`Zoomed to location: ${lat}, ${lon}`);
@@ -74,30 +74,71 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function updateApaTable(siteLat, siteLon) {
-    if (!Array.isArray(SATELLITES)) {
-      console.error("SATELLITES data not loaded.");
-      return;
-    }
+    if (!Array.isArray(SATELLITES)) return;
 
-    tbody.innerHTML = ""; // Clear previous results
+    tbody.innerHTML = "";
+    clearLines();
 
-    SATELLITES.forEach(sat => {
+    SATELLITES.forEach((sat, index) => {
       const azimuth = computeAzimuth(siteLat, siteLon, sat.longitude);
       const elevation = computeElevation(siteLat, siteLon, sat.longitude);
       const isNegative = elevation < 0;
 
       const row = document.createElement("tr");
+      const rowId = `sat-${index}`;
+
       row.innerHTML = `
-        <td><input type="checkbox" checked></td>
+        <td><input type="checkbox" id="${rowId}" data-lat="${siteLat}" data-lon="${siteLon}" data-satlon="${sat.longitude}" ${isNegative ? "" : "checked"}></td>
         <td>${sat.name}</td>
         <td>${sat.longitude}</td>
         <td class="${isNegative ? "negative" : ""}">${elevation.toFixed(2)}</td>
         <td>${azimuth.toFixed(2)}</td>
       `;
+
       tbody.appendChild(row);
+
+      if (!isNegative) {
+        drawLine(siteLat, siteLon, sat.longitude, sat.name, rowId);
+      }
     });
 
-    console.log("APA table updated.");
+    // Event delegation
+    tbody.querySelectorAll("input[type=checkbox]").forEach(cb => {
+      cb.addEventListener("change", function () {
+        const id = this.id;
+        const lat = parseFloat(this.dataset.lat);
+        const lon = parseFloat(this.dataset.lon);
+        const satLon = parseFloat(this.dataset.satlon);
+
+        if (this.checked) {
+          drawLine(lat, lon, satLon, id.replace("sat-", "SAT-"), id);
+        } else {
+          const line = lineLayers.find(l => l.id === id);
+          if (line) {
+            map.removeLayer(line.layer);
+            lineLayers = lineLayers.filter(l => l.id !== id);
+          }
+        }
+      });
+    });
+  }
+
+  function drawLine(lat, lon, satLon, label, id) {
+    const satLat = 0; // geostationary satellites assumed
+    const polyline = L.polyline([[lat, lon], [satLat, satLon]], {
+      color: "#00bcd4",
+      weight: 2,
+      opacity: 0.9
+    }).addTo(map);
+
+    polyline.bindTooltip(label, { permanent: true, direction: "center", className: "apa-line-label" });
+
+    lineLayers.push({ id, layer: polyline });
+  }
+
+  function clearLines() {
+    lineLayers.forEach(line => map.removeLayer(line.layer));
+    lineLayers = [];
   }
 
   function computeAzimuth(lat, lon, satLon) {
@@ -111,14 +152,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function computeElevation(lat, lon, satLon) {
-    const Re = 6378.137; // Earth radius (km)
-    const h = 35786;     // Geostationary satellite altitude (km)
+    const Re = 6378.137;
+    const h = 35786;
     const φ = (lat * Math.PI) / 180;
     const Δλ = ((satLon - lon) * Math.PI) / 180;
-
     const slat = Math.cos(φ) * Math.cos(Δλ);
     const sdist = Math.sqrt(1 + (h / Re) ** 2 - 2 * (h / Re) * slat);
-
     const elevation = Math.atan((Math.cos(φ) * Math.cos(Δλ) - (Re / (Re + h))) / Math.sqrt(1 - slat ** 2)) * (180 / Math.PI);
     return elevation;
   }
