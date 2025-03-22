@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
     attribution: '&copy; OpenStreetMap contributors',
   }).addTo(map);
 
-  // === Leaflet APA Control ===
   L.Control.APA = L.Control.extend({
     onAdd: function () {
       const container = L.DomUtil.create("div", "leaflet-control apa-control");
@@ -69,7 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     siteMarker = L.marker([lat, lon]).addTo(map);
     map.setView([lat, lon], 8);
-    console.log(`Zoomed to location: ${lat}, ${lon}`);
     updateApaTable(lat, lon);
   });
 
@@ -98,11 +96,10 @@ document.addEventListener("DOMContentLoaded", () => {
       tbody.appendChild(row);
 
       if (!isNegative) {
-        drawLine(siteLat, siteLon, sat.longitude, sat.name, rowId);
+        drawLine(siteLat, siteLon, sat.longitude, sat.name, rowId, elevation);
       }
     });
 
-    // Event delegation
     tbody.querySelectorAll("input[type=checkbox]").forEach(cb => {
       cb.addEventListener("change", function () {
         const id = this.id;
@@ -111,7 +108,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const satLon = parseFloat(this.dataset.satlon);
 
         if (this.checked) {
-          drawLine(lat, lon, satLon, id.replace("sat-", "SAT-"), id);
+          const elevation = computeElevation(lat, lon, satLon);
+          drawLine(lat, lon, satLon, id.replace("sat-", "SAT-"), id, elevation);
         } else {
           const line = lineLayers.find(l => l.id === id);
           if (line) {
@@ -123,15 +121,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function drawLine(lat, lon, satLon, label, id) {
-    const satLat = 0; // geostationary satellites assumed
-    const polyline = L.polyline([[lat, lon], [satLat, satLon]], {
-      color: "#00bcd4",
+  function drawLine(lat, lon, satLon, label, id, elevation) {
+    const color = elevation < 0 ? "#ff5252" : "#00bcd4";
+    const polyline = L.polyline([[lat, lon], [0, satLon]], {
+      color,
       weight: 2,
       opacity: 0.9
     }).addTo(map);
 
-    polyline.bindTooltip(label, { permanent: true, direction: "center", className: "apa-line-label" });
+    polyline.bindTooltip(`${label}`, {
+      permanent: true,
+      direction: "center",
+      className: "apa-line-label"
+    });
 
     lineLayers.push({ id, layer: polyline });
   }
@@ -157,7 +159,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const φ = (lat * Math.PI) / 180;
     const Δλ = ((satLon - lon) * Math.PI) / 180;
     const slat = Math.cos(φ) * Math.cos(Δλ);
-    const sdist = Math.sqrt(1 + (h / Re) ** 2 - 2 * (h / Re) * slat);
     const elevation = Math.atan((Math.cos(φ) * Math.cos(Δλ) - (Re / (Re + h))) / Math.sqrt(1 - slat ** 2)) * (180 / Math.PI);
     return elevation;
   }
