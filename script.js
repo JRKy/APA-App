@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     attribution: '&copy; OpenStreetMap contributors',
   }).addTo(map);
 
+  // Create APA Table as Leaflet Control
   L.Control.APA = L.Control.extend({
     onAdd: function () {
       const container = L.DomUtil.create("div", "leaflet-control apa-control");
@@ -53,15 +54,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const tbody = document.querySelector("#apa-table tbody");
   const locationSelect = document.getElementById("location-select");
+  const aorFilter = document.getElementById("aor-filter");
+  const countryFilter = document.getElementById("country-filter");
 
-  if (typeof LOCATIONS !== "undefined") {
+  // Populate AOR & Country dropdowns
+  const aors = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
+  const countries = [...new Set(LOCATIONS.map(loc => loc.country))].sort();
+
+  aors.forEach(aor => {
+    const opt = document.createElement("option");
+    opt.value = aor;
+    opt.textContent = aor;
+    aorFilter.appendChild(opt);
+  });
+
+  countries.forEach(country => {
+    const opt = document.createElement("option");
+    opt.value = country;
+    opt.textContent = country;
+    countryFilter.appendChild(opt);
+  });
+
+  // Update location dropdown based on filters
+  function updateLocationDropdown() {
+    const selectedAor = aorFilter.value;
+    const selectedCountry = countryFilter.value;
+    locationSelect.innerHTML = `<option value="">Choose a location...</option>`;
+
     LOCATIONS.forEach(loc => {
-      const opt = document.createElement("option");
-      opt.value = `${loc.latitude},${loc.longitude}`;
-      opt.textContent = loc.name;
-      locationSelect.appendChild(opt);
+      if (
+        (!selectedAor || loc.aor === selectedAor) &&
+        (!selectedCountry || loc.country === selectedCountry)
+      ) {
+        const opt = document.createElement("option");
+        opt.value = `${loc.latitude},${loc.longitude}`;
+        opt.textContent = loc.name;
+        locationSelect.appendChild(opt);
+      }
     });
   }
+
+  aorFilter.addEventListener("change", updateLocationDropdown);
+  countryFilter.addEventListener("change", updateLocationDropdown);
+
+  // Initial location dropdown
+  updateLocationDropdown();
 
   locationSelect.addEventListener("change", function () {
     const [lat, lon] = this.value.split(",").map(Number);
@@ -138,7 +175,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Table sorting handlers
     document.querySelectorAll("#apa-table th[data-sort]").forEach(th => {
       th.addEventListener("click", () => {
         const idx = parseInt(th.dataset.sort);
