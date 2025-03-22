@@ -1,6 +1,7 @@
 let map;
 let siteMarker;
 let lineLayers = [];
+let satMarkers = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Initializing APA App...");
@@ -65,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const [lat, lon] = this.value.split(",").map(Number);
     if (siteMarker) map.removeLayer(siteMarker);
     clearLines();
+    clearSatMarkers();
 
     siteMarker = L.marker([lat, lon]).addTo(map);
     map.setView([lat, lon], 8);
@@ -76,15 +78,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     tbody.innerHTML = "";
     clearLines();
+    clearSatMarkers();
 
     SATELLITES.forEach((sat, index) => {
       const azimuth = computeAzimuth(siteLat, siteLon, sat.longitude);
       const elevation = computeElevation(siteLat, siteLon, sat.longitude);
       const isNegative = elevation < 0;
-
-      const row = document.createElement("tr");
       const rowId = `sat-${index}`;
 
+      // Add marker for satellite
+      const marker = L.circleMarker([0, sat.longitude], {
+        radius: 6,
+        fillColor: isNegative ? "#ff5252" : "#00c853",
+        color: "#333",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.9
+      }).addTo(map).bindPopup(`
+        <strong>${sat.name}</strong><br/>
+        El: ${elevation.toFixed(2)}°<br/>
+        Az: ${azimuth.toFixed(2)}°
+      `);
+
+      satMarkers.push(marker);
+
+      // APA table row
+      const row = document.createElement("tr");
       row.innerHTML = `
         <td><input type="checkbox" id="${rowId}" data-lat="${siteLat}" data-lon="${siteLon}" data-satlon="${sat.longitude}" ${isNegative ? "" : "checked"}></td>
         <td>${sat.name}</td>
@@ -141,6 +160,11 @@ document.addEventListener("DOMContentLoaded", () => {
   function clearLines() {
     lineLayers.forEach(line => map.removeLayer(line.layer));
     lineLayers = [];
+  }
+
+  function clearSatMarkers() {
+    satMarkers.forEach(m => map.removeLayer(m));
+    satMarkers = [];
   }
 
   function computeAzimuth(lat, lon, satLon) {
