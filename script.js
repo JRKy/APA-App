@@ -2,6 +2,7 @@ let map;
 let siteMarker;
 let lineLayers = [];
 let satMarkers = [];
+let currentSort = { index: null, asc: true };
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Initializing APA App...");
@@ -25,10 +26,10 @@ document.addEventListener("DOMContentLoaded", () => {
             <thead>
               <tr>
                 <th>Show</th>
-                <th>Satellite</th>
+                <th data-sort="1">Satellite</th>
                 <th>Lon (°)</th>
-                <th>El (°)</th>
-                <th>Az (°)</th>
+                <th data-sort="3">El (°)</th>
+                <th data-sort="4">Az (°)</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -86,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const isNegative = elevation < 0;
       const rowId = `sat-${index}`;
 
-      // Add marker for satellite
       const marker = L.circleMarker([0, sat.longitude], {
         radius: 6,
         fillColor: isNegative ? "#ff5252" : "#00c853",
@@ -102,7 +102,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       satMarkers.push(marker);
 
-      // APA table row
       const row = document.createElement("tr");
       row.innerHTML = `
         <td><input type="checkbox" id="${rowId}" data-lat="${siteLat}" data-lon="${siteLon}" data-satlon="${sat.longitude}" ${isNegative ? "" : "checked"}></td>
@@ -136,6 +135,28 @@ document.addEventListener("DOMContentLoaded", () => {
             lineLayers = lineLayers.filter(l => l.id !== id);
           }
         }
+      });
+    });
+
+    // Table sorting handlers
+    document.querySelectorAll("#apa-table th[data-sort]").forEach(th => {
+      th.addEventListener("click", () => {
+        const idx = parseInt(th.dataset.sort);
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+        const isAsc = currentSort.index === idx ? !currentSort.asc : true;
+
+        rows.sort((a, b) => {
+          const va = a.children[idx].textContent.trim();
+          const vb = b.children[idx].textContent.trim();
+          return isAsc
+            ? va.localeCompare(vb, undefined, { numeric: true })
+            : vb.localeCompare(va, undefined, { numeric: true });
+        });
+
+        tbody.innerHTML = "";
+        rows.forEach(r => tbody.appendChild(r));
+
+        currentSort = { index: idx, asc: isAsc };
       });
     });
   }
