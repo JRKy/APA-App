@@ -1,4 +1,4 @@
-/* APA App Styles - v1.4.6 */
+/* APA App Styles - v1.4.7 */
 
 body, html {
   height: 100%;
@@ -32,9 +32,6 @@ header {
   max-height: 70vh;
   overflow: auto;
   font-size: 13px;
-  position: absolute !important;
-  z-index: 9999 !important;
-  border: 2px dashed limegreen; /* diagnostic only */
 }
 
 .apa-panel-header {
@@ -42,7 +39,6 @@ header {
   justify-content: space-between;
   align-items: center;
   gap: 6px;
-  cursor: move;
 }
 
 .apa-panel-header button {
