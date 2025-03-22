@@ -49,29 +49,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   map.addControl(new L.Control.APA({ position: "topright" }));
 
-  // === Populate APA Table (Mock Data) ===
   const tbody = document.querySelector("#apa-table tbody");
-  const sats = [
-    { name: "SAT-A", lon: 10, el: 25, az: 135 },
-    { name: "SAT-B", lon: 45, el: -5, az: 160 },
-    { name: "SAT-C", lon: 90, el: 40, az: 100 }
-  ];
-
-  sats.forEach(sat => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td><input type="checkbox" checked></td>
-      <td>${sat.name}</td>
-      <td>${sat.lon}</td>
-      <td class="${sat.el < 0 ? "negative" : ""}">${sat.el}</td>
-      <td>${sat.az}</td>
-    `;
-    tbody.appendChild(row);
-  });
-
-  // === Location Dropdown Logic ===
   const locationSelect = document.getElementById("location-select");
 
+  // Populate dropdown
   if (typeof LOCATIONS !== "undefined") {
     LOCATIONS.forEach(loc => {
       const opt = document.createElement("option");
@@ -89,5 +70,56 @@ document.addEventListener("DOMContentLoaded", () => {
     siteMarker = L.marker([lat, lon]).addTo(map);
     map.setView([lat, lon], 8);
     console.log(`Zoomed to location: ${lat}, ${lon}`);
+    updateApaTable(lat, lon);
   });
+
+  function updateApaTable(siteLat, siteLon) {
+    if (!Array.isArray(SATELLITES)) {
+      console.error("SATELLITES data not loaded.");
+      return;
+    }
+
+    tbody.innerHTML = ""; // Clear previous results
+
+    SATELLITES.forEach(sat => {
+      const azimuth = computeAzimuth(siteLat, siteLon, sat.longitude);
+      const elevation = computeElevation(siteLat, siteLon, sat.longitude);
+      const isNegative = elevation < 0;
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><input type="checkbox" checked></td>
+        <td>${sat.name}</td>
+        <td>${sat.longitude}</td>
+        <td class="${isNegative ? "negative" : ""}">${elevation.toFixed(2)}</td>
+        <td>${azimuth.toFixed(2)}</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    console.log("APA table updated.");
+  }
+
+  function computeAzimuth(lat, lon, satLon) {
+    const φ = (lat * Math.PI) / 180;
+    const Δλ = ((satLon - lon) * Math.PI) / 180;
+    const y = Math.sin(Δλ);
+    const x = Math.cos(φ) * Math.tan(0) - Math.sin(φ) * Math.cos(Δλ);
+    let az = Math.atan2(y, x) * (180 / Math.PI);
+    az = (az + 360) % 360;
+    return az;
+  }
+
+  function computeElevation(lat, lon, satLon) {
+    const Re = 6378.137; // Earth radius (km)
+    const h = 35786;     // Geostationary satellite altitude (km)
+    const φ = (lat * Math.PI) / 180;
+    const Δλ = ((satLon - lon) * Math.PI) / 180;
+
+    const slat = Math.cos(φ) * Math.cos(Δλ);
+    const sdist = Math.sqrt(1 + (h / Re) ** 2 - 2 * (h / Re) * slat);
+
+    const elevation = Math.atan((Math.cos(φ) * Math.cos(Δλ) - (Re / (Re + h))) / Math.sqrt(1 - slat ** 2)) * (180 / Math.PI);
+    return elevation;
+  }
 });
