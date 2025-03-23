@@ -25,26 +25,24 @@
     <p>Version: <span id="app-version">1.5.9</span></p>
   </header>
 
-  <main role="main">
-    <div id="map" role="application" aria-label="Interactive satellite map">
-      <div class="map-controls leaflet-bar" role="region" aria-label="Location and Filter Controls">
-        <label for="aor-filter">Filter by AOR:</label>
-        <select id="aor-filter" aria-label="Filter locations by AOR">
-          <option value="">All AORs</option>
-        </select>
+  <div id="map" role="application" aria-label="Satellite Map showing locations and satellite connections">
+    <div class="map-controls leaflet-bar" role="navigation" aria-label="Location and Filter Controls">
+      <label for="aor-filter">Filter by AOR:</label>
+      <select id="aor-filter" aria-label="AOR Filter">
+        <option value="">All AORs</option>
+      </select>
 
-        <label for="country-filter">Filter by Country:</label>
-        <select id="country-filter" aria-label="Filter locations by country">
-          <option value="">All Countries</option>
-        </select>
+      <label for="country-filter">Filter by Country:</label>
+      <select id="country-filter" aria-label="Country Filter">
+        <option value="">All Countries</option>
+      </select>
 
-        <label for="location-select">Select a Location:</label>
-        <select id="location-select" aria-label="Select a location from the list">
-          <option value="">Choose a location...</option>
-        </select>
-      </div>
+      <label for="location-select">Select a Location:</label>
+      <select id="location-select" aria-label="Location Selector">
+        <option value="">Choose a location...</option>
+      </select>
     </div>
-  </main>
+  </div>
 
   <script src="data.js?v=1.5.9"></script>
   <script src="script.js?v=1.5.9"></script>
