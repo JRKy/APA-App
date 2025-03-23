@@ -2,7 +2,8 @@ let map;
 let siteMarker;
 let baseLayers;
 let currentBaseLayer;
-let mapInitialized = false;
+let allAORs = [];
+let allCountries = [];
 
 console.log("Initializing APA App... v1.6.9");
 
@@ -36,6 +37,91 @@ document.addEventListener("DOMContentLoaded", () => {
 
   L.control.layers(baseLayers).addTo(map);
 
+  const locationSelect = document.getElementById("location-select");
+  const aorFilter = document.getElementById("aor-filter");
+  const countryFilter = document.getElementById("country-filter");
+  const resetBtn = document.getElementById("reset-filters");
+
+  // Populate initial dropdown values
+  allAORs = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
+  allCountries = [...new Set(LOCATIONS.map(loc => loc.country))].sort();
+
+  function populateDropdown(select, items, label) {
+    select.innerHTML = `<option value="">All ${label}</option>`;
+    items.forEach(val => {
+      const opt = document.createElement("option");
+      opt.value = val;
+      opt.textContent = val;
+      select.appendChild(opt);
+    });
+  }
+
+  function updateLocationDropdown() {
+    const selectedAOR = aorFilter.value;
+    const selectedCountry = countryFilter.value;
+
+    const filtered = LOCATIONS.filter(loc => {
+      return (!selectedAOR || loc.aor === selectedAOR) &&
+             (!selectedCountry || loc.country === selectedCountry);
+    });
+
+    locationSelect.innerHTML = `<option value="">Choose a location...</option>`;
+    filtered.forEach(loc => {
+      const opt = document.createElement("option");
+      opt.value = `${loc.latitude},${loc.longitude}`;
+      opt.textContent = loc.name;
+      locationSelect.appendChild(opt);
+    });
+  }
+
+  function updateAorAndCountryDropdowns() {
+    const selectedAOR = aorFilter.value;
+    const selectedCountry = countryFilter.value;
+
+    let filteredAORs = allAORs;
+    let filteredCountries = allCountries;
+
+    if (selectedCountry) {
+      filteredAORs = [...new Set(LOCATIONS.filter(loc => loc.country === selectedCountry).map(loc => loc.aor))].sort();
+    }
+
+    if (selectedAOR) {
+      filteredCountries = [...new Set(LOCATIONS.filter(loc => loc.aor === selectedAOR).map(loc => loc.country))].sort();
+    }
+
+    populateDropdown(aorFilter, filteredAORs, "AORs");
+    aorFilter.value = selectedAOR;
+
+    populateDropdown(countryFilter, filteredCountries, "Countries");
+    countryFilter.value = selectedCountry;
+
+    updateLocationDropdown();
+  }
+
+  aorFilter.addEventListener("change", updateAorAndCountryDropdowns);
+  countryFilter.addEventListener("change", updateAorAndCountryDropdowns);
+
+  locationSelect.addEventListener("change", function () {
+    const [lat, lon] = this.value.split(",").map(Number);
+    if (siteMarker) map.removeLayer(siteMarker);
+    siteMarker = L.marker([lat, lon]).addTo(map);
+    map.setView([lat, lon], 8);
+    console.log(`Zooming to location: ${lat}, ${lon}`);
+    // updateApaTable(lat, lon); // connect APA logic here if needed
+  });
+
+  resetBtn.addEventListener("click", () => {
+    populateDropdown(aorFilter, allAORs, "AORs");
+    populateDropdown(countryFilter, allCountries, "Countries");
+    aorFilter.value = "";
+    countryFilter.value = "";
+    updateLocationDropdown();
+  });
+
+  populateDropdown(aorFilter, allAORs, "AORs");
+  populateDropdown(countryFilter, allCountries, "Countries");
+  updateLocationDropdown();
+
   document.getElementById("use-my-location").addEventListener("click", () => {
     if (!navigator.geolocation) {
       alert("Geolocation is not supported.");
@@ -48,7 +134,8 @@ document.addEventListener("DOMContentLoaded", () => {
         map.setView([latitude, longitude], 8);
         if (siteMarker) map.removeLayer(siteMarker);
         siteMarker = L.marker([latitude, longitude]).addTo(map);
-        // You can also call updateApaTable(latitude, longitude) here if you want
+        console.log(`Centered on current location: ${latitude}, ${longitude}`);
+        // updateApaTable(latitude, longitude); // connect APA logic here
       },
       () => {
         alert("Unable to retrieve your location.");
@@ -56,7 +143,5 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 
-  mapInitialized = true;
-
-  console.log("Map initialized with layer control and geolocation support.");
+  console.log("Map initialized with layer control, dropdown filters, and geolocation.");
 });
