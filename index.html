@@ -6,7 +6,7 @@
   <title>Antenna Pointing Angles (APA) App</title>
   <meta name="description" content="A tool for calculating and visualizing antenna pointing angles for satellite communication.">
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css?v=1.6.9" />
+  <link rel="stylesheet" href="styles.css?v=1.6.9.2" />
   <meta name="theme-color" content="#003087" />
 
   <!-- Leaflet -->
@@ -16,46 +16,58 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
 
-  <script>const APP_VERSION = "1.6.9"; console.log(`APA App Version: ${APP_VERSION}`);</script>
+  <script>const APP_VERSION = "1.6.9.2"; console.log(`APA App Version: ${APP_VERSION}`);</script>
 </head>
 <body>
   <header role="banner">
     <h1 id="app-title">Antenna Pointing Angles (APA) App</h1>
-    <p>Version: <span id="app-version">1.6.9</span></p>
+    <p>Version: <span id="app-version">1.6.9.2</span></p>
   </header>
 
   <div id="map" role="application" aria-label="Satellite Map showing locations and satellite connections">
     <div class="map-controls leaflet-bar" role="navigation" aria-label="Location and Filter Controls">
       <label for="aor-filter">Filter by AOR:</label>
-      <select id="aor-filter">
-        <option value="">All AORs</option>
-      </select>
+      <select id="aor-filter"><option value="">All AORs</option></select>
 
       <label for="country-filter">Filter by Country:</label>
-      <select id="country-filter">
-        <option value="">All Countries</option>
-      </select>
+      <select id="country-filter"><option value="">All Countries</option></select>
 
       <label for="location-select">Select a Location:</label>
-      <select id="location-select">
-        <option value="">Choose a location...</option>
-      </select>
+      <select id="location-select"><option value="">Choose a location...</option></select>
 
       <button id="use-my-location">📍 Use My Location</button>
       <button id="reset-filters">Reset Filters</button>
     </div>
   </div>
 
-  <div id="help-tooltip" role="note" aria-live="polite">
-    <strong>ℹ️ APA Help:</strong> Select a location or use your current location to show APA lines. Filter by AOR or country. Checkboxes control which satellites are shown.
+  <div id="apa-panel" class="leaflet-control apa-control">
+    <div class="apa-panel-header">
+      <strong>APA Table</strong>
+      <button id="close-apa-panel" title="Close Panel">×</button>
+    </div>
+    <table id="apa-table">
+      <thead>
+        <tr>
+          <th>Show</th>
+          <th>Satellite</th>
+          <th>Lon (°)</th>
+          <th>El (°)</th>
+          <th>Az (°)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
-  <script src="data.js?v=1.6.9"></script>
-  <script src="script.js?v=1.6.9"></script>
+  <div id="help-tooltip" role="note" aria-live="polite">
+    <strong>ℹ️ APA Help:</strong> Select a location or use your current location to show APA lines. Checkboxes control visibility of satellite lines.
+  </div>
 
+  <script src="data.js?v=1.6.9.2"></script>
+  <script src="script.js?v=1.6.9.2"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.6.9").then(reg => {
+      navigator.serviceWorker.register("sw.js?v=1.6.9.2").then(reg => {
         console.log("Service Worker registered with scope:", reg.scope);
       }).catch(err => {
         console.error("Service Worker registration failed:", err);
