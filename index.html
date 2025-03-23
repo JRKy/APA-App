@@ -7,7 +7,7 @@
   <meta name="description" content="A tool for calculating and visualizing antenna pointing angles for satellite communication.">
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css?v=1.6.1" />
+  <link rel="stylesheet" href="styles.css?v=1.6.2" />
   <meta name="theme-color" content="#003087" />
 
   <!-- Leaflet -->
@@ -17,39 +17,46 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
 
-  <script>const APP_VERSION = "1.6.1"; console.log(`APA App Version: ${APP_VERSION}`);</script>
+  <script>const APP_VERSION = "1.6.2"; console.log(`APA App Version: ${APP_VERSION}`);</script>
 </head>
 <body>
   <header role="banner">
     <h1 id="app-title">Antenna Pointing Angles (APA) App</h1>
-    <p>Version: <span id="app-version">1.6.1</span></p>
+    <p>Version: <span id="app-version">1.6.2</span></p>
   </header>
 
   <div id="map" role="application" aria-label="Satellite Map showing locations and satellite connections">
     <div class="map-controls leaflet-bar" role="navigation" aria-label="Location and Filter Controls">
-      <label for="aor-filter">Filter by AOR:</label>
+      <label for="aor-filter" title="Filter locations by Combatant Command Area of Responsibility">Filter by AOR:</label>
       <select id="aor-filter" aria-label="AOR Filter">
         <option value="">All AORs</option>
       </select>
 
-      <label for="country-filter">Filter by Country:</label>
+      <label for="country-filter" title="Filter locations by country">Filter by Country:</label>
       <select id="country-filter" aria-label="Country Filter">
         <option value="">All Countries</option>
       </select>
 
-      <label for="location-select">Select a Location:</label>
+      <label for="location-select" title="Choose a location to calculate antenna pointing angles from">Select a Location:</label>
       <select id="location-select" aria-label="Location Selector">
         <option value="">Choose a location...</option>
       </select>
+
+      <button id="reset-filters" title="Clear AOR and Country filters and reload locations">Reset Filters</button>
     </div>
   </div>
 
-  <script src="data.js?v=1.6.1"></script>
-  <script src="script.js?v=1.6.1"></script>
+  <!-- Help Dialog (toggleable in a future version) -->
+  <div id="help-tooltip" role="note" aria-live="polite">
+    <strong>🛈 APA Help:</strong> Use the dropdowns to select a location and filter by AOR or country. Checkboxes in the APA table let you show/hide satellite plot lines.
+  </div>
+
+  <script src="data.js?v=1.6.2"></script>
+  <script src="script.js?v=1.6.2"></script>
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.6.1").then(reg => {
+      navigator.serviceWorker.register("sw.js?v=1.6.2").then(reg => {
         console.log("Service Worker registered with scope:", reg.scope);
       }).catch(err => {
         console.error("Service Worker registration failed:", err);
