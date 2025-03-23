@@ -1,37 +1,99 @@
-    <!-- APA Panel Floating on Map -->
-    <div id="apa-panel" class="leaflet-control apa-control">
-        <div class="apa-panel-header">
-            <strong>APA Table</strong>
-            <button id="close-apa-panel" title="Close Panel">×</button>
-        </div>
-        <table id="apa-table">
-            <thead>
-                <tr>
-                    <th>Show</th>
-                    <th>Satellite</th>
-                    <th>Lon (°)</th>
-                    <th>El (°)</th>
-                    <th>Az (°)</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Antenna Pointing Angles (APA) App</title>
+  <meta name="description" content="A tool for calculating and visualizing antenna pointing angles for satellite communication.">
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#003087" />
 
-    <!-- Help Tooltip -->
-    <div id="help-tooltip" role="note" aria-live="polite">
-        <strong>ℹ️ APA Help:</strong> Select or enter a location to generate APA lines. Add satellites manually. Use the checkboxes to toggle visibility.
-    </div>
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css?v=1.6.9.4" />
 
-    <!-- JavaScript Files with Versioning -->
-    <script src="data.js?v=1.6.9.4"></script>
-    <script src="script.js?v=1.6.9.4"></script>
-    <script>
-        if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register("sw.js?v=1.6.9.4")
-                .then(reg => console.log("Service Worker registered with scope:", reg.scope))
-                .catch(err => console.error("SW registration failed:", err));
-        }
-    </script>
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+
+  <!-- App Versioning -->
+  <script>const APP_VERSION = "1.6.9.4"; console.log(`APA App Version: ${APP_VERSION}`);</script>
+</head>
+<body>
+  <header role="banner">
+    <h1 id="app-title">Antenna Pointing Angles (APA) App</h1>
+    <p>Version: <span id="app-version">1.6.9.4</span></p>
+  </header>
+
+  <div id="map" role="application" aria-label="Satellite Map showing locations and satellite connections">
+    <div class="map-controls leaflet-bar" role="navigation" aria-label="Location and Filter Controls">
+      <label for="aor-filter">Filter by AOR:</label>
+      <select id="aor-filter"><option value="">All AORs</option></select>
+
+      <label for="country-filter">Filter by Country:</label>
+      <select id="country-filter"><option value="">All Countries</option></select>
+
+      <label for="location-select">Select a Location:</label>
+      <select id="location-select"><option value="">Choose a location...</option></select>
+
+      <button id="use-my-location">📍 Use My Location</button>
+      <button id="reset-filters">Reset Filters</button>
+
+      <fieldset>
+        <legend>Or Enter Custom Location:</legend>
+        <label for="custom-lat">Latitude:</label>
+        <input type="number" id="custom-lat" step="any" placeholder="e.g., 34.0522" />
+        <label for="custom-lon">Longitude:</label>
+        <input type="number" id="custom-lon" step="any" placeholder="e.g., -118.2437" />
+        <button id="custom-location-btn">Set Location</button>
+      </fieldset>
+
+      <fieldset>
+        <legend>Add a Satellite:</legend>
+        <label for="sat-name">Satellite Name:</label>
+        <input type="text" id="sat-name" placeholder="e.g., CustomSat-1" />
+        <label for="sat-lon">Longitude (°):</label>
+        <input type="number" id="sat-lon" step="any" placeholder="e.g., -45.0" />
+        <button id="add-satellite-btn">Add Satellite</button>
+      </fieldset>
+    </div>
+  </div>
+
+  <div id="apa-panel" class="leaflet-control apa-control">
+    <div class="apa-panel-header">
+      <strong>APA Table</strong>
+      <button id="close-apa-panel" title="Close Panel">×</button>
+    </div>
+    <table id="apa-table">
+      <thead>
+        <tr>
+          <th>Show</th>
+          <th>Satellite</th>
+          <th>Lon (°)</th>
+          <th>El (°)</th>
+          <th>Az (°)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="help-tooltip" role="note" aria-live="polite">
+    <strong>ℹ️ APA Help:</strong> Select or enter a location to generate APA lines. Add satellites manually. Use the checkboxes to toggle visibility.
+  </div>
+
+  <script src="data.js?v=1.6.9.4"></script>
+  <script src="script.js?v=1.6.9.4"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js?v=1.6.9.4").then(reg => {
+        console.log("Service Worker registered with scope:", reg.scope);
+      }).catch(err => {
+        console.error("Service Worker registration failed:", err);
+      });
+    }
+  </script>
 </body>
 </html>
