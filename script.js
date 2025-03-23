@@ -168,15 +168,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const selectAllBtn = document.getElementById("select-all-btn");
     selectAllBtn.textContent = "Select All";
-    let allVisible = true;
 
     selectAllBtn.addEventListener("click", () => {
-      allVisible = !allVisible;
-      allCheckboxes.forEach(cb => {
-        cb.checked = allVisible;
+      const checkboxes = Array.from(tbody.querySelectorAll("input[type=checkbox]"));
+      const allChecked = checkboxes.every(cb => cb.checked);
+      const newState = !allChecked;
+
+      checkboxes.forEach(cb => {
+        cb.checked = newState;
         cb.dispatchEvent(new Event("change"));
       });
-      selectAllBtn.textContent = allVisible ? "Deselect All" : "Select All";
+
+      selectAllBtn.textContent = newState ? "Deselect All" : "Select All";
     });
 
     document.querySelectorAll("#apa-table th[data-sort]").forEach(th => {
