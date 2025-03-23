@@ -1,11 +1,34 @@
-// Version 1.6.8
+// Version 1.6.9.4
+
 const SATELLITES = [
-  { name: "ALT-1", longitude: -15 },
-  { name: "ALT-2", longitude: 0 },
-  { name: "ALT-3", longitude: 15 },
-  { name: "WGS-9", longitude: 60 },
-  { name: "MUOS-4", longitude: 100 },
-  { name: "AEHF-6", longitude: 135 }
+  {
+    "name": "ALT-3",
+    "longitude": 100
+  },
+  {
+    "name": "WGS-10",
+    "longitude": -10
+  },
+  {
+    "name": "MUOS-1",
+    "longitude": -100
+  },
+  {
+    "name": "MUOS-2",
+    "longitude": -177
+  },
+  {
+    "name": "MUOS-3",
+    "longitude": -16
+  },
+  {
+    "name": "MUOS-4",
+    "longitude": 75
+  },
+  {
+    "name": "MUOS-5",
+    "longitude": -80
+  }
 ];
 
 const LOCATIONS = [
