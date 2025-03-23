@@ -1,4 +1,4 @@
-/* APA App Styles - v1.5.6 */
+/* APA App Styles - v1.5.9 */
 
 body, html {
   height: 100%;
@@ -21,7 +21,6 @@ header {
   position: relative;
 }
 
-/* Map Controls */
 .map-controls {
   position: absolute;
   top: 80px;
@@ -43,7 +42,12 @@ header {
   font-size: 14px;
 }
 
-/* APA Leaflet Control */
+.map-controls select:focus {
+  outline: 2px solid #003087;
+  outline-offset: 2px;
+}
+
+/* APA Table */
 .leaflet-control.apa-control {
   background-color: rgba(0, 48, 135, 0.95);
   color: white;
@@ -72,7 +76,6 @@ header {
   cursor: pointer;
 }
 
-/* APA Table */
 #apa-table {
   width: 100%;
   border-collapse: collapse;
@@ -95,6 +98,11 @@ header {
   cursor: pointer;
 }
 
+#apa-table th:focus {
+  outline: 2px solid #ff0;
+  outline-offset: 2px;
+}
+
 #apa-table td:first-child {
   width: 50px;
 }
@@ -109,7 +117,6 @@ header {
   font-weight: bold;
 }
 
-/* APA Line Label */
 .leaflet-tooltip.apa-line-label {
   background: #003087;
   color: white;
