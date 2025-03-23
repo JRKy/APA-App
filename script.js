@@ -1,11 +1,13 @@
 let map;
 let siteMarker;
+let lineLayers = [];
+let satMarkers = [];
 let baseLayers;
 let currentBaseLayer;
 let allAORs = [];
 let allCountries = [];
 
-console.log("Initializing APA App... v1.6.9");
+console.log("Initializing APA App... v1.6.9.1");
 
 document.addEventListener("DOMContentLoaded", () => {
   const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -34,13 +36,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   currentBaseLayer = osm;
-
   L.control.layers(baseLayers).addTo(map);
 
   const locationSelect = document.getElementById("location-select");
   const aorFilter = document.getElementById("aor-filter");
   const countryFilter = document.getElementById("country-filter");
   const resetBtn = document.getElementById("reset-filters");
+
+  const tbody = document.querySelector("#apa-table tbody");
 
   // Populate initial dropdown values
   allAORs = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
@@ -106,8 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (siteMarker) map.removeLayer(siteMarker);
     siteMarker = L.marker([lat, lon]).addTo(map);
     map.setView([lat, lon], 8);
-    console.log(`Zooming to location: ${lat}, ${lon}`);
-    // updateApaTable(lat, lon); // connect APA logic here if needed
+    updateApaTable(lat, lon);
   });
 
   resetBtn.addEventListener("click", () => {
@@ -134,8 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
         map.setView([latitude, longitude], 8);
         if (siteMarker) map.removeLayer(siteMarker);
         siteMarker = L.marker([latitude, longitude]).addTo(map);
-        console.log(`Centered on current location: ${latitude}, ${longitude}`);
-        // updateApaTable(latitude, longitude); // connect APA logic here
+        updateApaTable(latitude, longitude);
       },
       () => {
         alert("Unable to retrieve your location.");
@@ -143,5 +144,116 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 
-  console.log("Map initialized with layer control, dropdown filters, and geolocation.");
+  function updateApaTable(siteLat, siteLon) {
+    tbody.innerHTML = "";
+    clearLines();
+    clearSatMarkers();
+
+    const fragment = document.createDocumentFragment();
+
+    SATELLITES.forEach((sat, index) => {
+      const azimuth = computeAzimuth(siteLat, siteLon, sat.longitude);
+      const elevation = computeElevation(siteLat, siteLon, sat.longitude);
+      const isNegative = elevation < 0;
+      const rowId = `sat-${index}`;
+
+      const marker = L.circleMarker([0, sat.longitude], {
+        radius: 6,
+        fillColor: isNegative ? "#ff5252" : "#00c853",
+        color: "#333",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.9
+      }).addTo(map).bindPopup(`
+        <strong>${sat.name}</strong><br/>
+        El: ${elevation.toFixed(2)}°<br/>
+        Az: ${azimuth.toFixed(2)}°
+      `);
+      satMarkers.push(marker);
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input type="checkbox" aria-label="Toggle ${sat.name}" id="${rowId}" data-lat="${siteLat}" data-lon="${siteLon}" data-satlon="${sat.longitude}" ${isNegative ? "" : "checked"}></td>
+        <td>${sat.name}</td>
+        <td>${sat.longitude}</td>
+        <td class="${isNegative ? "negative" : ""}">${elevation.toFixed(2)}</td>
+        <td>${azimuth.toFixed(2)}</td>
+      `;
+      fragment.appendChild(tr);
+    });
+
+    tbody.appendChild(fragment);
+
+    const checkboxes = tbody.querySelectorAll("input[type=checkbox]");
+    checkboxes.forEach(cb => {
+      cb.addEventListener("change", checkboxChangeHandler);
+      if (cb.checked) checkboxChangeHandler.call(cb);
+    });
+  }
+
+  function checkboxChangeHandler() {
+    const id = this.id;
+    const lat = parseFloat(this.dataset.lat);
+    const lon = parseFloat(this.dataset.lon);
+    const satLon = parseFloat(this.dataset.satlon);
+
+    const existing = lineLayers.find(l => l.id === id);
+    if (existing) {
+      map.removeLayer(existing.layer);
+      lineLayers = lineLayers.filter(l => l.id !== id);
+    }
+
+    if (this.checked) {
+      const elevation = computeElevation(lat, lon, satLon);
+      drawLine(lat, lon, satLon, id, id, elevation);
+    }
+  }
+
+  function drawLine(lat, lon, satLon, label, id, elevation) {
+    const color = elevation < 0 ? "#ff5252" : "#00bcd4";
+    const polyline = L.polyline([[lat, lon], [0, satLon]], {
+      color,
+      weight: 2,
+      opacity: 0.9
+    }).addTo(map);
+
+    polyline.bindTooltip(`${label}`, {
+      permanent: true,
+      direction: "center",
+      className: "apa-line-label"
+    });
+
+    lineLayers.push({ id, layer: polyline });
+  }
+
+  function clearLines() {
+    lineLayers.forEach(line => map.removeLayer(line.layer));
+    lineLayers = [];
+  }
+
+  function clearSatMarkers() {
+    satMarkers.forEach(m => map.removeLayer(m));
+    satMarkers = [];
+  }
+
+  function computeAzimuth(lat, lon, satLon) {
+    const φ = (lat * Math.PI) / 180;
+    const Δλ = ((satLon - lon) * Math.PI) / 180;
+    const y = Math.sin(Δλ);
+    const x = Math.cos(φ) * Math.tan(0) - Math.sin(φ) * Math.cos(Δλ);
+    let az = Math.atan2(y, x) * (180 / Math.PI);
+    return (az + 360) % 360;
+  }
+
+  function computeElevation(lat, lon, satLon) {
+    const Re = 6378.137;
+    const h = 35786;
+    const φ = (lat * Math.PI) / 180;
+    const Δλ = ((satLon - lon) * Math.PI) / 180;
+    const slat = Math.cos(φ) * Math.cos(Δλ);
+    const elevation = Math.atan((Math.cos(φ) * Math.cos(Δλ) - (Re / (Re + h))) / Math.sqrt(1 - slat ** 2)) * (180 / Math.PI);
+    return elevation;
+  }
+
+  console.log("APA table and dropdowns connected successfully.");
 });
