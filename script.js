@@ -7,30 +7,37 @@ let currentSort = { index: null, asc: true };
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Initializing APA App...");
 
-  map = L.map("map").setView([20, 0], 2);
+  map = L.map("map", {
+    keyboard: true,
+    zoomControl: true
+  }).setView([20, 0], 2);
+
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; OpenStreetMap contributors',
   }).addTo(map);
 
-  // Create APA Table as Leaflet Control
+  // Leaflet Control - APA Table
   L.Control.APA = L.Control.extend({
     onAdd: function () {
       const container = L.DomUtil.create("div", "leaflet-control apa-control");
 
+      container.setAttribute("role", "region");
+      container.setAttribute("aria-label", "APA Results Table");
+
       container.innerHTML = `
         <div class="apa-panel-header">
           <h4 style="margin:0;">APA Table</h4>
-          <button id="toggle-apa-collapse" title="Collapse">−</button>
+          <button id="toggle-apa-collapse" title="Collapse" aria-label="Collapse APA Table">−</button>
         </div>
         <div id="apa-table-wrapper">
-          <table id="apa-table">
+          <table id="apa-table" aria-describedby="app-title">
             <thead>
               <tr>
-                <th>Show</th>
-                <th data-sort="1">Satellite</th>
-                <th data-sort="2">Lon (°)</th>
-                <th data-sort="3">El (°)</th>
-                <th data-sort="4">Az (°)</th>
+                <th scope="col">Show</th>
+                <th scope="col" data-sort="1">Satellite</th>
+                <th scope="col" data-sort="2">Lon (°)</th>
+                <th scope="col" data-sort="3">El (°)</th>
+                <th scope="col" data-sort="4">Az (°)</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -57,7 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const aorFilter = document.getElementById("aor-filter");
   const countryFilter = document.getElementById("country-filter");
 
-  // Populate AOR & Country dropdowns
   const aors = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
   const countries = [...new Set(LOCATIONS.map(loc => loc.country))].sort();
 
@@ -75,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
     countryFilter.appendChild(opt);
   });
 
-  // Update location dropdown based on filters
   function updateLocationDropdown() {
     const selectedAor = aorFilter.value;
     const selectedCountry = countryFilter.value;
@@ -96,8 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   aorFilter.addEventListener("change", updateLocationDropdown);
   countryFilter.addEventListener("change", updateLocationDropdown);
-
-  // Initial location dropdown
   updateLocationDropdown();
 
   locationSelect.addEventListener("change", function () {
@@ -141,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td><input type="checkbox" id="${rowId}" data-lat="${siteLat}" data-lon="${siteLon}" data-satlon="${sat.longitude}" ${isNegative ? "" : "checked"}></td>
+        <td><input type="checkbox" aria-label="Toggle ${sat.name}" id="${rowId}" data-lat="${siteLat}" data-lon="${siteLon}" data-satlon="${sat.longitude}" ${isNegative ? "" : "checked"}></td>
         <td>${sat.name}</td>
         <td>${sat.longitude}</td>
         <td class="${isNegative ? "negative" : ""}">${elevation.toFixed(2)}</td>
@@ -176,25 +179,34 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.querySelectorAll("#apa-table th[data-sort]").forEach(th => {
-      th.addEventListener("click", () => {
-        const idx = parseInt(th.dataset.sort);
-        const rows = Array.from(tbody.querySelectorAll("tr"));
-        const isAsc = currentSort.index === idx ? !currentSort.asc : true;
-
-        rows.sort((a, b) => {
-          const va = a.children[idx].textContent.trim();
-          const vb = b.children[idx].textContent.trim();
-          return isAsc
-            ? va.localeCompare(vb, undefined, { numeric: true })
-            : vb.localeCompare(va, undefined, { numeric: true });
-        });
-
-        tbody.innerHTML = "";
-        rows.forEach(r => tbody.appendChild(r));
-
-        currentSort = { index: idx, asc: isAsc };
+      th.setAttribute("tabindex", "0");
+      th.addEventListener("click", () => sortTable(th));
+      th.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          sortTable(th);
+        }
       });
     });
+  }
+
+  function sortTable(th) {
+    const idx = parseInt(th.dataset.sort);
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    const isAsc = currentSort.index === idx ? !currentSort.asc : true;
+
+    rows.sort((a, b) => {
+      const va = a.children[idx].textContent.trim();
+      const vb = b.children[idx].textContent.trim();
+      return isAsc
+        ? va.localeCompare(vb, undefined, { numeric: true })
+        : vb.localeCompare(va, undefined, { numeric: true });
+    });
+
+    tbody.innerHTML = "";
+    rows.forEach(r => tbody.appendChild(r));
+
+    currentSort = { index: idx, asc: isAsc };
   }
 
   function drawLine(lat, lon, satLon, label, id, elevation) {
