@@ -3,11 +3,12 @@ let siteMarker;
 let lineLayers = [];
 let satMarkers = [];
 let baseLayers;
-let currentBaseLayer;
 let allAORs = [];
 let allCountries = [];
+let currentSortColumn = null;
+let currentSortAsc = true;
 
-console.log("Initializing APA App... v1.6.9.1");
+console.log("Initializing APA App... v1.6.9.3");
 
 document.addEventListener("DOMContentLoaded", () => {
   const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -35,17 +36,16 @@ document.addEventListener("DOMContentLoaded", () => {
     zoomControl: true,
   });
 
-  currentBaseLayer = osm;
   L.control.layers(baseLayers).addTo(map);
 
   const locationSelect = document.getElementById("location-select");
   const aorFilter = document.getElementById("aor-filter");
   const countryFilter = document.getElementById("country-filter");
   const resetBtn = document.getElementById("reset-filters");
-
   const tbody = document.querySelector("#apa-table tbody");
+  const apaPanel = document.getElementById("apa-panel");
+  const closePanelBtn = document.getElementById("close-apa-panel");
 
-  // Populate initial dropdown values
   allAORs = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
   allCountries = [...new Set(LOCATIONS.map(loc => loc.country))].sort();
 
@@ -73,6 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const opt = document.createElement("option");
       opt.value = `${loc.latitude},${loc.longitude}`;
       opt.textContent = loc.name;
+      opt.dataset.aor = loc.aor;
+      opt.dataset.country = loc.country;
       locationSelect.appendChild(opt);
     });
   }
@@ -106,9 +108,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   locationSelect.addEventListener("change", function () {
     const [lat, lon] = this.value.split(",").map(Number);
+    const selectedOption = this.options[this.selectedIndex];
+    const selectedAOR = selectedOption.dataset.aor;
+    const selectedCountry = selectedOption.dataset.country;
+
+    aorFilter.value = selectedAOR;
+    countryFilter.value = selectedCountry;
+
+    updateAorAndCountryDropdowns();
+
     if (siteMarker) map.removeLayer(siteMarker);
     siteMarker = L.marker([lat, lon]).addTo(map);
     map.setView([lat, lon], 8);
+    apaPanel.style.display = "block";
     updateApaTable(lat, lon);
   });
 
@@ -119,10 +131,6 @@ document.addEventListener("DOMContentLoaded", () => {
     countryFilter.value = "";
     updateLocationDropdown();
   });
-
-  populateDropdown(aorFilter, allAORs, "AORs");
-  populateDropdown(countryFilter, allCountries, "Countries");
-  updateLocationDropdown();
 
   document.getElementById("use-my-location").addEventListener("click", () => {
     if (!navigator.geolocation) {
@@ -136,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
         map.setView([latitude, longitude], 8);
         if (siteMarker) map.removeLayer(siteMarker);
         siteMarker = L.marker([latitude, longitude]).addTo(map);
+        apaPanel.style.display = "block";
         updateApaTable(latitude, longitude);
       },
       () => {
@@ -144,17 +153,47 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 
+  closePanelBtn.addEventListener("click", () => {
+    apaPanel.style.display = "none";
+  });
+
+  populateDropdown(aorFilter, allAORs, "AORs");
+  populateDropdown(countryFilter, allCountries, "Countries");
+  updateLocationDropdown();
+
   function updateApaTable(siteLat, siteLon) {
     tbody.innerHTML = "";
     clearLines();
     clearSatMarkers();
 
-    const fragment = document.createDocumentFragment();
-
-    SATELLITES.forEach((sat, index) => {
+    let rows = SATELLITES.map((sat, index) => {
       const azimuth = computeAzimuth(siteLat, siteLon, sat.longitude);
       const elevation = computeElevation(siteLat, siteLon, sat.longitude);
       const isNegative = elevation < 0;
+      return {
+        index,
+        sat,
+        azimuth,
+        elevation,
+        isNegative
+      };
+    });
+
+    if (currentSortColumn) {
+      rows.sort((a, b) => {
+        let valA = a[currentSortColumn];
+        let valB = b[currentSortColumn];
+        if (typeof valA === "string") valA = valA.toLowerCase();
+        if (typeof valB === "string") valB = valB.toLowerCase();
+        if (valA < valB) return currentSortAsc ? -1 : 1;
+        if (valA > valB) return currentSortAsc ? 1 : -1;
+        return 0;
+      });
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    rows.forEach(({ sat, azimuth, elevation, isNegative }, index) => {
       const rowId = `sat-${index}`;
 
       const marker = L.circleMarker([0, sat.longitude], {
@@ -255,5 +294,33 @@ document.addEventListener("DOMContentLoaded", () => {
     return elevation;
   }
 
-  console.log("APA table and dropdowns connected successfully.");
+  // Sort columns when clicked
+  document.querySelectorAll("#apa-table th").forEach((th, i) => {
+    th.addEventListener("click", () => {
+      const sortMap = {
+        1: "sat.name",
+        2: "sat.longitude",
+        3: "elevation",
+        4: "azimuth"
+      };
+
+      const key = sortMap[i];
+      if (!key) return;
+
+      if (currentSortColumn === key) {
+        currentSortAsc = !currentSortAsc;
+      } else {
+        currentSortColumn = key;
+        currentSortAsc = true;
+      }
+
+      const siteValue = locationSelect.value;
+      if (siteValue) {
+        const [lat, lon] = siteValue.split(",").map(Number);
+        updateApaTable(lat, lon);
+      }
+    });
+  });
+
+  console.log("APA table, dropdown sync, and sorting ready.");
 });
