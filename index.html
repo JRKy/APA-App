@@ -1,78 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Antenna Pointing Angles (APA) App</title>
-  <meta name="description" content="A tool for calculating and visualizing antenna pointing angles for satellite communication.">
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css?v=1.6.9.3" />
-  <meta name="theme-color" content="#003087" />
-
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
-
-  <script>const APP_VERSION = "1.6.9.3"; console.log(`APA App Version: ${APP_VERSION}`);</script>
-</head>
-<body>
-  <header role="banner">
-    <h1 id="app-title">Antenna Pointing Angles (APA) App</h1>
-    <p>Version: <span id="app-version">1.6.9.3</span></p>
-  </header>
-
-  <div id="map" role="application" aria-label="Satellite Map showing locations and satellite connections">
-    <div class="map-controls leaflet-bar" role="navigation" aria-label="Location and Filter Controls">
-      <label for="aor-filter">Filter by AOR:</label>
-      <select id="aor-filter"><option value="">All AORs</option></select>
-
-      <label for="country-filter">Filter by Country:</label>
-      <select id="country-filter"><option value="">All Countries</option></select>
-
-      <label for="location-select">Select a Location:</label>
-      <select id="location-select"><option value="">Choose a location...</option></select>
-
-      <button id="use-my-location">📍 Use My Location</button>
-      <button id="reset-filters">Reset Filters</button>
+    <!-- APA Panel Floating on Map -->
+    <div id="apa-panel" class="leaflet-control apa-control">
+        <div class="apa-panel-header">
+            <strong>APA Table</strong>
+            <button id="close-apa-panel" title="Close Panel">×</button>
+        </div>
+        <table id="apa-table">
+            <thead>
+                <tr>
+                    <th>Show</th>
+                    <th>Satellite</th>
+                    <th>Lon (°)</th>
+                    <th>El (°)</th>
+                    <th>Az (°)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
-  </div>
 
-  <div id="apa-panel" class="leaflet-control apa-control">
-    <div class="apa-panel-header">
-      <strong>APA Table</strong>
-      <button id="close-apa-panel" title="Close Panel">×</button>
+    <!-- Help Tooltip -->
+    <div id="help-tooltip" role="note" aria-live="polite">
+        <strong>ℹ️ APA Help:</strong> Select or enter a location to generate APA lines. Add satellites manually. Use the checkboxes to toggle visibility.
     </div>
-    <table id="apa-table">
-      <thead>
-        <tr>
-          <th>Show</th>
-          <th>Satellite</th>
-          <th>Lon (°)</th>
-          <th>El (°)</th>
-          <th>Az (°)</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
 
-  <div id="help-tooltip" role="note" aria-live="polite">
-    <strong>ℹ️ APA Help:</strong> Select a location or use your current location to show APA lines. Checkboxes control visibility of satellite lines.
-  </div>
-
-  <script src="data.js?v=1.6.9.3"></script>
-  <script src="script.js?v=1.6.9.3"></script>
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.6.9.3").then(reg => {
-        console.log("Service Worker registered with scope:", reg.scope);
-      }).catch(err => {
-        console.error("Service Worker registration failed:", err);
-      });
-    }
-  </script>
+    <!-- JavaScript Files with Versioning -->
+    <script src="data.js?v=1.6.9.4"></script>
+    <script src="script.js?v=1.6.9.4"></script>
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("sw.js?v=1.6.9.4")
+                .then(reg => console.log("Service Worker registered with scope:", reg.scope))
+                .catch(err => console.error("SW registration failed:", err));
+        }
+    </script>
 </body>
 </html>
