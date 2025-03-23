@@ -164,7 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
     tbody.appendChild(fragment);
 
     const checkboxes = tbody.querySelectorAll("input[type=checkbox]");
-
     checkboxes.forEach(cb => {
       cb.addEventListener("change", checkboxChangeHandler);
     });
@@ -175,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const newState = !allChecked;
       checkboxes.forEach(cb => {
         cb.checked = newState;
-        checkboxChangeHandler.call(cb); // key change: call directly, not dispatchEvent
+        checkboxChangeHandler.call(cb);
       });
     };
 
