@@ -58,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const aorFilter = document.getElementById("aor-filter");
   const countryFilter = document.getElementById("country-filter");
   const resetBtn = document.getElementById("reset-filters");
+  const selectAllBtn = document.getElementById("select-all-btn");
 
   const aors = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
   const countries = [...new Set(LOCATIONS.map(loc => loc.country))].sort();
@@ -160,61 +161,69 @@ document.addEventListener("DOMContentLoaded", () => {
 
     tbody.appendChild(fragment);
 
-    const allCheckboxes = tbody.querySelectorAll("input[type=checkbox]");
+    const checkboxes = tbody.querySelectorAll("input[type=checkbox]");
 
-    allCheckboxes.forEach(cb => {
-      cb.addEventListener("change", debounceCheckboxChange);
+    checkboxes.forEach(cb => {
+      cb.addEventListener("change", function () {
+        const id = this.id;
+        const lat = parseFloat(this.dataset.lat);
+        const lon = parseFloat(this.dataset.lon);
+        const satLon = parseFloat(this.dataset.satlon);
+
+        if (this.checked) {
+          const elevation = computeElevation(lat, lon, satLon);
+          drawLine(lat, lon, satLon, id, id, elevation);
+        } else {
+          const line = lineLayers.find(l => l.id === id);
+          if (line) {
+            map.removeLayer(line.layer);
+            lineLayers = lineLayers.filter(l => l.id !== id);
+          }
+        }
+
+        updateSelectAllState();
+      });
     });
 
-    const selectAllBtn = document.getElementById("select-all-btn");
+    // Select All / Deselect All Button
     selectAllBtn.textContent = "Select All";
-
-    selectAllBtn.addEventListener("click", () => {
-      const checkboxes = Array.from(tbody.querySelectorAll("input[type=checkbox]"));
-      const allChecked = checkboxes.every(cb => cb.checked);
+    selectAllBtn.onclick = () => {
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
       const newState = !allChecked;
 
       checkboxes.forEach(cb => {
         cb.checked = newState;
         cb.dispatchEvent(new Event("change"));
       });
+    };
 
-      selectAllBtn.textContent = newState ? "Deselect All" : "Select All";
-    });
+    updateSelectAllState();
+    bindSortHandlers();
+  }
 
-    document.querySelectorAll("#apa-table th[data-sort]").forEach(th => {
+  function updateSelectAllState() {
+    const checkboxes = document.querySelectorAll("#apa-table tbody input[type=checkbox]");
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    document.getElementById("select-all-btn").textContent = allChecked ? "Deselect All" : "Select All";
+  }
+
+  function bindSortHandlers() {
+    const headers = document.querySelectorAll("#apa-table th[data-sort]");
+    headers.forEach(th => {
       th.setAttribute("tabindex", "0");
-      th.addEventListener("click", () => sortTable(th));
-      th.addEventListener("keydown", e => {
+      th.onclick = () => sortTable(th);
+      th.onkeydown = e => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           sortTable(th);
         }
-      });
+      };
     });
   }
 
-  const debounceCheckboxChange = debounce(function () {
-    const id = this.id;
-    const lat = parseFloat(this.dataset.lat);
-    const lon = parseFloat(this.dataset.lon);
-    const satLon = parseFloat(this.dataset.satlon);
-
-    if (this.checked) {
-      const elevation = computeElevation(lat, lon, satLon);
-      drawLine(lat, lon, satLon, id, id, elevation);
-    } else {
-      const line = lineLayers.find(l => l.id === id);
-      if (line) {
-        map.removeLayer(line.layer);
-        lineLayers = lineLayers.filter(l => l.id !== id);
-      }
-    }
-  }, 150);
-
   function sortTable(th) {
     const idx = parseInt(th.dataset.sort);
-    const rows = Array.from(tbody.querySelectorAll("tr"));
+    const rows = Array.from(document.querySelectorAll("#apa-table tbody tr"));
     const isAsc = currentSort.index === idx ? !currentSort.asc : true;
 
     rows.sort((a, b) => {
@@ -225,6 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
         : vb.localeCompare(va, undefined, { numeric: true });
     });
 
+    const tbody = document.querySelector("#apa-table tbody");
     tbody.innerHTML = "";
     rows.forEach(r => tbody.appendChild(r));
     currentSort = { index: idx, asc: isAsc };
