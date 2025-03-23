@@ -23,14 +23,15 @@ document.addEventListener("DOMContentLoaded", () => {
           <button id="toggle-apa-collapse" title="Collapse" aria-label="Collapse APA Table">−</button>
         </div>
         <div id="apa-table-wrapper">
+          <button id="select-all-btn" title="Toggle all APA satellite visibility">Select All</button>
           <table id="apa-table" aria-describedby="app-title">
             <thead>
               <tr>
                 <th scope="col">Show</th>
-                <th scope="col" data-sort="1">Satellite</th>
-                <th scope="col" data-sort="2">Lon (°)</th>
-                <th scope="col" data-sort="3">El (°)</th>
-                <th scope="col" data-sort="4">Az (°)</th>
+                <th scope="col" data-sort="1" title="Sort by Satellite Name">Satellite</th>
+                <th scope="col" data-sort="2" title="Sort by Longitude">Lon (°)</th>
+                <th scope="col" data-sort="3" title="Sort by Elevation">El (°)</th>
+                <th scope="col" data-sort="4" title="Sort by Azimuth">Az (°)</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -56,6 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const locationSelect = document.getElementById("location-select");
   const aorFilter = document.getElementById("aor-filter");
   const countryFilter = document.getElementById("country-filter");
+  const resetBtn = document.getElementById("reset-filters");
 
   const aors = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
   const countries = [...new Set(LOCATIONS.map(loc => loc.country))].sort();
@@ -93,6 +95,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   aorFilter.addEventListener("change", updateLocationDropdown);
   countryFilter.addEventListener("change", updateLocationDropdown);
+  resetBtn.addEventListener("click", () => {
+    aorFilter.value = "";
+    countryFilter.value = "";
+    updateLocationDropdown();
+  });
+
   updateLocationDropdown();
 
   locationSelect.addEventListener("change", function () {
@@ -152,8 +160,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     tbody.appendChild(fragment);
 
-    tbody.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    const allCheckboxes = tbody.querySelectorAll("input[type=checkbox]");
+
+    allCheckboxes.forEach(cb => {
       cb.addEventListener("change", debounceCheckboxChange);
+    });
+
+    const selectAllBtn = document.getElementById("select-all-btn");
+    selectAllBtn.textContent = "Select All";
+    let allVisible = true;
+
+    selectAllBtn.addEventListener("click", () => {
+      allVisible = !allVisible;
+      allCheckboxes.forEach(cb => {
+        cb.checked = allVisible;
+        cb.dispatchEvent(new Event("change"));
+      });
+      selectAllBtn.textContent = allVisible ? "Deselect All" : "Select All";
     });
 
     document.querySelectorAll("#apa-table th[data-sort]").forEach(th => {
