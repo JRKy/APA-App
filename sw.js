@@ -1,38 +1,33 @@
-const CACHE_NAME = "apa-cache-v1.6.8";
-const urlsToCache = [
-  "./",
-  "index.html",
-  "styles.css?v=1.6.8",
-  "data.js?v=1.6.8",
-  "script.js?v=1.6.8",
-  "manifest.json",
-  "icons/icon-192.png",
-  "icons/icon-512.png"
-];
+const CACHE_NAME = "apa-app-cache-v1.6.9.3";
+const OFFLINE_URL = "offline.html";
 
-self.addEventListener("install", event => {
-  console.log("Installed SW Version: v1.6.8");
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll([
+        "./",
+        "index.html",
+        "styles.css?v=1.6.9.3",
+        "script.js?v=1.6.9.3",
+        "data.js?v=1.6.9.3",
+        "manifest.json",
+        OFFLINE_URL,
+      ]);
+    })
   );
+  console.log("Installed SW Version: v1.6.9.3");
 });
 
-self.addEventListener("fetch", event => {
+self.addEventListener("fetch", (event) => {
   event.respondWith(
-    caches.match(event.request).then(response =>
-      response || fetch(event.request)
-    )
+    fetch(event.request).catch(() => caches.match(event.request).then((response) => response || caches.match(OFFLINE_URL)))
   );
 });
 
-self.addEventListener("activate", event => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames =>
-      Promise.all(
-        cacheNames
-          .filter(name => name !== CACHE_NAME)
-          .map(name => caches.delete(name))
-      )
+    caches.keys().then((keyList) =>
+      Promise.all(keyList.map((key) => key !== CACHE_NAME && caches.delete(key)))
     )
   );
 });
