@@ -5,6 +5,8 @@ let satMarkers = [];
 let currentSort = { index: null, asc: true };
 let redrawTimeout = null;
 
+console.log("Initializing APA App... v1.6.7");
+
 document.addEventListener("DOMContentLoaded", () => {
   map = L.map("map", { keyboard: true }).setView([20, 0], 2);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
