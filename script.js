@@ -202,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (this.checked) {
       const elevation = computeElevation(lat, lon, satLon);
-      drawLine(lat, lon, satLon, id.replace("sat-", "SAT-"), id, elevation);
+      drawLine(lat, lon, satLon, id, id, elevation);
     } else {
       const line = lineLayers.find(l => l.id === id);
       if (line) {
