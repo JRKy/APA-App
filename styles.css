@@ -1,4 +1,4 @@
-/* APA App Styles - v1.6.9.2 */
+/* APA App Styles - v1.6.9.4 */
 
 body, html {
   height: 100%;
@@ -11,7 +11,7 @@ body, html {
 header {
   background-color: #003087;
   color: white;
-  padding: 12px 16px;
+  padding: 15px;
   text-align: center;
 }
 
@@ -24,129 +24,116 @@ header {
 .map-controls {
   position: absolute;
   top: 10px;
-  left: 10px;
+  left: 50px;
   background: white;
-  padding: 10px;
+  padding: 12px;
   border-radius: 6px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
   font-size: 14px;
   max-width: 250px;
 }
 
 .map-controls label {
   font-weight: bold;
+  margin-top: 4px;
 }
 
 .map-controls select,
+.map-controls input,
 .map-controls button {
-  padding: 5px;
+  padding: 6px;
   font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+.map-controls fieldset {
+  margin: 10px 0 0;
+  padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  background: #fff;
-  cursor: pointer;
 }
 
-.map-controls button:hover {
-  background-color: #e8f0fe;
+.map-controls legend {
+  font-weight: bold;
+  padding: 0 6px;
 }
 
-#help-tooltip {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  background: #fff;
-  color: #333;
-  padding: 8px 12px;
-  font-size: 14px;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  z-index: 1000;
-}
-
-/* APA Panel */
-.leaflet-control.apa-control {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: white;
+#apa-panel.leaflet-control.apa-control {
+  background: rgba(0, 48, 135, 0.95);
+  color: white;
   padding: 10px;
   border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  font-size: 13px;
-  color: #222;
   max-height: 60vh;
+  max-width: 300px;
   overflow-y: auto;
   z-index: 1001;
+  position: absolute;
+  top: 80px;
+  left: 80px;
 }
 
 .apa-panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
 }
 
-.apa-panel-header button {
-  background: #eee;
+#close-apa-panel {
+  background: none;
   border: none;
-  font-size: 16px;
+  color: white;
+  font-size: 20px;
   cursor: pointer;
-  padding: 2px 8px;
 }
 
 #apa-table {
   width: 100%;
+  margin-top: 10px;
   border-collapse: collapse;
-  margin-top: 6px;
+  table-layout: fixed;
 }
 
 #apa-table th,
 #apa-table td {
-  border: 1px solid #ccc;
-  padding: 6px;
+  border: 1px solid white;
+  padding: 4px;
   text-align: center;
+  word-wrap: break-word;
   font-size: 13px;
 }
 
 #apa-table th {
-  background: #f5f5f5;
+  background-color: rgba(255, 255, 255, 0.2);
   font-weight: bold;
 }
 
 .negative {
-  color: #FF5252;
+  color: #ff5252;
   font-weight: bold;
 }
 
-@media (max-width: 600px) {
-  .map-controls {
-    top: 5px;
-    left: 5px;
-    font-size: 12px;
-    max-width: 90vw;
-  }
+.apa-line-label {
+  background: none !important;
+  color: #000;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px #fff;
+}
 
-  .leaflet-control.apa-control {
-    top: auto;
-    bottom: 60px;
-    right: 5px;
-    left: 5px;
-    max-height: 40vh;
-    font-size: 12px;
-  }
-
-  #apa-table th, #apa-table td {
-    font-size: 11px;
-    padding: 4px;
-  }
-
-  #help-tooltip {
-    font-size: 12px;
-    padding: 6px 10px;
-  }
+#help-tooltip {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  background: #003087;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 13px;
+  z-index: 9999;
+  max-width: 300px;
 }
