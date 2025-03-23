@@ -1,54 +1,38 @@
-const CACHE_VERSION = "v1.1.7"; // Increment for new updates
-const CACHE_NAME = `apa-app-${CACHE_VERSION}`;
-const STATIC_ASSETS = [
-  "/APA-App/",
-  "/APA-App/index.html?v=1.1.7",
-  "/APA-App/styles.css?v=1.1.7",
-  "/APA-App/script.js?v=1.1.7",
-  "/APA-App/data.js?v=1.1.7",
-  "/APA-App/manifest.json",
-  "/APA-App/icons/icon-192.png",
-  "/APA-App/icons/icon-512.png",
-  "/APA-App/favicon.ico",
-  "/APA-App/offline.html"
+const CACHE_NAME = "apa-cache-v1.6.7";
+const urlsToCache = [
+  "./",
+  "index.html",
+  "styles.css?v=1.6.7",
+  "data.js?v=1.6.7",
+  "script.js?v=1.6.7",
+  "manifest.json",
+  "icons/icon-192.png",
+  "icons/icon-512.png"
 ];
 
-// Install and cache new version
-self.addEventListener("install", (event) => {
+self.addEventListener("install", event => {
+  console.log("Installed SW Version: v1.6.7");
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
-  console.log(`Installed SW Version: ${CACHE_VERSION}`);
 });
 
-// Activate and remove old caches, but don't force a refresh
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            console.log(`Deleting old cache: ${key}`);
-            return caches.delete(key);
-          }
-        })
-      )
+self.addEventListener("fetch", event => {
+  event.respondWith(
+    caches.match(event.request).then(response =>
+      response || fetch(event.request)
     )
   );
 });
 
-// Fetch fresh content when online, fallback to cache when offline
-self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, response.clone());
-          return response;
-        });
-      })
-      .catch(() => caches.match(event.request))
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames =>
+      Promise.all(
+        cacheNames
+          .filter(name => name !== CACHE_NAME)
+          .map(name => caches.delete(name))
+      )
+    )
   );
 });
-
-// Do not force an update. Let the browser naturally pick up the changes.
