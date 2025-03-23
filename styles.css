@@ -153,3 +153,31 @@ header {
   outline: 2px solid #ffcc00;
   outline-offset: 2px;
 }
+#reset-filters {
+  margin-top: 6px;
+  padding: 6px;
+  font-size: 14px;
+  background-color: #003087;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#reset-filters:hover {
+  background-color: #002060;
+}
+
+#help-tooltip {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  max-width: 360px;
+  z-index: 1100;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
