@@ -42,12 +42,7 @@ header {
   font-size: 14px;
 }
 
-.map-controls select:focus {
-  outline: 2px solid #003087;
-  outline-offset: 2px;
-}
-
-/* APA Table */
+/* APA Table Panel */
 .leaflet-control.apa-control {
   background-color: rgba(0, 48, 135, 0.95);
   color: white;
@@ -76,6 +71,7 @@ header {
   cursor: pointer;
 }
 
+/* Table styling */
 #apa-table {
   width: 100%;
   border-collapse: collapse;
@@ -96,11 +92,6 @@ header {
   background-color: rgba(255, 255, 255, 0.2);
   font-weight: bold;
   cursor: pointer;
-}
-
-#apa-table th:focus {
-  outline: 2px solid #ff0;
-  outline-offset: 2px;
 }
 
 #apa-table td:first-child {
@@ -126,4 +117,10 @@ header {
   border-radius: 4px;
   font-weight: bold;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Accessibility Focus Outline */
+:focus {
+  outline: 2px solid #ffcc00;
+  outline-offset: 2px;
 }
