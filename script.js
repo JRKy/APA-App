@@ -5,7 +5,7 @@ let satMarkers = [];
 let currentSort = { index: null, asc: true };
 let redrawTimeout = null;
 
-console.log("Initializing APA App... v1.6.7");
+console.log("Initializing APA App... v1.6.8");
 
 document.addEventListener("DOMContentLoaded", () => {
   map = L.map("map", { keyboard: true }).setView([20, 0], 2);
@@ -155,10 +155,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${azimuth.toFixed(2)}</td>
       `;
       fragment.appendChild(tr);
-
-      if (!isNegative) {
-        drawLine(siteLat, siteLon, sat.longitude, sat.name, rowId, elevation);
-      }
     });
 
     tbody.appendChild(fragment);
@@ -166,6 +162,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const checkboxes = tbody.querySelectorAll("input[type=checkbox]");
     checkboxes.forEach(cb => {
       cb.addEventListener("change", checkboxChangeHandler);
+    });
+
+    // ✅ Call the handler explicitly to initialize lines correctly
+    checkboxes.forEach(cb => {
+      if (cb.checked) {
+        checkboxChangeHandler.call(cb);
+      }
     });
 
     selectAllBtn.textContent = "Select All";
@@ -188,15 +191,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const lon = parseFloat(this.dataset.lon);
     const satLon = parseFloat(this.dataset.satlon);
 
+    // Always remove first (whether or not it exists)
+    const existing = lineLayers.find(l => l.id === id);
+    if (existing) {
+      map.removeLayer(existing.layer);
+      lineLayers = lineLayers.filter(l => l.id !== id);
+    }
+
     if (this.checked) {
       const elevation = computeElevation(lat, lon, satLon);
       drawLine(lat, lon, satLon, id, id, elevation);
-    } else {
-      const line = lineLayers.find(l => l.id === id);
-      if (line) {
-        map.removeLayer(line.layer);
-        lineLayers = lineLayers.filter(l => l.id !== id);
-      }
     }
 
     updateSelectAllState();
