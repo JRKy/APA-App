@@ -3,24 +3,17 @@ let siteMarker;
 let lineLayers = [];
 let satMarkers = [];
 let currentSort = { index: null, asc: true };
+let redrawTimeout = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("Initializing APA App...");
-
-  map = L.map("map", {
-    keyboard: true,
-    zoomControl: true
-  }).setView([20, 0], 2);
-
+  map = L.map("map", { keyboard: true }).setView([20, 0], 2);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; OpenStreetMap contributors',
   }).addTo(map);
 
-  // Leaflet Control - APA Table
   L.Control.APA = L.Control.extend({
     onAdd: function () {
       const container = L.DomUtil.create("div", "leaflet-control apa-control");
-
       container.setAttribute("role", "region");
       container.setAttribute("aria-label", "APA Results Table");
 
@@ -85,7 +78,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectedAor = aorFilter.value;
     const selectedCountry = countryFilter.value;
     locationSelect.innerHTML = `<option value="">Choose a location...</option>`;
-
     LOCATIONS.forEach(loc => {
       if (
         (!selectedAor || loc.aor === selectedAor) &&
@@ -106,20 +98,22 @@ document.addEventListener("DOMContentLoaded", () => {
   locationSelect.addEventListener("change", function () {
     const [lat, lon] = this.value.split(",").map(Number);
     if (siteMarker) map.removeLayer(siteMarker);
-    clearLines();
-    clearSatMarkers();
-
     siteMarker = L.marker([lat, lon]).addTo(map);
     map.setView([lat, lon], 8);
-    updateApaTable(lat, lon);
+    debouncedApaUpdate(lat, lon);
   });
 
-  function updateApaTable(siteLat, siteLon) {
-    if (!Array.isArray(SATELLITES)) return;
+  function debouncedApaUpdate(lat, lon) {
+    clearTimeout(redrawTimeout);
+    redrawTimeout = setTimeout(() => updateApaTable(lat, lon), 250);
+  }
 
+  function updateApaTable(siteLat, siteLon) {
     tbody.innerHTML = "";
     clearLines();
     clearSatMarkers();
+
+    const fragment = document.createDocumentFragment();
 
     SATELLITES.forEach((sat, index) => {
       const azimuth = computeAzimuth(siteLat, siteLon, sat.longitude);
@@ -139,43 +133,27 @@ document.addEventListener("DOMContentLoaded", () => {
         El: ${elevation.toFixed(2)}°<br/>
         Az: ${azimuth.toFixed(2)}°
       `);
-
       satMarkers.push(marker);
 
-      const row = document.createElement("tr");
-      row.innerHTML = `
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
         <td><input type="checkbox" aria-label="Toggle ${sat.name}" id="${rowId}" data-lat="${siteLat}" data-lon="${siteLon}" data-satlon="${sat.longitude}" ${isNegative ? "" : "checked"}></td>
         <td>${sat.name}</td>
         <td>${sat.longitude}</td>
         <td class="${isNegative ? "negative" : ""}">${elevation.toFixed(2)}</td>
         <td>${azimuth.toFixed(2)}</td>
       `;
-
-      tbody.appendChild(row);
+      fragment.appendChild(tr);
 
       if (!isNegative) {
         drawLine(siteLat, siteLon, sat.longitude, sat.name, rowId, elevation);
       }
     });
 
-    tbody.querySelectorAll("input[type=checkbox]").forEach(cb => {
-      cb.addEventListener("change", function () {
-        const id = this.id;
-        const lat = parseFloat(this.dataset.lat);
-        const lon = parseFloat(this.dataset.lon);
-        const satLon = parseFloat(this.dataset.satlon);
+    tbody.appendChild(fragment);
 
-        if (this.checked) {
-          const elevation = computeElevation(lat, lon, satLon);
-          drawLine(lat, lon, satLon, id.replace("sat-", "SAT-"), id, elevation);
-        } else {
-          const line = lineLayers.find(l => l.id === id);
-          if (line) {
-            map.removeLayer(line.layer);
-            lineLayers = lineLayers.filter(l => l.id !== id);
-          }
-        }
-      });
+    tbody.querySelectorAll("input[type=checkbox]").forEach(cb => {
+      cb.addEventListener("change", debounceCheckboxChange);
     });
 
     document.querySelectorAll("#apa-table th[data-sort]").forEach(th => {
@@ -189,6 +167,24 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
+
+  const debounceCheckboxChange = debounce(function () {
+    const id = this.id;
+    const lat = parseFloat(this.dataset.lat);
+    const lon = parseFloat(this.dataset.lon);
+    const satLon = parseFloat(this.dataset.satlon);
+
+    if (this.checked) {
+      const elevation = computeElevation(lat, lon, satLon);
+      drawLine(lat, lon, satLon, id.replace("sat-", "SAT-"), id, elevation);
+    } else {
+      const line = lineLayers.find(l => l.id === id);
+      if (line) {
+        map.removeLayer(line.layer);
+        lineLayers = lineLayers.filter(l => l.id !== id);
+      }
+    }
+  }, 150);
 
   function sortTable(th) {
     const idx = parseInt(th.dataset.sort);
@@ -205,7 +201,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     tbody.innerHTML = "";
     rows.forEach(r => tbody.appendChild(r));
-
     currentSort = { index: idx, asc: isAsc };
   }
 
@@ -254,5 +249,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const slat = Math.cos(φ) * Math.cos(Δλ);
     const elevation = Math.atan((Math.cos(φ) * Math.cos(Δλ) - (Re / (Re + h))) / Math.sqrt(1 - slat ** 2)) * (180 / Math.PI);
     return elevation;
+  }
+
+  function debounce(fn, delay = 250) {
+    let t;
+    return function (...args) {
+      clearTimeout(t);
+      t = setTimeout(() => fn.apply(this, args), delay);
+    };
   }
 });
