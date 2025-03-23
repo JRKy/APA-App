@@ -7,7 +7,7 @@
   <meta name="description" content="A tool for calculating and visualizing antenna pointing angles for satellite communication.">
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css?v=1.5.7" />
+  <link rel="stylesheet" href="styles.css?v=1.5.9" />
   <meta name="theme-color" content="#003087" />
 
   <!-- Leaflet -->
@@ -17,39 +17,41 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
 
-  <script>const APP_VERSION = "1.5.7"; console.log(`APA App Version: ${APP_VERSION}`);</script>
+  <script>const APP_VERSION = "1.5.9"; console.log(`APA App Version: ${APP_VERSION}`);</script>
 </head>
 <body>
-  <header>
-    <h1>Antenna Pointing Angles (APA) App</h1>
-    <p>Version: <span id="app-version">1.5.7</span></p>
+  <header role="banner">
+    <h1 id="app-title">Antenna Pointing Angles (APA) App</h1>
+    <p>Version: <span id="app-version">1.5.9</span></p>
   </header>
 
-  <div id="map">
-    <div class="map-controls leaflet-bar">
-      <label for="aor-filter">Filter by AOR:</label>
-      <select id="aor-filter">
-        <option value="">All AORs</option>
-      </select>
+  <main role="main">
+    <div id="map" role="application" aria-label="Interactive satellite map">
+      <div class="map-controls leaflet-bar" role="region" aria-label="Location and Filter Controls">
+        <label for="aor-filter">Filter by AOR:</label>
+        <select id="aor-filter" aria-label="Filter locations by AOR">
+          <option value="">All AORs</option>
+        </select>
 
-      <label for="country-filter">Filter by Country:</label>
-      <select id="country-filter">
-        <option value="">All Countries</option>
-      </select>
+        <label for="country-filter">Filter by Country:</label>
+        <select id="country-filter" aria-label="Filter locations by country">
+          <option value="">All Countries</option>
+        </select>
 
-      <label for="location-select">Select a Location:</label>
-      <select id="location-select">
-        <option value="">Choose a location...</option>
-      </select>
+        <label for="location-select">Select a Location:</label>
+        <select id="location-select" aria-label="Select a location from the list">
+          <option value="">Choose a location...</option>
+        </select>
+      </div>
     </div>
-  </div>
+  </main>
 
-  <script src="data.js?v=1.5.7"></script>
-  <script src="script.js?v=1.5.7"></script>
+  <script src="data.js?v=1.5.9"></script>
+  <script src="script.js?v=1.5.9"></script>
 
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.5.7").then(reg => {
+      navigator.serviceWorker.register("sw.js?v=1.5.9").then(reg => {
         console.log("Service Worker registered with scope:", reg.scope);
       }).catch(err => {
         console.error("Service Worker registration failed:", err);
