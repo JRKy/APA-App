@@ -1,4 +1,4 @@
-// Version 1.6.7
+// Version 1.6.8
 const SATELLITES = [
   { name: "ALT-1", longitude: -15 },
   { name: "ALT-2", longitude: 0 },
@@ -32,4 +32,4 @@ const LOCATIONS = [
   { name: "Schriever SFB, CO", latitude: 29.74215, longitude: -90.81037, country: "USA", aor: "NORTHCOM" }
 ];
 
-console.log(`Data Loaded: ${SATELLITES.length} satellites, ${LOCATIONS.length} locations (v1.6.7)`);
+console.log(`Data Loaded: ${SATELLITES.length} satellites, ${LOCATIONS.length} locations (v1.6.8)`);
