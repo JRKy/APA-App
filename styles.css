@@ -1,4 +1,4 @@
-/* APA App Styles - v1.5.9 */
+/* APA App Styles - v1.6.1 */
 
 body, html {
   height: 100%;
@@ -34,12 +34,33 @@ header {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: max-content;
+  max-width: 90vw;
+}
+
+.map-controls label {
+  font-weight: bold;
+  margin-bottom: 2px;
 }
 
 .map-controls select {
-  width: 200px;
-  padding: 4px;
+  width: 220px;
+  padding: 6px;
   font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+@media (max-width: 768px) {
+  .map-controls {
+    left: 8px;
+    right: 8px;
+    width: auto;
+  }
+
+  .map-controls select {
+    width: 100%;
+  }
 }
 
 /* APA Table Panel */
@@ -61,21 +82,29 @@ header {
   justify-content: space-between;
   align-items: center;
   gap: 6px;
+  margin-bottom: 4px;
 }
 
 .apa-panel-header button {
   background: none;
   border: none;
   color: white;
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: bold;
   cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.apa-panel-header button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Table styling */
 #apa-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  margin-top: 4px;
   table-layout: fixed;
 }
 
