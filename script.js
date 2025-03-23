@@ -164,41 +164,41 @@ document.addEventListener("DOMContentLoaded", () => {
     const checkboxes = tbody.querySelectorAll("input[type=checkbox]");
 
     checkboxes.forEach(cb => {
-      cb.addEventListener("change", function () {
-        const id = this.id;
-        const lat = parseFloat(this.dataset.lat);
-        const lon = parseFloat(this.dataset.lon);
-        const satLon = parseFloat(this.dataset.satlon);
-
-        if (this.checked) {
-          const elevation = computeElevation(lat, lon, satLon);
-          drawLine(lat, lon, satLon, id, id, elevation);
-        } else {
-          const line = lineLayers.find(l => l.id === id);
-          if (line) {
-            map.removeLayer(line.layer);
-            lineLayers = lineLayers.filter(l => l.id !== id);
-          }
-        }
-
-        updateSelectAllState();
-      });
+      cb.addEventListener("change", checkboxChangeHandler);
     });
 
-    // Select All / Deselect All Button
     selectAllBtn.textContent = "Select All";
     selectAllBtn.onclick = () => {
       const allChecked = Array.from(checkboxes).every(cb => cb.checked);
       const newState = !allChecked;
-
       checkboxes.forEach(cb => {
         cb.checked = newState;
-        cb.dispatchEvent(new Event("change"));
+        checkboxChangeHandler.call(cb); // key change: call directly, not dispatchEvent
       });
     };
 
     updateSelectAllState();
     bindSortHandlers();
+  }
+
+  function checkboxChangeHandler() {
+    const id = this.id;
+    const lat = parseFloat(this.dataset.lat);
+    const lon = parseFloat(this.dataset.lon);
+    const satLon = parseFloat(this.dataset.satlon);
+
+    if (this.checked) {
+      const elevation = computeElevation(lat, lon, satLon);
+      drawLine(lat, lon, satLon, id, id, elevation);
+    } else {
+      const line = lineLayers.find(l => l.id === id);
+      if (line) {
+        map.removeLayer(line.layer);
+        lineLayers = lineLayers.filter(l => l.id !== id);
+      }
+    }
+
+    updateSelectAllState();
   }
 
   function updateSelectAllState() {
@@ -285,13 +285,5 @@ document.addEventListener("DOMContentLoaded", () => {
     const slat = Math.cos(φ) * Math.cos(Δλ);
     const elevation = Math.atan((Math.cos(φ) * Math.cos(Δλ) - (Re / (Re + h))) / Math.sqrt(1 - slat ** 2)) * (180 / Math.PI);
     return elevation;
-  }
-
-  function debounce(fn, delay = 250) {
-    let t;
-    return function (...args) {
-      clearTimeout(t);
-      t = setTimeout(() => fn.apply(this, args), delay);
-    };
   }
 });
