@@ -1,4 +1,4 @@
-/* APA App Styles - v1.7.5 */
+/* APA App Styles - v1.7.6 */
 
 body, html {
   height: 100%;
@@ -43,12 +43,14 @@ header h1 {
 
 .map-tools button {
   background: white;
-  border: 1px solid #ccc;
-  padding: 6px;
+  border: 1px solid #999;
+  padding: 0;
   width: 34px;
   height: 34px;
-  border-radius: 4px;
-  font-size: 16px;
+  font-size: 18px;
+  line-height: 34px;
+  border-radius: 2px;
+  text-align: center;
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
@@ -59,7 +61,7 @@ header h1 {
 
 .tool-panel {
   position: absolute;
-  top: 60px;
+  top: 100px;
   left: 60px;
   background: white;
   padding: 10px;
@@ -75,8 +77,7 @@ header h1 {
 }
 
 .tool-panel.leaflet-control {
-  border: 1px solid #ccc;
-  box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+  border: 1px solid #aaa;
 }
 
 .tool-panel fieldset {
@@ -106,6 +107,18 @@ header h1 {
   font-size: 13px;
   margin-top: 2px;
   border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.tool-panel .close-panel {
+  margin-top: 8px;
+  padding: 4px;
+  width: 100%;
+  font-size: 14px;
+  border: none;
+  background: #f0f0f0;
+  cursor: pointer;
   border-radius: 4px;
 }
 
@@ -188,7 +201,7 @@ header h1 {
   display: none !important;
 }
 
-#show-apa-btn {
+#toggle-apa-panel {
   position: fixed;
   right: 20px;
   bottom: 10px;
@@ -199,21 +212,5 @@ header h1 {
   border: none;
   border-radius: 5px;
   font-size: 13px;
-  display: none;
   cursor: pointer;
-}
-
-#toggle-apa-panel {
-  position: fixed;
-  top: 60px;
-  right: 20px;
-  z-index: 1003;
-  background: #003087;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 4px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  display: none;
 }
