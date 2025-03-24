@@ -1,6 +1,6 @@
 
-// APA App Script - v1.6.9.10
-console.log("APA App v1.6.9.10 Loaded");
+// APA App Script - v1.6.9.11
+console.log("APA App v1.6.9.11 Loaded");
 
 let map;
 let siteMarker;
@@ -8,6 +8,9 @@ let lineLayers = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   const locationSelect = document.getElementById("location-select");
+  const aorFilter = document.getElementById("aor-filter");
+  const countryFilter = document.getElementById("country-filter");
+
   console.log("Initializing map...");
   map = L.map("map").setView([20, 0], 2);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -86,8 +89,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("reset-filters").addEventListener("click", () => {
-    document.getElementById("aor-filter").value = "";
-    document.getElementById("country-filter").value = "";
+    aorFilter.value = "";
+    countryFilter.value = "";
     locationSelect.value = "";
     apaTableBody.innerHTML = "";
     clearLines();
@@ -128,6 +131,70 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  function populateFilters() {
+    const uniqueAORs = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
+    const uniqueCountries = [...new Set(LOCATIONS.map(loc => loc.country))].sort();
+    uniqueAORs.forEach(aor => {
+      const opt = document.createElement("option");
+      opt.value = aor;
+      opt.textContent = aor;
+      aorFilter.appendChild(opt);
+    });
+    uniqueCountries.forEach(country => {
+      const opt = document.createElement("option");
+      opt.value = country;
+      opt.textContent = country;
+      countryFilter.appendChild(opt);
+    });
+  }
+
+  function filterLocations() {
+    const selectedAOR = aorFilter.value;
+    const selectedCountry = countryFilter.value;
+    locationSelect.innerHTML = '<option value="">Choose a location...</option>';
+    LOCATIONS.forEach(loc => {
+      const matchAOR = !selectedAOR || loc.aor === selectedAOR;
+      const matchCountry = !selectedCountry || loc.country === selectedCountry;
+      if (matchAOR && matchCountry) {
+        const opt = document.createElement("option");
+        opt.value = `${loc.latitude},${loc.longitude}`;
+        opt.textContent = loc.name;
+        locationSelect.appendChild(opt);
+      }
+    });
+  }
+
+  aorFilter.addEventListener("change", () => {
+    filterLocations();
+    const selectedAOR = aorFilter.value;
+    const countriesInAOR = LOCATIONS.filter(loc => !selectedAOR || loc.aor === selectedAOR).map(loc => loc.country);
+    const uniqueCountries = [...new Set(countriesInAOR)].sort();
+    countryFilter.innerHTML = '<option value="">All Countries</option>';
+    uniqueCountries.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c;
+      opt.textContent = c;
+      countryFilter.appendChild(opt);
+    });
+  });
+
+  countryFilter.addEventListener("change", () => {
+    filterLocations();
+    const selectedCountry = countryFilter.value;
+    const aorsInCountry = LOCATIONS.filter(loc => !selectedCountry || loc.country === selectedCountry).map(loc => loc.aor);
+    const uniqueAORs = [...new Set(aorsInCountry)].sort();
+    aorFilter.innerHTML = '<option value="">All AORs</option>';
+    uniqueAORs.forEach(a => {
+      const opt = document.createElement("option");
+      opt.value = a;
+      opt.textContent = a;
+      aorFilter.appendChild(opt);
+    });
+  });
+
+  populateFilters();
+  filterLocations();
+
   function goToLocation(lat, lon) {
     map.setView([lat, lon], 8);
     if (siteMarker) map.removeLayer(siteMarker);
@@ -140,12 +207,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateApaTable(lat, lon) {
     apaTableBody.innerHTML = "";
     clearLines();
-
     SATELLITES.forEach((sat, idx) => {
       const az = ((sat.longitude - lon + 360) % 360).toFixed(2);
       const el = (90 - Math.abs(lat) - Math.abs(sat.longitude - lon)).toFixed(2);
       const isNegative = el < 0;
-
       const row = document.createElement("tr");
       const id = `sat-${idx}`;
       row.innerHTML = `
@@ -153,11 +218,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${sat.name}</td>
         <td>${sat.longitude}</td>
         <td class="${isNegative ? "negative" : ""}">${el}</td>
-        <td>${az}</td>
-      `;
+        <td>${az}</td>`;
       apaTableBody.appendChild(row);
     });
-
     apaTableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
       cb.addEventListener("change", function () {
         const id = this.id;
@@ -165,19 +228,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const lon = parseFloat(this.dataset.lon);
         const satLon = parseFloat(this.dataset.satlon);
         const name = this.dataset.name;
-
         const existing = lineLayers.find(l => l.id === id);
         if (existing) {
           map.removeLayer(existing.layer);
           lineLayers = lineLayers.filter(l => l.id !== id);
         }
-
         if (this.checked) {
           const el = 90 - Math.abs(lat) - Math.abs(satLon - lon);
           drawLine(lat, lon, satLon, name, el, id);
         }
       });
-
       if (cb.checked) cb.dispatchEvent(new Event("change"));
     });
   }
@@ -202,78 +262,3 @@ document.addEventListener("DOMContentLoaded", () => {
     lineLayers = [];
   }
 });
-
-// Update AOR and Country filters
-const aorFilter = document.getElementById("aor-filter");
-const countryFilter = document.getElementById("country-filter");
-
-function populateFilters() {
-  const uniqueAORs = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
-  const uniqueCountries = [...new Set(LOCATIONS.map(loc => loc.country))].sort();
-
-  uniqueAORs.forEach(aor => {
-    const opt = document.createElement("option");
-    opt.value = aor;
-    opt.textContent = aor;
-    aorFilter.appendChild(opt);
-  });
-
-  uniqueCountries.forEach(country => {
-    const opt = document.createElement("option");
-    opt.value = country;
-    opt.textContent = country;
-    countryFilter.appendChild(opt);
-  });
-}
-
-function filterLocations() {
-  const selectedAOR = aorFilter.value;
-  const selectedCountry = countryFilter.value;
-
-  locationSelect.innerHTML = '<option value="">Choose a location...</option>';
-
-  LOCATIONS.forEach(loc => {
-    const matchAOR = !selectedAOR || loc.aor === selectedAOR;
-    const matchCountry = !selectedCountry || loc.country === selectedCountry;
-
-    if (matchAOR && matchCountry) {
-      const opt = document.createElement("option");
-      opt.value = `${loc.latitude},${loc.longitude}`;
-      opt.textContent = loc.name;
-      locationSelect.appendChild(opt);
-    }
-  });
-}
-
-aorFilter.addEventListener("change", () => {
-  filterLocations();
-  const selectedAOR = aorFilter.value;
-  const countriesInAOR = LOCATIONS.filter(loc => !selectedAOR || loc.aor === selectedAOR)
-                                   .map(loc => loc.country);
-  const uniqueCountries = [...new Set(countriesInAOR)].sort();
-  countryFilter.innerHTML = '<option value="">All Countries</option>';
-  uniqueCountries.forEach(c => {
-    const opt = document.createElement("option");
-    opt.value = c;
-    opt.textContent = c;
-    countryFilter.appendChild(opt);
-  });
-});
-
-countryFilter.addEventListener("change", () => {
-  filterLocations();
-  const selectedCountry = countryFilter.value;
-  const aorsInCountry = LOCATIONS.filter(loc => !selectedCountry || loc.country === selectedCountry)
-                                  .map(loc => loc.aor);
-  const uniqueAORs = [...new Set(aorsInCountry)].sort();
-  aorFilter.innerHTML = '<option value="">All AORs</option>';
-  uniqueAORs.forEach(a => {
-    const opt = document.createElement("option");
-    opt.value = a;
-    opt.textContent = a;
-    aorFilter.appendChild(opt);
-  });
-});
-
-populateFilters();
-filterLocations();
