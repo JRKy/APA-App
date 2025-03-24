@@ -1,4 +1,4 @@
-/* APA App Styles - v1.7.0 */
+/* APA App Styles - v1.7.1 */
 
 body, html {
   height: 100%;
@@ -71,6 +71,12 @@ header h1 {
   width: 260px;
   max-height: 70vh;
   overflow-y: auto;
+  transition: opacity 0.2s ease;
+}
+
+.tool-panel.leaflet-control {
+  border: 1px solid #ccc;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.4);
 }
 
 .tool-panel fieldset {
