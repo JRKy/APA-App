@@ -24,14 +24,16 @@
   </header>
 
   <div id="map">
+    <!-- Tool Buttons (must be inside map for Leaflet positioning) -->
     <div class="map-tools leaflet-bar leaflet-control">
       <button id="btn-location" title="Use My Location">📍</button>
       <button id="btn-filter" title="Filters">🔍</button>
       <button id="btn-custom-location" title="Custom Location">📌</button>
-      <button id="btn-satellite" title="Add Satellite">🛰️</button>
+      <button id="btn-satellite" title="Add Satellite">🚁️</button>
     </div>
   </div>
 
+  <!-- Filter Panel -->
   <div id="filter-panel" class="tool-panel">
     <fieldset>
       <legend>Filter Locations</legend>
@@ -51,6 +53,7 @@
     </select>
   </div>
 
+  <!-- Custom Location Panel -->
   <div id="location-panel" class="tool-panel">
     <fieldset>
       <legend>Custom Location</legend>
@@ -62,6 +65,7 @@
     </fieldset>
   </div>
 
+  <!-- Add Satellite Panel -->
   <div id="satellite-panel" class="tool-panel">
     <fieldset>
       <legend>Add Satellite</legend>
@@ -73,6 +77,7 @@
     </fieldset>
   </div>
 
+  <!-- APA Panel -->
   <div id="apa-panel" class="leaflet-control apa-control">
     <div class="apa-panel-header">
       <strong>APA Table</strong>
@@ -95,7 +100,7 @@
   <button id="show-apa-btn">Show APA Table</button>
 
   <div id="help-tooltip">
-    🛈 APA Help: Select a location and view satellite pointing angles.
+    📾 APA Help: Select a location and view satellite pointing angles.
     <button id="hide-help-tooltip">×</button>
   </div>
 
