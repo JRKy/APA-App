@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>APA App</title>
-  <link rel="stylesheet" href="styles.css?v=1.7.5" />
+  <link rel="stylesheet" href="styles.css?v=1.7.6" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#003087" />
   <link rel="icon" href="favicon.ico" />
@@ -13,18 +13,18 @@
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
   <script>
-    const APP_VERSION = "1.7.5";
+    const APP_VERSION = "1.7.6";
     console.log(`APA App Version: ${APP_VERSION}`);
   </script>
 </head>
 <body>
   <header>
     <h1>APA App</h1>
-    <span>v1.7.5</span>
+    <span>v1.7.6</span>
   </header>
 
   <div id="map">
-    <!-- Tool Buttons (must be inside map for Leaflet positioning) -->
+    <!-- Tool Buttons -->
     <div class="map-tools leaflet-bar leaflet-control">
       <button id="btn-location" title="Use My Location">📍</button>
       <button id="btn-filter" title="Filters">🔍</button>
@@ -50,6 +50,7 @@
       <select id="location-select">
         <option value="">Choose a location...</option>
       </select>
+      <button class="close-panel">×</button>
     </div>
 
     <!-- Custom Location Panel -->
@@ -62,6 +63,7 @@
         <input id="custom-lon" type="number" step="any" />
         <button id="custom-location-btn">Go</button>
       </fieldset>
+      <button class="close-panel">×</button>
     </div>
 
     <!-- Add Satellite Panel -->
@@ -74,6 +76,7 @@
         <input id="sat-lon" type="number" step="any" />
         <button id="add-satellite-btn">Add</button>
       </fieldset>
+      <button class="close-panel">×</button>
     </div>
   </div>
 
@@ -97,18 +100,19 @@
     </table>
   </div>
 
-  <button id="show-apa-btn">Show APA Table</button>
+  <!-- Single APA Toggle Button -->
+  <button id="toggle-apa-panel">▲ APA</button>
 
   <div id="help-tooltip">
     📾 APA Help: Select a location and view satellite pointing angles.
     <button id="hide-help-tooltip">×</button>
   </div>
 
-  <script src="data.js?v=1.7.5"></script>
-  <script src="script.js?v=1.7.5"></script>
+  <script src="data.js?v=1.7.6"></script>
+  <script src="script.js?v=1.7.6"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.7.5").then(reg => {
+      navigator.serviceWorker.register("sw.js?v=1.7.6").then(reg => {
         console.log("Service Worker registered with scope:", reg.scope);
       });
     }
