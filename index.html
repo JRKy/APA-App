@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>APA App</title>
 
-  <link rel="stylesheet" href="styles.css?v=1.6.9.12" />
+  <link rel="stylesheet" href="styles.css?v=1.6.9.16" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#003087" />
   <link rel="icon" href="favicon.ico" />
@@ -14,7 +14,7 @@
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
   <script>
-    const APP_VERSION = "1.6.9.12";
+    const APP_VERSION = "1.6.9.16";
     console.log(`APA App Version: ${APP_VERSION}`);
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("app-version").textContent = APP_VERSION;
@@ -101,8 +101,8 @@
     <button id="hide-help-tooltip">×</button>
   </div>
 
-  <script src="data.js?v=1.6.9.8"></script>
-  <script src="script.js?v=1.6.9.12"></script>
+  <script src="data.js?v=1.6.9.16"></script>
+  <script src="script.js?v=1.6.9.16"></script>
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js?v=1.6.9.3").then(reg => {
