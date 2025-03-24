@@ -1,15 +1,17 @@
-// APA App Script - v1.6.9.6
-console.log("APA App v1.6.9.6 Loaded");
+// APA App Script - v1.6.9.7
+console.log("APA App v1.6.9.7 Loaded");
 
 let map;
 let siteMarker;
 let lineLayers = [];
 
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("Initializing map...");
   map = L.map("map").setView([20, 0], 2);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
+  console.log("Map initialized successfully.");
 
   const locationSelect = document.getElementById("location-select");
   const apaPanel = document.getElementById("apa-panel");
@@ -17,7 +19,78 @@ document.addEventListener("DOMContentLoaded", () => {
   const closePanelBtn = document.getElementById("close-apa-panel");
   const showApaBtn = document.getElementById("show-apa-btn");
   const helpTooltip = document.getElementById("help-tooltip");
-  const hideHelpBtn = document.getElementById("hide-help-tooltip");
+
+  const filterPanel = document.getElementById("filter-panel");
+  const locationPanel = document.getElementById("location-panel");
+  const satellitePanel = document.getElementById("satellite-panel");
+
+  const btnLocation = document.getElementById("btn-location");
+  const btnFilter = document.getElementById("btn-filter");
+  const btnCustomLocation = document.getElementById("btn-custom-location");
+  const btnSatellite = document.getElementById("btn-satellite");
+
+  function hideAllPanels() {
+    filterPanel.style.display = "none";
+    locationPanel.style.display = "none";
+    satellitePanel.style.display = "none";
+  }
+
+  btnLocation.addEventListener("click", () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          goToLocation(lat, lon);
+        },
+        (err) => {
+          alert("Failed to get location: " + err.message);
+        }
+      );
+    } else {
+      alert("Geolocation is not supported.");
+    }
+  });
+
+  btnFilter.addEventListener("click", () => {
+    const isVisible = filterPanel.style.display === "block";
+    hideAllPanels();
+    filterPanel.style.display = isVisible ? "none" : "block";
+  });
+
+  btnCustomLocation.addEventListener("click", () => {
+    const isVisible = locationPanel.style.display === "block";
+    hideAllPanels();
+    locationPanel.style.display = isVisible ? "none" : "block";
+  });
+
+  btnSatellite.addEventListener("click", () => {
+    const isVisible = satellitePanel.style.display === "block";
+    hideAllPanels();
+    satellitePanel.style.display = isVisible ? "none" : "block";
+  });
+
+  closePanelBtn.addEventListener("click", () => {
+    apaPanel.style.display = "none";
+    showApaBtn.style.display = "block";
+  });
+
+  showApaBtn.addEventListener("click", () => {
+    apaPanel.style.display = "block";
+    showApaBtn.style.display = "none";
+  });
+
+  document.getElementById("hide-help-tooltip").addEventListener("click", () => {
+    helpTooltip.classList.add("hidden");
+  });
+
+  document.getElementById("reset-filters").addEventListener("click", () => {
+    document.getElementById("aor-filter").value = "";
+    document.getElementById("country-filter").value = "";
+    locationSelect.value = "";
+    apaTableBody.innerHTML = "";
+    clearLines();
+  });
 
   if (typeof LOCATIONS !== "undefined") {
     LOCATIONS.forEach(loc => {
@@ -52,20 +125,6 @@ document.addEventListener("DOMContentLoaded", () => {
         updateApaTable(lat, lon);
       }
     }
-  });
-
-  closePanelBtn.addEventListener("click", () => {
-    apaPanel.style.display = "none";
-    showApaBtn.style.display = "block";
-  });
-
-  showApaBtn.addEventListener("click", () => {
-    apaPanel.style.display = "block";
-    showApaBtn.style.display = "none";
-  });
-
-  hideHelpBtn.addEventListener("click", () => {
-    helpTooltip.classList.add("hidden");
   });
 
   function goToLocation(lat, lon) {
