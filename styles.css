@@ -1,4 +1,4 @@
-/* APA App Styles - v1.7.12 */
+/* APA App Styles - v1.7.13 */
 
 body, html {
   height: 100%;
@@ -18,6 +18,13 @@ input, select, button, label {
   flex-direction: column;
   margin-bottom: 12px;
   gap: 4px;
+  position: relative;
+  z-index: 1003;
+}
+
+.input-group input,
+.input-group select {
+  pointer-events: auto;
 }
 
 label {
