@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>APA App</title>
-  <link rel="stylesheet" href="styles.css?v=1.7.8" />
+  <link rel="stylesheet" href="styles.css?v=1.7.9" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#003087" />
   <link rel="icon" href="favicon.ico" />
@@ -13,14 +13,14 @@
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
   <script>
-    const APP_VERSION = "1.7.8";
+    const APP_VERSION = "1.7.9";
     console.log(`APA App Version: ${APP_VERSION}`);
   </script>
 </head>
 <body>
   <header>
     <h1>APA App</h1>
-    <span>v1.7.8</span>
+    <span>v1.7.9</span>
   </header>
 
   <div id="map">
@@ -83,7 +83,7 @@
           <th>Lon (°)</th>
           <th>El (°)</th>
           <th>Az (°)</th>
-          <th></th> <!-- Delete column -->
+          <th></th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -97,11 +97,11 @@
     <button id="hide-help-tooltip">×</button>
   </div>
 
-  <script src="data.js?v=1.7.8"></script>
-  <script src="script.js?v=1.7.8"></script>
+  <script src="data.js?v=1.7.9"></script>
+  <script src="script.js?v=1.7.9"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.7.8").then(reg => {
+      navigator.serviceWorker.register("sw.js?v=1.7.9").then(reg => {
         console.log("Service Worker registered with scope:", reg.scope);
       });
     }
