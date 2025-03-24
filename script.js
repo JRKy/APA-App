@@ -1,21 +1,20 @@
-// APA App Script - v1.7.6
-console.log("APA App v1.7.6 Loaded");
+// APA App Script - v1.7.7
+console.log("APA App v1.7.7 Loaded");
 
 let map;
 let siteMarker;
 let lineLayers = [];
+let lastLocation = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   const locationSelect = document.getElementById("location-select");
   const aorFilter = document.getElementById("aor-filter");
   const countryFilter = document.getElementById("country-filter");
 
-  console.log("Initializing map...");
   map = L.map("map").setView([20, 0], 2);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
-  console.log("Map initialized successfully.");
 
   const apaPanel = document.getElementById("apa-panel");
   const apaTableBody = document.querySelector("#apa-table tbody");
@@ -42,13 +41,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          goToLocation(lat, lon);
+          goToLocation(pos.coords.latitude, pos.coords.longitude);
         },
-        (err) => {
-          alert("Failed to get location: " + err.message);
-        }
+        (err) => alert("Failed to get location: " + err.message)
       );
     } else {
       alert("Geolocation is not supported.");
@@ -124,13 +119,18 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("add-satellite-btn").addEventListener("click", () => {
     const name = document.getElementById("sat-name").value.trim();
     const lon = parseFloat(document.getElementById("sat-lon").value);
-    if (name && !isNaN(lon)) {
-      SATELLITES.push({ name, longitude: lon });
-      const selectedValue = locationSelect.value;
-      if (selectedValue) {
-        const [lat, lon] = selectedValue.split(",").map(Number);
-        updateApaTable(lat, lon);
-      }
+    if (!name || isNaN(lon)) return;
+
+    // Prevent duplicates
+    if (SATELLITES.some(sat => sat.name === name)) {
+      alert("Satellite already exists.");
+      return;
+    }
+
+    SATELLITES.push({ name, longitude: lon });
+
+    if (lastLocation) {
+      updateApaTable(lastLocation.lat, lastLocation.lon);
     }
   });
 
@@ -199,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
   filterLocations();
 
   function goToLocation(lat, lon) {
+    lastLocation = { lat, lon };
     map.setView([lat, lon], 8);
     if (siteMarker) map.removeLayer(siteMarker);
     siteMarker = L.marker([lat, lon]).addTo(map);
