@@ -1,10 +1,9 @@
-// APA App Script - v1.6.9.5
-console.log("APA App v1.6.9.5 Loaded");
+// APA App Script - v1.6.9.6
+console.log("APA App v1.6.9.6 Loaded");
 
 let map;
 let siteMarker;
 let lineLayers = [];
-let satMarkers = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   map = L.map("map").setView([20, 0], 2);
@@ -90,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const row = document.createElement("tr");
       const id = `sat-${idx}`;
       row.innerHTML = `
-        <td><input type="checkbox" id="${id}" data-lat="${lat}" data-lon="${lon}" data-satlon="${sat.longitude}" ${isNegative ? "" : "checked"}></td>
+        <td><input type="checkbox" id="${id}" data-lat="${lat}" data-lon="${lon}" data-satlon="${sat.longitude}" data-name="${sat.name}" ${isNegative ? "" : "checked"}></td>
         <td>${sat.name}</td>
         <td>${sat.longitude}</td>
         <td class="${isNegative ? "negative" : ""}">${el}</td>
@@ -105,6 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const lat = parseFloat(this.dataset.lat);
         const lon = parseFloat(this.dataset.lon);
         const satLon = parseFloat(this.dataset.satlon);
+        const name = this.dataset.name;
 
         const existing = lineLayers.find(l => l.id === id);
         if (existing) {
@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (this.checked) {
           const el = 90 - Math.abs(lat) - Math.abs(satLon - lon);
-          drawLine(lat, lon, satLon, id, el);
+          drawLine(lat, lon, satLon, name, el, id);
         }
       });
 
@@ -122,15 +122,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function drawLine(lat, lon, satLon, label, el) {
+  function drawLine(lat, lon, satLon, label, el, id) {
     const color = el < 0 ? "#ff5252" : "#00bcd4";
     const polyline = L.polyline([[lat, lon], [0, satLon]], {
       color,
       weight: 2,
       opacity: 0.9
     }).addTo(map);
-    polyline.bindTooltip(label, { permanent: true, direction: "center", className: "apa-line-label" });
-    lineLayers.push({ id: label, layer: polyline });
+    polyline.bindTooltip(label, {
+      permanent: true,
+      direction: "center",
+      className: "apa-line-label"
+    });
+    lineLayers.push({ id, layer: polyline });
   }
 
   function clearLines() {
