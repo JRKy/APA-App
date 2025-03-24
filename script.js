@@ -23,17 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const showApaBtn = document.getElementById("show-apa-btn");
   const helpTooltip = document.getElementById("help-tooltip");
 
-  const toggleBtn = document.createElement("button");
-  toggleBtn.id = "toggle-apa-panel";
-  toggleBtn.title = "Minimize/Expand";
-  toggleBtn.innerText = "▾";
-  document.querySelector(".apa-panel-header").appendChild(toggleBtn);
-
-  toggleBtn.addEventListener("click", () => {
-    const minimized = apaPanel.classList.toggle("minimized");
-    toggleBtn.innerText = minimized ? "▸" : "▾";
-  });
-
   const filterPanel = document.getElementById("filter-panel");
   const locationPanel = document.getElementById("location-panel");
   const satellitePanel = document.getElementById("satellite-panel");
@@ -87,12 +76,25 @@ document.addEventListener("DOMContentLoaded", () => {
   closePanelBtn.addEventListener("click", () => {
     apaPanel.style.display = "none";
     showApaBtn.style.display = "block";
+    document.getElementById("toggle-apa-panel").style.display = "block";
   });
 
   showApaBtn.addEventListener("click", () => {
     apaPanel.style.display = "block";
     showApaBtn.style.display = "none";
+    document.getElementById("toggle-apa-panel").style.display = "none";
   });
+
+  const toggleApaBtn = document.createElement("button");
+  toggleApaBtn.id = "toggle-apa-panel";
+  toggleApaBtn.textContent = "▲ APA";
+  toggleApaBtn.title = "Show APA Panel";
+  toggleApaBtn.style.display = "none";
+  toggleApaBtn.addEventListener("click", () => {
+    apaPanel.style.display = "block";
+    toggleApaBtn.style.display = "none";
+  });
+  document.body.appendChild(toggleApaBtn);
 
   document.getElementById("hide-help-tooltip").addEventListener("click", () => {
     helpTooltip.classList.add("hidden");
@@ -211,6 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
     siteMarker = L.marker([lat, lon]).addTo(map);
     apaPanel.style.display = "block";
     showApaBtn.style.display = "none";
+    document.getElementById("toggle-apa-panel").style.display = "none";
     updateApaTable(lat, lon);
   }
 
