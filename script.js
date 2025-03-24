@@ -1,4 +1,3 @@
-
 // APA App Script - v1.7.0
 console.log("APA App v1.7.0 Loaded");
 
