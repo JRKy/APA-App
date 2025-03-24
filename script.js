@@ -1,5 +1,5 @@
-// APA App Script - v1.7.3
-console.log("APA App v1.7.3 Loaded");
+// APA App Script - v1.7.6
+console.log("APA App v1.7.6 Loaded");
 
 let map;
 let siteMarker;
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const apaPanel = document.getElementById("apa-panel");
   const apaTableBody = document.querySelector("#apa-table tbody");
   const closePanelBtn = document.getElementById("close-apa-panel");
-  const showApaBtn = document.getElementById("show-apa-btn");
+  const toggleApaBtn = document.getElementById("toggle-apa-panel");
   const helpTooltip = document.getElementById("help-tooltip");
 
   const filterPanel = document.getElementById("filter-panel");
@@ -37,6 +37,23 @@ document.addEventListener("DOMContentLoaded", () => {
     locationPanel.style.display = "none";
     satellitePanel.style.display = "none";
   }
+
+  btnLocation.addEventListener("click", () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          goToLocation(lat, lon);
+        },
+        (err) => {
+          alert("Failed to get location: " + err.message);
+        }
+      );
+    } else {
+      alert("Geolocation is not supported.");
+    }
+  });
 
   btnFilter.addEventListener("click", () => {
     const isVisible = filterPanel.style.display === "block";
@@ -56,45 +73,19 @@ document.addEventListener("DOMContentLoaded", () => {
     satellitePanel.style.display = isVisible ? "none" : "block";
   });
 
-  btnLocation.addEventListener("click", () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          goToLocation(lat, lon);
-        },
-        (err) => {
-          alert("Failed to get location: " + err.message);
-        }
-      );
-    } else {
-      alert("Geolocation is not supported.");
-    }
+  document.querySelectorAll(".close-panel").forEach(btn => {
+    btn.addEventListener("click", hideAllPanels);
   });
 
   closePanelBtn.addEventListener("click", () => {
     apaPanel.style.display = "none";
-    showApaBtn.style.display = "block";
-    document.getElementById("toggle-apa-panel").style.display = "block";
+    toggleApaBtn.style.display = "block";
   });
 
-  showApaBtn.addEventListener("click", () => {
-    apaPanel.style.display = "block";
-    showApaBtn.style.display = "none";
-    document.getElementById("toggle-apa-panel").style.display = "none";
-  });
-
-  const toggleApaBtn = document.createElement("button");
-  toggleApaBtn.id = "toggle-apa-panel";
-  toggleApaBtn.textContent = "▲ APA";
-  toggleApaBtn.title = "Show APA Panel";
-  toggleApaBtn.style.display = "none";
   toggleApaBtn.addEventListener("click", () => {
     apaPanel.style.display = "block";
     toggleApaBtn.style.display = "none";
   });
-  document.body.appendChild(toggleApaBtn);
 
   document.getElementById("hide-help-tooltip").addEventListener("click", () => {
     helpTooltip.classList.add("hidden");
@@ -106,7 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
     locationSelect.value = "";
     apaTableBody.innerHTML = "";
     clearLines();
-    filterLocations();
   });
 
   if (typeof LOCATIONS !== "undefined") {
@@ -213,8 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (siteMarker) map.removeLayer(siteMarker);
     siteMarker = L.marker([lat, lon]).addTo(map);
     apaPanel.style.display = "block";
-    showApaBtn.style.display = "none";
-    document.getElementById("toggle-apa-panel").style.display = "none";
+    toggleApaBtn.style.display = "none";
     updateApaTable(lat, lon);
   }
 
