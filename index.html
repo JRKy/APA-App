@@ -7,7 +7,7 @@
   <meta name="description" content="A tool for calculating and visualizing antenna pointing angles for satellite communication.">
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#003087" />
-  <link rel="stylesheet" href="styles.css?v=1.6.9.5" />
+  <link rel="stylesheet" href="styles.css?v=1.6.9.6" />
 
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
@@ -15,12 +15,12 @@
   <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
-  <script>const APP_VERSION = "1.6.9.5"; console.log(`APA App Version: ${APP_VERSION}`);</script>
+  <script>const APP_VERSION = "1.6.9.6"; console.log(`APA App Version: ${APP_VERSION}`);</script>
 </head>
 <body>
   <header>
     <h1>Antenna Pointing Angles (APA) App</h1>
-    <p>Version: <span id="app-version">1.6.9.5</span></p>
+    <span>v1.6.9.6</span>
   </header>
 
   <div id="map">
@@ -83,11 +83,11 @@
     <button id="hide-help-tooltip" style="margin-left:10px;">×</button>
   </div>
 
-  <script src="data.js?v=1.6.9.5"></script>
-  <script src="script.js?v=1.6.9.5"></script>
+  <script src="data.js?v=1.6.9.6"></script>
+  <script src="script.js?v=1.6.9.6"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.6.9.5")
+      navigator.serviceWorker.register("sw.js?v=1.6.9.6")
         .then(reg => console.log("Service Worker registered with scope:", reg.scope))
         .catch(err => console.error("Service Worker registration failed:", err));
     }
