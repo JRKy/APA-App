@@ -1,4 +1,4 @@
-/* APA App Styles - v1.6.9.7 */
+/* APA App Styles - v1.6.9.8 */
 
 body, html {
   height: 100%;
@@ -31,10 +31,9 @@ header h1 {
   position: relative;
 }
 
-/* Leaflet Map Button Stack */
 .map-tools {
   position: absolute;
-  top: 10px;
+  top: 60px;
   left: 10px;
   z-index: 1001;
   display: flex;
@@ -58,7 +57,6 @@ header h1 {
   background-color: #eee;
 }
 
-/* Tool Panel Styles */
 .tool-panel {
   position: absolute;
   top: 60px;
@@ -105,7 +103,6 @@ header h1 {
   border-radius: 4px;
 }
 
-/* APA Table Panel */
 #apa-panel.leaflet-control.apa-control {
   background: rgba(0, 48, 135, 0.96);
   color: white;
