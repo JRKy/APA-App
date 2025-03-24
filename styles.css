@@ -1,4 +1,4 @@
-/* APA App Styles - v1.7.10 */
+/* APA App Styles - v1.7.11 */
 
 body, html {
   height: 100%;
@@ -13,9 +13,14 @@ input, select, button, label {
   touch-action: manipulation;
 }
 
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+  gap: 4px;
+}
+
 label {
-  margin-bottom: 4px;
-  display: inline-block;
   font-weight: bold;
   font-size: 14px;
 }
@@ -111,8 +116,6 @@ header h1 {
   width: 100%;
   padding: 6px;
   font-size: 16px;
-  margin-top: 4px;
-  margin-bottom: 12px;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
