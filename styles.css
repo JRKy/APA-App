@@ -1,4 +1,4 @@
-/* APA App Styles - v1.7.2 */
+/* APA App Styles - v1.7.5 */
 
 body, html {
   height: 100%;
@@ -33,7 +33,7 @@ header h1 {
 
 .map-tools {
   position: absolute;
-  top: 60px;
+  top: 100px;
   left: 10px;
   z-index: 1001;
   display: flex;
@@ -122,12 +122,6 @@ header h1 {
   top: 60px;
   right: 20px;
   display: none;
-  transition: max-height 0.2s ease;
-}
-
-#apa-panel.minimized {
-  max-height: 36px;
-  overflow: hidden;
 }
 
 .apa-panel-header {
@@ -136,14 +130,12 @@ header h1 {
   align-items: center;
 }
 
-#close-apa-panel,
-#toggle-apa-panel {
+#close-apa-panel {
   background: none;
   border: none;
   color: white;
   font-size: 20px;
   cursor: pointer;
-  margin-left: 6px;
 }
 
 #apa-table {
@@ -209,4 +201,19 @@ header h1 {
   font-size: 13px;
   display: none;
   cursor: pointer;
+}
+
+#toggle-apa-panel {
+  position: fixed;
+  top: 60px;
+  right: 20px;
+  z-index: 1003;
+  background: #003087;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  display: none;
 }
