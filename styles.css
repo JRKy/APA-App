@@ -1,4 +1,4 @@
-/* APA App Styles - v1.6.9.5 */
+/* APA App Styles - v1.6.9.6 */
 
 body, html {
   height: 100%;
@@ -11,30 +11,43 @@ body, html {
 header {
   background-color: #003087;
   color: white;
-  padding: 15px;
-  text-align: center;
+  padding: 8px 15px;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  height: 40px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 16px;
 }
 
 #map {
-  height: calc(100vh - 100px);
+  height: calc(100vh - 40px);
   width: 100%;
   position: relative;
 }
 
+/* Controls Box */
 .map-controls {
   position: absolute;
   top: 10px;
-  left: 50px;
+  left: 10px;
   background: white;
-  padding: 12px;
+  padding: 10px;
   border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
   z-index: 1000;
+  font-size: 13px;
+  max-width: 280px;
+  overflow-y: auto;
+  max-height: 80vh;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  font-size: 14px;
-  max-width: 250px;
+  gap: 8px;
 }
 
 .map-controls label {
@@ -46,14 +59,14 @@ header {
 .map-controls input,
 .map-controls button {
   padding: 6px;
-  font-size: 14px;
+  font-size: 13px;
   border-radius: 4px;
   border: 1px solid #ccc;
   width: 100%;
 }
 
 .map-controls fieldset {
-  margin: 10px 0 0;
+  margin-top: 6px;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -61,20 +74,22 @@ header {
 
 .map-controls legend {
   font-weight: bold;
-  padding: 0 6px;
+  font-size: 12px;
+  padding: 0 4px;
 }
 
+/* APA Table Panel */
 #apa-panel.leaflet-control.apa-control {
-  background: rgba(0, 48, 135, 0.95);
+  background: rgba(0, 48, 135, 0.96);
   color: white;
   padding: 10px;
   border-radius: 6px;
   max-height: 60vh;
-  max-width: 300px;
+  max-width: 320px;
   overflow-y: auto;
   z-index: 1001;
   position: absolute;
-  top: 80px;
+  top: 60px; /* adjusted to be below new header */
   right: 20px;
   display: none;
 }
