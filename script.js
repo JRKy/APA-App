@@ -1,12 +1,13 @@
 
 // APA App Script - v1.6.9.7
-console.log("APA App v1.6.9.7 Loaded");
+console.log("APA App v1.6.9.9 Loaded");
 
 let map;
 let siteMarker;
 let lineLayers = [];
 
 document.addEventListener("DOMContentLoaded", () => {
+  const locationSelect = document.getElementById("location-select");
   console.log("Initializing map...");
   map = L.map("map").setView([20, 0], 2);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
