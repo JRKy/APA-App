@@ -1,198 +1,279 @@
-/* APA App Styles - v1.6.9.8 */
 
-body, html {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-  background-color: #f0f0f0;
+// APA App Script - v1.6.9.7
+console.log("APA App v1.6.9.7 Loaded");
+
+let map;
+let siteMarker;
+let lineLayers = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Initializing map...");
+  map = L.map("map").setView([20, 0], 2);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  console.log("Map initialized successfully.");
+
+  const locationSelect = document.getElementById("location-select");
+  const apaPanel = document.getElementById("apa-panel");
+  const apaTableBody = document.querySelector("#apa-table tbody");
+  const closePanelBtn = document.getElementById("close-apa-panel");
+  const showApaBtn = document.getElementById("show-apa-btn");
+  const helpTooltip = document.getElementById("help-tooltip");
+
+  const filterPanel = document.getElementById("filter-panel");
+  const locationPanel = document.getElementById("location-panel");
+  const satellitePanel = document.getElementById("satellite-panel");
+
+  const btnLocation = document.getElementById("btn-location");
+  const btnFilter = document.getElementById("btn-filter");
+  const btnCustomLocation = document.getElementById("btn-custom-location");
+  const btnSatellite = document.getElementById("btn-satellite");
+
+  function hideAllPanels() {
+    filterPanel.style.display = "none";
+    locationPanel.style.display = "none";
+    satellitePanel.style.display = "none";
+  }
+
+  btnLocation.addEventListener("click", () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          goToLocation(lat, lon);
+        },
+        (err) => {
+          alert("Failed to get location: " + err.message);
+        }
+      );
+    } else {
+      alert("Geolocation is not supported.");
+    }
+  });
+
+  btnFilter.addEventListener("click", () => {
+    const isVisible = filterPanel.style.display === "block";
+    hideAllPanels();
+    filterPanel.style.display = isVisible ? "none" : "block";
+  });
+
+  btnCustomLocation.addEventListener("click", () => {
+    const isVisible = locationPanel.style.display === "block";
+    hideAllPanels();
+    locationPanel.style.display = isVisible ? "none" : "block";
+  });
+
+  btnSatellite.addEventListener("click", () => {
+    const isVisible = satellitePanel.style.display === "block";
+    hideAllPanels();
+    satellitePanel.style.display = isVisible ? "none" : "block";
+  });
+
+  closePanelBtn.addEventListener("click", () => {
+    apaPanel.style.display = "none";
+    showApaBtn.style.display = "block";
+  });
+
+  showApaBtn.addEventListener("click", () => {
+    apaPanel.style.display = "block";
+    showApaBtn.style.display = "none";
+  });
+
+  document.getElementById("hide-help-tooltip").addEventListener("click", () => {
+    helpTooltip.classList.add("hidden");
+  });
+
+  document.getElementById("reset-filters").addEventListener("click", () => {
+    document.getElementById("aor-filter").value = "";
+    document.getElementById("country-filter").value = "";
+    locationSelect.value = "";
+    apaTableBody.innerHTML = "";
+    clearLines();
+  });
+
+  if (typeof LOCATIONS !== "undefined") {
+    LOCATIONS.forEach(loc => {
+      const opt = document.createElement("option");
+      opt.value = `${loc.latitude},${loc.longitude}`;
+      opt.textContent = loc.name;
+      locationSelect.appendChild(opt);
+    });
+  }
+
+  locationSelect.addEventListener("change", function () {
+    const [lat, lon] = this.value.split(",").map(Number);
+    goToLocation(lat, lon);
+  });
+
+  document.getElementById("custom-location-btn").addEventListener("click", () => {
+    const lat = parseFloat(document.getElementById("custom-lat").value);
+    const lon = parseFloat(document.getElementById("custom-lon").value);
+    if (!isNaN(lat) && !isNaN(lon)) {
+      goToLocation(lat, lon);
+    }
+  });
+
+  document.getElementById("add-satellite-btn").addEventListener("click", () => {
+    const name = document.getElementById("sat-name").value.trim();
+    const lon = parseFloat(document.getElementById("sat-lon").value);
+    if (name && !isNaN(lon)) {
+      SATELLITES.push({ name, longitude: lon });
+      const selectedValue = locationSelect.value;
+      if (selectedValue) {
+        const [lat, lon] = selectedValue.split(",").map(Number);
+        updateApaTable(lat, lon);
+      }
+    }
+  });
+
+  function goToLocation(lat, lon) {
+    map.setView([lat, lon], 8);
+    if (siteMarker) map.removeLayer(siteMarker);
+    siteMarker = L.marker([lat, lon]).addTo(map);
+    apaPanel.style.display = "block";
+    showApaBtn.style.display = "none";
+    updateApaTable(lat, lon);
+  }
+
+  function updateApaTable(lat, lon) {
+    apaTableBody.innerHTML = "";
+    clearLines();
+
+    SATELLITES.forEach((sat, idx) => {
+      const az = ((sat.longitude - lon + 360) % 360).toFixed(2);
+      const el = (90 - Math.abs(lat) - Math.abs(sat.longitude - lon)).toFixed(2);
+      const isNegative = el < 0;
+
+      const row = document.createElement("tr");
+      const id = `sat-${idx}`;
+      row.innerHTML = `
+        <td><input type="checkbox" id="${id}" data-lat="${lat}" data-lon="${lon}" data-satlon="${sat.longitude}" data-name="${sat.name}" ${isNegative ? "" : "checked"}></td>
+        <td>${sat.name}</td>
+        <td>${sat.longitude}</td>
+        <td class="${isNegative ? "negative" : ""}">${el}</td>
+        <td>${az}</td>
+      `;
+      apaTableBody.appendChild(row);
+    });
+
+    apaTableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
+      cb.addEventListener("change", function () {
+        const id = this.id;
+        const lat = parseFloat(this.dataset.lat);
+        const lon = parseFloat(this.dataset.lon);
+        const satLon = parseFloat(this.dataset.satlon);
+        const name = this.dataset.name;
+
+        const existing = lineLayers.find(l => l.id === id);
+        if (existing) {
+          map.removeLayer(existing.layer);
+          lineLayers = lineLayers.filter(l => l.id !== id);
+        }
+
+        if (this.checked) {
+          const el = 90 - Math.abs(lat) - Math.abs(satLon - lon);
+          drawLine(lat, lon, satLon, name, el, id);
+        }
+      });
+
+      if (cb.checked) cb.dispatchEvent(new Event("change"));
+    });
+  }
+
+  function drawLine(lat, lon, satLon, label, el, id) {
+    const color = el < 0 ? "#ff5252" : "#00bcd4";
+    const polyline = L.polyline([[lat, lon], [0, satLon]], {
+      color,
+      weight: 2,
+      opacity: 0.9
+    }).addTo(map);
+    polyline.bindTooltip(label, {
+      permanent: true,
+      direction: "center",
+      className: "apa-line-label"
+    });
+    lineLayers.push({ id, layer: polyline });
+  }
+
+  function clearLines() {
+    lineLayers.forEach(l => map.removeLayer(l.layer));
+    lineLayers = [];
+  }
+});
+
+// Update AOR and Country filters
+const aorFilter = document.getElementById("aor-filter");
+const countryFilter = document.getElementById("country-filter");
+
+function populateFilters() {
+  const uniqueAORs = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
+  const uniqueCountries = [...new Set(LOCATIONS.map(loc => loc.country))].sort();
+
+  uniqueAORs.forEach(aor => {
+    const opt = document.createElement("option");
+    opt.value = aor;
+    opt.textContent = aor;
+    aorFilter.appendChild(opt);
+  });
+
+  uniqueCountries.forEach(country => {
+    const opt = document.createElement("option");
+    opt.value = country;
+    opt.textContent = country;
+    countryFilter.appendChild(opt);
+  });
 }
 
-header {
-  background-color: #003087;
-  color: white;
-  padding: 8px 15px;
-  text-align: left;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 16px;
-  height: 40px;
+function filterLocations() {
+  const selectedAOR = aorFilter.value;
+  const selectedCountry = countryFilter.value;
+
+  locationSelect.innerHTML = '<option value="">Choose a location...</option>';
+
+  LOCATIONS.forEach(loc => {
+    const matchAOR = !selectedAOR || loc.aor === selectedAOR;
+    const matchCountry = !selectedCountry || loc.country === selectedCountry;
+
+    if (matchAOR && matchCountry) {
+      const opt = document.createElement("option");
+      opt.value = `${loc.latitude},${loc.longitude}`;
+      opt.textContent = loc.name;
+      locationSelect.appendChild(opt);
+    }
+  });
 }
 
-header h1 {
-  margin: 0;
-  font-size: 16px;
-}
+aorFilter.addEventListener("change", () => {
+  filterLocations();
+  const selectedAOR = aorFilter.value;
+  const countriesInAOR = LOCATIONS.filter(loc => !selectedAOR || loc.aor === selectedAOR)
+                                   .map(loc => loc.country);
+  const uniqueCountries = [...new Set(countriesInAOR)].sort();
+  countryFilter.innerHTML = '<option value="">All Countries</option>';
+  uniqueCountries.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    countryFilter.appendChild(opt);
+  });
+});
 
-#map {
-  height: calc(100vh - 40px);
-  width: 100%;
-  position: relative;
-}
+countryFilter.addEventListener("change", () => {
+  filterLocations();
+  const selectedCountry = countryFilter.value;
+  const aorsInCountry = LOCATIONS.filter(loc => !selectedCountry || loc.country === selectedCountry)
+                                  .map(loc => loc.aor);
+  const uniqueAORs = [...new Set(aorsInCountry)].sort();
+  aorFilter.innerHTML = '<option value="">All AORs</option>';
+  uniqueAORs.forEach(a => {
+    const opt = document.createElement("option");
+    opt.value = a;
+    opt.textContent = a;
+    aorFilter.appendChild(opt);
+  });
+});
 
-.map-tools {
-  position: absolute;
-  top: 60px;
-  left: 10px;
-  z-index: 1001;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.map-tools button {
-  background: white;
-  border: 1px solid #ccc;
-  padding: 6px;
-  width: 34px;
-  height: 34px;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-}
-
-.map-tools button:hover {
-  background-color: #eee;
-}
-
-.tool-panel {
-  position: absolute;
-  top: 60px;
-  left: 60px;
-  background: white;
-  padding: 10px;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  z-index: 1002;
-  font-size: 13px;
-  display: none;
-  width: 260px;
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-.tool-panel fieldset {
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  padding: 6px;
-  border-radius: 4px;
-}
-
-.tool-panel legend {
-  font-weight: bold;
-  font-size: 12px;
-  padding: 0 4px;
-}
-
-.tool-panel label {
-  display: block;
-  font-weight: bold;
-  margin-top: 6px;
-}
-
-.tool-panel input,
-.tool-panel select,
-.tool-panel button {
-  width: 100%;
-  padding: 6px;
-  font-size: 13px;
-  margin-top: 2px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-#apa-panel.leaflet-control.apa-control {
-  background: rgba(0, 48, 135, 0.96);
-  color: white;
-  padding: 10px;
-  border-radius: 6px;
-  max-height: 60vh;
-  max-width: 320px;
-  overflow-y: auto;
-  z-index: 1001;
-  position: absolute;
-  top: 60px;
-  right: 20px;
-  display: none;
-}
-
-.apa-panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-#close-apa-panel {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-#apa-table {
-  width: 100%;
-  margin-top: 10px;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-
-#apa-table th,
-#apa-table td {
-  border: 1px solid white;
-  padding: 4px;
-  text-align: center;
-  word-wrap: break-word;
-  font-size: 13px;
-}
-
-#apa-table th {
-  background-color: rgba(255, 255, 255, 0.2);
-  font-weight: bold;
-}
-
-.negative {
-  color: #ff5252;
-  font-weight: bold;
-}
-
-.apa-line-label {
-  background: none !important;
-  color: #000;
-  font-weight: bold;
-  text-shadow: 1px 1px 2px #fff;
-}
-
-#help-tooltip {
-  position: fixed;
-  bottom: 10px;
-  left: 10px;
-  background: #003087;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 5px;
-  font-size: 13px;
-  z-index: 9999;
-  max-width: 300px;
-}
-
-#help-tooltip.hidden {
-  display: none !important;
-}
-
-#show-apa-btn {
-  position: fixed;
-  right: 20px;
-  bottom: 10px;
-  z-index: 1002;
-  padding: 8px 12px;
-  background: #003087;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 13px;
-  display: none;
-  cursor: pointer;
-}
+populateFilters();
+filterLocations();
