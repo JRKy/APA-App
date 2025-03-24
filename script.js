@@ -1,3 +1,4 @@
+
 // APA App Script - v1.6.9.7
 console.log("APA App v1.6.9.7 Loaded");
 
@@ -201,3 +202,78 @@ document.addEventListener("DOMContentLoaded", () => {
     lineLayers = [];
   }
 });
+
+// Update AOR and Country filters
+const aorFilter = document.getElementById("aor-filter");
+const countryFilter = document.getElementById("country-filter");
+
+function populateFilters() {
+  const uniqueAORs = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
+  const uniqueCountries = [...new Set(LOCATIONS.map(loc => loc.country))].sort();
+
+  uniqueAORs.forEach(aor => {
+    const opt = document.createElement("option");
+    opt.value = aor;
+    opt.textContent = aor;
+    aorFilter.appendChild(opt);
+  });
+
+  uniqueCountries.forEach(country => {
+    const opt = document.createElement("option");
+    opt.value = country;
+    opt.textContent = country;
+    countryFilter.appendChild(opt);
+  });
+}
+
+function filterLocations() {
+  const selectedAOR = aorFilter.value;
+  const selectedCountry = countryFilter.value;
+
+  locationSelect.innerHTML = '<option value="">Choose a location...</option>';
+
+  LOCATIONS.forEach(loc => {
+    const matchAOR = !selectedAOR || loc.aor === selectedAOR;
+    const matchCountry = !selectedCountry || loc.country === selectedCountry;
+
+    if (matchAOR && matchCountry) {
+      const opt = document.createElement("option");
+      opt.value = `${loc.latitude},${loc.longitude}`;
+      opt.textContent = loc.name;
+      locationSelect.appendChild(opt);
+    }
+  });
+}
+
+aorFilter.addEventListener("change", () => {
+  filterLocations();
+  const selectedAOR = aorFilter.value;
+  const countriesInAOR = LOCATIONS.filter(loc => !selectedAOR || loc.aor === selectedAOR)
+                                   .map(loc => loc.country);
+  const uniqueCountries = [...new Set(countriesInAOR)].sort();
+  countryFilter.innerHTML = '<option value="">All Countries</option>';
+  uniqueCountries.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    countryFilter.appendChild(opt);
+  });
+});
+
+countryFilter.addEventListener("change", () => {
+  filterLocations();
+  const selectedCountry = countryFilter.value;
+  const aorsInCountry = LOCATIONS.filter(loc => !selectedCountry || loc.country === selectedCountry)
+                                  .map(loc => loc.aor);
+  const uniqueAORs = [...new Set(aorsInCountry)].sort();
+  aorFilter.innerHTML = '<option value="">All AORs</option>';
+  uniqueAORs.forEach(a => {
+    const opt = document.createElement("option");
+    opt.value = a;
+    opt.textContent = a;
+    aorFilter.appendChild(opt);
+  });
+});
+
+populateFilters();
+filterLocations();
