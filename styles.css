@@ -1,4 +1,4 @@
-/* APA App Styles - v1.6.9.4 */
+/* APA App Styles - v1.6.9.5 */
 
 body, html {
   height: 100%;
@@ -75,7 +75,8 @@ header {
   z-index: 1001;
   position: absolute;
   top: 80px;
-  left: 80px;
+  right: 20px;
+  display: none;
 }
 
 .apa-panel-header {
@@ -136,4 +137,23 @@ header {
   font-size: 13px;
   z-index: 9999;
   max-width: 300px;
+}
+
+#help-tooltip.hidden {
+  display: none !important;
+}
+
+#show-apa-btn {
+  position: fixed;
+  right: 20px;
+  bottom: 10px;
+  z-index: 1002;
+  padding: 8px 12px;
+  background: #003087;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  display: none;
+  cursor: pointer;
 }
