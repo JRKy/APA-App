@@ -1,5 +1,5 @@
-// APA App Script - v1.6.9.4
-console.log("APA App v1.6.9.4 Loaded");
+// APA App Script - v1.6.9.5
+console.log("APA App v1.6.9.5 Loaded");
 
 let map;
 let siteMarker;
@@ -16,6 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const apaPanel = document.getElementById("apa-panel");
   const apaTableBody = document.querySelector("#apa-table tbody");
   const closePanelBtn = document.getElementById("close-apa-panel");
+  const showApaBtn = document.getElementById("show-apa-btn");
+  const helpTooltip = document.getElementById("help-tooltip");
+  const hideHelpBtn = document.getElementById("hide-help-tooltip");
 
   if (typeof LOCATIONS !== "undefined") {
     LOCATIONS.forEach(loc => {
@@ -54,6 +57,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   closePanelBtn.addEventListener("click", () => {
     apaPanel.style.display = "none";
+    showApaBtn.style.display = "block";
+  });
+
+  showApaBtn.addEventListener("click", () => {
+    apaPanel.style.display = "block";
+    showApaBtn.style.display = "none";
+  });
+
+  hideHelpBtn.addEventListener("click", () => {
+    helpTooltip.classList.add("hidden");
   });
 
   function goToLocation(lat, lon) {
@@ -61,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (siteMarker) map.removeLayer(siteMarker);
     siteMarker = L.marker([lat, lon]).addTo(map);
     apaPanel.style.display = "block";
+    showApaBtn.style.display = "none";
     updateApaTable(lat, lon);
   }
 
@@ -123,9 +137,4 @@ document.addEventListener("DOMContentLoaded", () => {
     lineLayers.forEach(l => map.removeLayer(l.layer));
     lineLayers = [];
   }
-
-  // Annotation placeholder (Leaflet.Illustrate can hook in here)
-  map.on("click", (e) => {
-    // Future: annotation support
-  });
 });
