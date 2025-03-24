@@ -4,8 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>APA App</title>
-
-  <link rel="stylesheet" href="styles.css?v=1.6.9.18" />
+  <link rel="stylesheet" href="styles.css?v=1.6.9.11" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#003087" />
   <link rel="icon" href="favicon.ico" />
@@ -14,26 +13,24 @@
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
   <script>
-    const APP_VERSION = "1.6.9.18";
+    const APP_VERSION = "1.6.9.11";
     console.log(`APA App Version: ${APP_VERSION}`);
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("app-version").textContent = APP_VERSION;
-    });
   </script>
 </head>
 <body>
   <header>
     <h1>APA App</h1>
-    <span>v<span id="app-version"></span></span>
+    <span>v1.6.9.11</span>
   </header>
 
-  <div id="map">
-    <div class="map-tools leaflet-bar leaflet-control">
-      <button id="btn-location" title="Use My Location">📍</button>
-      <button id="btn-filter" title="Filters">🔍</button>
-      <button id="btn-custom-location" title="Custom Location">📌</button>
-      <button id="btn-satellite" title="Add Satellite">🛰️</button>
-    </div>
+  <div id="map"></div>
+
+  <!-- Tool Buttons -->
+  <div class="map-tools leaflet-bar leaflet-control">
+    <button id="btn-location" title="Use My Location">📍</button>
+    <button id="btn-filter" title="Filters">🔍</button>
+    <button id="btn-custom-location" title="Custom Location">📌</button>
+    <button id="btn-satellite" title="Add Satellite">🛰️</button>
   </div>
 
   <!-- Filter Panel -->
@@ -41,13 +38,19 @@
     <fieldset>
       <legend>Filter Locations</legend>
       <label for="aor-filter">AOR:</label>
-      <select id="aor-filter"><option value="">All AORs</option></select>
+      <select id="aor-filter">
+        <option value="">All AORs</option>
+      </select>
       <label for="country-filter">Country:</label>
-      <select id="country-filter"><option value="">All Countries</option></select>
+      <select id="country-filter">
+        <option value="">All Countries</option>
+      </select>
     </fieldset>
     <button id="reset-filters">Reset Filters</button>
     <label for="location-select">Locations:</label>
-    <select id="location-select"><option value="">Choose a location...</option></select>
+    <select id="location-select">
+      <option value="">Choose a location...</option>
+    </select>
   </div>
 
   <!-- Custom Location Panel -->
@@ -97,12 +100,12 @@
   <button id="show-apa-btn">Show APA Table</button>
 
   <div id="help-tooltip">
-    ℹ️ <strong>APA Help:</strong> Select a location and view satellite pointing angles.
+    🛈 APA Help: Select a location and view satellite pointing angles.
     <button id="hide-help-tooltip">×</button>
   </div>
 
-  <script src="data.js?v=1.6.9.18"></script>
-  <script src="script.js?v=1.6.9.18"></script>
+  <script src="data.js?v=1.6.9.8"></script>
+  <script src="script.js?v=1.6.9.11"></script>
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js?v=1.6.9.3").then(reg => {
