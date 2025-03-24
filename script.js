@@ -1,6 +1,6 @@
-// APA App Script - v1.6.9.17
+// APA App Script - v1.6.9.18 (Restored Baseline)
 
-console.log("APA App v1.6.9.17 Loaded");
+console.log("APA App v1.6.9.18 Loaded");
 
 let map;
 let locationMarker;
@@ -13,8 +13,8 @@ function initMap() {
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
+
   labelLayerGroup.addTo(map);
-  console.log("Map initialized successfully.");
 }
 
 function createLabel(latlng, labelText) {
@@ -140,21 +140,14 @@ function setupGeolocation() {
 }
 
 function setupToolbarToggles() {
-  const panels = {
-    "btn-filter": "filter-panel",
-    "btn-custom-location": "location-panel",
-    "btn-satellite": "satellite-panel"
-  };
-
-  Object.entries(panels).forEach(([btnId, panelId]) => {
-    const btn = document.getElementById(btnId);
-    const panel = document.getElementById(panelId);
-    if (btn && panel) {
-      btn.addEventListener("click", () => {
-        panel.classList.toggle("visible");
-        console.log(`Toggled ${panelId}`);
-      });
-    }
+  document.getElementById("btn-filter")?.addEventListener("click", () => {
+    document.getElementById("filter-panel")?.classList.toggle("visible");
+  });
+  document.getElementById("btn-custom-location")?.addEventListener("click", () => {
+    document.getElementById("location-panel")?.classList.toggle("visible");
+  });
+  document.getElementById("btn-satellite")?.addEventListener("click", () => {
+    document.getElementById("satellite-panel")?.classList.toggle("visible");
   });
 }
 
