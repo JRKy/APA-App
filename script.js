@@ -1,5 +1,5 @@
 
-// APA App Script - v1.6.9.7
+// APA App Script - v1.6.9.9
 console.log("APA App v1.6.9.9 Loaded");
 
 let map;
@@ -15,7 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }).addTo(map);
   console.log("Map initialized successfully.");
 
-  const locationSelect = document.getElementById("location-select");
   const apaPanel = document.getElementById("apa-panel");
   const apaTableBody = document.querySelector("#apa-table tbody");
   const closePanelBtn = document.getElementById("close-apa-panel");
