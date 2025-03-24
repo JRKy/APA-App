@@ -1,6 +1,6 @@
 
-// APA App Script - v1.6.9.11
-console.log("APA App v1.6.9.11 Loaded");
+// APA App Script - v1.7.0
+console.log("APA App v1.7.0 Loaded");
 
 let map;
 let siteMarker;
