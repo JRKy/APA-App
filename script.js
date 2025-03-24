@@ -1,5 +1,5 @@
-// APA App Script - v1.7.2
-console.log("APA App v1.7.2 Loaded");
+// APA App Script - v1.7.3
+console.log("APA App v1.7.3 Loaded");
 
 let map;
 let siteMarker;
@@ -38,23 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
     satellitePanel.style.display = "none";
   }
 
-  btnLocation.addEventListener("click", () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          goToLocation(lat, lon);
-        },
-        (err) => {
-          alert("Failed to get location: " + err.message);
-        }
-      );
-    } else {
-      alert("Geolocation is not supported.");
-    }
-  });
-
   btnFilter.addEventListener("click", () => {
     const isVisible = filterPanel.style.display === "block";
     hideAllPanels();
@@ -71,6 +54,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const isVisible = satellitePanel.style.display === "block";
     hideAllPanels();
     satellitePanel.style.display = isVisible ? "none" : "block";
+  });
+
+  btnLocation.addEventListener("click", () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          goToLocation(lat, lon);
+        },
+        (err) => {
+          alert("Failed to get location: " + err.message);
+        }
+      );
+    } else {
+      alert("Geolocation is not supported.");
+    }
   });
 
   closePanelBtn.addEventListener("click", () => {
@@ -106,6 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
     locationSelect.value = "";
     apaTableBody.innerHTML = "";
     clearLines();
+    filterLocations();
   });
 
   if (typeof LOCATIONS !== "undefined") {
