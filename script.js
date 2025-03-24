@@ -1,5 +1,5 @@
-// APA App Script - v1.7.0
-console.log("APA App v1.7.0 Loaded");
+// APA App Script - v1.7.2
+console.log("APA App v1.7.2 Loaded");
 
 let map;
 let siteMarker;
@@ -22,6 +22,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const closePanelBtn = document.getElementById("close-apa-panel");
   const showApaBtn = document.getElementById("show-apa-btn");
   const helpTooltip = document.getElementById("help-tooltip");
+
+  const toggleBtn = document.createElement("button");
+  toggleBtn.id = "toggle-apa-panel";
+  toggleBtn.title = "Minimize/Expand";
+  toggleBtn.innerText = "▾";
+  document.querySelector(".apa-panel-header").appendChild(toggleBtn);
+
+  toggleBtn.addEventListener("click", () => {
+    const minimized = apaPanel.classList.toggle("minimized");
+    toggleBtn.innerText = minimized ? "▸" : "▾";
+  });
 
   const filterPanel = document.getElementById("filter-panel");
   const locationPanel = document.getElementById("location-panel");
