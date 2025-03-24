@@ -1,6 +1,6 @@
-// APA App Script - v1.6.9.13
+// APA App Script - v1.6.9.14
 
-console.log("APA App v1.6.9.13 Loaded");
+console.log("APA App v1.6.9.14 Loaded");
 
 let map;
 let satelliteLines = {};
@@ -21,14 +21,11 @@ function createLabel(latlng, labelText) {
 
 function updateLabelsVisibility() {
   const zoom = map.getZoom();
-  const minZoom = 3;
-  const visible = zoom >= minZoom;
-
+  const visible = zoom >= 3;
   labelLayerGroup.eachLayer(layer => {
-    if (visible) {
-      layer.getElement()?.classList.remove("hidden-label");
-    } else {
-      layer.getElement()?.classList.add("hidden-label");
+    const el = layer.getElement();
+    if (el) {
+      el.classList.toggle("hidden-label", !visible);
     }
   });
 }
@@ -99,13 +96,35 @@ document.addEventListener("DOMContentLoaded", () => {
   }).addTo(map);
 
   const locationSelect = document.getElementById("location-select");
-  locationSelect.addEventListener("change", () => {
+  locationSelect?.addEventListener("change", () => {
     const value = locationSelect.value;
     if (value) {
       const [lat, lon] = value.split(",").map(Number);
       map.setView([lat, lon], 5);
       drawAPA(lat, lon, SATELLITES);
     }
+  });
+
+  // Hook up toolbar buttons
+  document.getElementById("btn-location")?.addEventListener("click", () => {
+    console.log("Use My Location clicked");
+    alert("Use My Location feature not yet implemented.");
+  });
+  document.getElementById("btn-filter")?.addEventListener("click", () => {
+    console.log("Filter button clicked");
+    document.getElementById("filter-panel")?.classList.toggle("visible");
+  });
+  document.getElementById("btn-custom-location")?.addEventListener("click", () => {
+    console.log("Custom Location button clicked");
+    document.getElementById("location-panel")?.classList.toggle("visible");
+  });
+  document.getElementById("btn-satellite")?.addEventListener("click", () => {
+    console.log("Satellite button clicked");
+    document.getElementById("satellite-panel")?.classList.toggle("visible");
+  });
+
+  document.getElementById("hide-help-tooltip")?.addEventListener("click", () => {
+    document.getElementById("help-tooltip")?.classList.add("hidden");
   });
 
   if ("serviceWorker" in navigator) {
