@@ -1,5 +1,5 @@
-// APA App Script - v1.7.7
-console.log("APA App v1.7.7 Loaded");
+// APA App Script - v1.7.8
+console.log("APA App v1.7.8 Loaded");
 
 let map;
 let siteMarker;
@@ -40,9 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   btnLocation.addEventListener("click", () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          goToLocation(pos.coords.latitude, pos.coords.longitude);
-        },
+        (pos) => goToLocation(pos.coords.latitude, pos.coords.longitude),
         (err) => alert("Failed to get location: " + err.message)
       );
     } else {
@@ -111,9 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("custom-location-btn").addEventListener("click", () => {
     const lat = parseFloat(document.getElementById("custom-lat").value);
     const lon = parseFloat(document.getElementById("custom-lon").value);
-    if (!isNaN(lat) && !isNaN(lon)) {
-      goToLocation(lat, lon);
-    }
+    if (!isNaN(lat) && !isNaN(lon)) goToLocation(lat, lon);
   });
 
   document.getElementById("add-satellite-btn").addEventListener("click", () => {
@@ -121,17 +117,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const lon = parseFloat(document.getElementById("sat-lon").value);
     if (!name || isNaN(lon)) return;
 
-    // Prevent duplicates
     if (SATELLITES.some(sat => sat.name === name)) {
       alert("Satellite already exists.");
       return;
     }
 
-    SATELLITES.push({ name, longitude: lon });
-
-    if (lastLocation) {
-      updateApaTable(lastLocation.lat, lastLocation.lon);
-    }
+    SATELLITES.push({ name, longitude: lon, custom: true });
+    if (lastLocation) updateApaTable(lastLocation.lat, lastLocation.lon);
   });
 
   function populateFilters() {
@@ -215,16 +207,34 @@ document.addEventListener("DOMContentLoaded", () => {
       const az = ((sat.longitude - lon + 360) % 360).toFixed(2);
       const el = (90 - Math.abs(lat) - Math.abs(sat.longitude - lon)).toFixed(2);
       const isNegative = el < 0;
-      const row = document.createElement("tr");
       const id = `sat-${idx}`;
+      const row = document.createElement("tr");
+
       row.innerHTML = `
-        <td><input type="checkbox" id="${id}" data-lat="${lat}" data-lon="${lon}" data-satlon="${sat.longitude}" data-name="${sat.name}" ${isNegative ? "" : "checked"}></td>
+        <td>
+          <input type="checkbox" id="${id}" data-lat="${lat}" data-lon="${lon}" data-satlon="${sat.longitude}" data-name="${sat.name}" ${isNegative ? "" : "checked"}>
+        </td>
         <td>${sat.name}</td>
         <td>${sat.longitude}</td>
         <td class="${isNegative ? "negative" : ""}">${el}</td>
-        <td>${az}</td>`;
+        <td>${az}</td>
+        ${sat.custom ? `<td><button class="delete-sat" data-name="${sat.name}" title="Delete Satellite">❌</button></td>` : "<td></td>"}
+      `;
+
       apaTableBody.appendChild(row);
     });
+
+    apaTableBody.querySelectorAll(".delete-sat").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const name = btn.dataset.name;
+        const index = SATELLITES.findIndex(s => s.name === name && s.custom);
+        if (index !== -1) {
+          SATELLITES.splice(index, 1);
+          updateApaTable(lastLocation.lat, lastLocation.lon);
+        }
+      });
+    });
+
     apaTableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
       cb.addEventListener("change", function () {
         const id = this.id;
