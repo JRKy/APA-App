@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>APA App</title>
-  <link rel="stylesheet" href="styles.css?v=1.7.0" />
+  <link rel="stylesheet" href="styles.css?v=1.7.1" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#003087" />
   <link rel="icon" href="favicon.ico" />
@@ -13,14 +13,14 @@
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
   <script>
-    const APP_VERSION = "1.7.0";
+    const APP_VERSION = "1.7.1";
     console.log(`APA App Version: ${APP_VERSION}`);
   </script>
 </head>
 <body>
   <header>
     <h1>APA App</h1>
-    <span>v1.7.0</span>
+    <span>v1.7.1</span>
   </header>
 
   <div id="map">
@@ -34,7 +34,7 @@
   </div>
 
   <!-- Filter Panel -->
-  <div id="filter-panel" class="tool-panel">
+  <div id="filter-panel" class="tool-panel leaflet-control">
     <fieldset>
       <legend>Filter Locations</legend>
       <label for="aor-filter">AOR:</label>
@@ -54,7 +54,7 @@
   </div>
 
   <!-- Custom Location Panel -->
-  <div id="location-panel" class="tool-panel">
+  <div id="location-panel" class="tool-panel leaflet-control">
     <fieldset>
       <legend>Custom Location</legend>
       <label for="custom-lat">Latitude:</label>
@@ -66,7 +66,7 @@
   </div>
 
   <!-- Add Satellite Panel -->
-  <div id="satellite-panel" class="tool-panel">
+  <div id="satellite-panel" class="tool-panel leaflet-control">
     <fieldset>
       <legend>Add Satellite</legend>
       <label for="sat-name">Name:</label>
@@ -104,11 +104,11 @@
     <button id="hide-help-tooltip">×</button>
   </div>
 
-  <script src="data.js?v=1.7.0"></script>
-  <script src="script.js?v=1.7.0"></script>
+  <script src="data.js?v=1.7.1"></script>
+  <script src="script.js?v=1.7.1"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.7.0").then(reg => {
+      navigator.serviceWorker.register("sw.js?v=1.7.1").then(reg => {
         console.log("Service Worker registered with scope:", reg.scope);
       });
     }
