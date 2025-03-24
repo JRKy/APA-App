@@ -1,4 +1,4 @@
-/* APA App Styles - v1.7.11 */
+/* APA App Styles - v1.7.12 */
 
 body, html {
   height: 100%;
@@ -95,19 +95,6 @@ header h1 {
 
 .tool-panel.leaflet-control {
   border: 1px solid #aaa;
-}
-
-.tool-panel fieldset {
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  padding: 6px;
-  border-radius: 4px;
-}
-
-.tool-panel legend {
-  font-weight: bold;
-  font-size: 12px;
-  padding: 0 4px;
 }
 
 .tool-panel input,
