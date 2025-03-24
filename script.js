@@ -3,91 +3,12 @@
 console.log("APA App v1.6.9.14 Loaded");
 
 let map;
-let satelliteLines = {};
-let satelliteMarkers = {};
-let labelLayerGroup;
+let locationMarker;
+let labelLayerGroup = L.layerGroup();
+let apaLines = {};
+let currentLatLon = null;
 
-function createLabel(latlng, labelText) {
-  return L.marker(latlng, {
-    icon: L.divIcon({
-      className: 'apa-label',
-      html: labelText,
-      iconSize: [100, 20],
-      iconAnchor: [50, 0]
-    }),
-    interactive: false
-  });
-}
-
-function updateLabelsVisibility() {
-  const zoom = map.getZoom();
-  const visible = zoom >= 3;
-  labelLayerGroup.eachLayer(layer => {
-    const el = layer.getElement();
-    if (el) {
-      el.classList.toggle("hidden-label", !visible);
-    }
-  });
-}
-
-function getSatelliteIcon(elevation) {
-  const color = elevation >= 0 ? "green" : "red";
-  return L.divIcon({
-    className: "sat-end-icon",
-    html: `<div style="width:10px;height:10px;border-radius:50%;background:${color};border:2px solid white;"></div>`,
-    iconSize: [10, 10],
-    iconAnchor: [5, 5]
-  });
-}
-
-function clearAPA() {
-  for (const id in satelliteLines) {
-    map.removeLayer(satelliteLines[id]);
-  }
-  for (const id in satelliteMarkers) {
-    map.removeLayer(satelliteMarkers[id]);
-  }
-  satelliteLines = {};
-  satelliteMarkers = {};
-  if (labelLayerGroup) {
-    labelLayerGroup.clearLayers();
-  }
-}
-
-function drawAPA(fromLat, fromLon, satellites) {
-  clearAPA();
-  labelLayerGroup = L.layerGroup().addTo(map);
-
-  satellites.forEach(sat => {
-    const satLatLng = L.latLng(0, sat.longitude);
-    const fromLatLng = L.latLng(fromLat, fromLon);
-    const el = (90 - Math.abs(fromLat) - Math.abs(sat.longitude - fromLon)).toFixed(2);
-    const az = ((sat.longitude - fromLon + 360) % 360).toFixed(2);
-    const isVisible = el >= 0;
-
-    const line = L.polyline([fromLatLng, satLatLng], {
-      color: isVisible ? "#4CAF50" : "#FF5252",
-      weight: 2,
-      opacity: 0.9
-    }).addTo(map);
-
-    const label = createLabel(satLatLng, sat.name);
-    labelLayerGroup.addLayer(label);
-
-    const iconMarker = L.marker(satLatLng, {
-      icon: getSatelliteIcon(el),
-      interactive: false
-    }).addTo(map);
-
-    satelliteLines[sat.name] = line;
-    satelliteMarkers[sat.name] = iconMarker;
-  });
-
-  updateLabelsVisibility();
-  map.on("zoomend", updateLabelsVisibility);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
+function initMap() {
   console.log("Initializing map...");
 
   map = L.map("map").setView([20, 0], 2);
@@ -95,41 +16,128 @@ document.addEventListener("DOMContentLoaded", () => {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  const locationSelect = document.getElementById("location-select");
-  locationSelect?.addEventListener("change", () => {
-    const value = locationSelect.value;
-    if (value) {
-      const [lat, lon] = value.split(",").map(Number);
-      map.setView([lat, lon], 5);
-      drawAPA(lat, lon, SATELLITES);
+  labelLayerGroup.addTo(map);
+
+  console.log("Map initialized successfully.");
+}
+
+function createLabel(latlng, name) {
+  return L.marker(latlng, {
+    icon: L.divIcon({
+      className: 'apa-label',
+      html: name,
+      iconSize: [80, 20],
+      iconAnchor: [40, 0]
+    }),
+    interactive: false
+  });
+}
+
+function drawAPALine(fromLatLng, toLon, satName, elevation) {
+  const toLatLng = L.latLng(0, toLon);
+  const color = elevation >= 0 ? "#4CAF50" : "#FF5252";
+
+  const line = L.polyline([fromLatLng, toLatLng], {
+    color,
+    weight: 2,
+    opacity: 0.8
+  }).addTo(map);
+
+  const label = createLabel(toLatLng, satName);
+  labelLayerGroup.addLayer(label);
+
+  apaLines[satName] = { line, label };
+}
+
+function clearAPA() {
+  Object.values(apaLines).forEach(({ line, label }) => {
+    map.removeLayer(line);
+    labelLayerGroup.removeLayer(label);
+  });
+  apaLines = {};
+}
+
+function updateAPA(lat, lon) {
+  clearAPA();
+  currentLatLon = [lat, lon];
+
+  SATELLITES.forEach((sat, i) => {
+    const el = (90 - Math.abs(lat) - Math.abs(sat.longitude - lon)).toFixed(2);
+    drawAPALine([lat, lon], sat.longitude, sat.name, parseFloat(el));
+  });
+}
+
+function populateLocationDropdown() {
+  const dropdown = document.getElementById("location-select");
+  LOCATIONS.forEach(loc => {
+    const option = document.createElement("option");
+    option.value = `${loc.latitude},${loc.longitude}`;
+    option.textContent = loc.name;
+    dropdown.appendChild(option);
+  });
+}
+
+function handleLocationSelect() {
+  const dropdown = document.getElementById("location-select");
+  dropdown.addEventListener("change", () => {
+    const [lat, lon] = dropdown.value.split(",").map(Number);
+    map.setView([lat, lon], 5);
+
+    if (locationMarker) map.removeLayer(locationMarker);
+    locationMarker = L.marker([lat, lon]).addTo(map);
+
+    updateAPA(lat, lon);
+  });
+}
+
+function setupGeolocation() {
+  const btn = document.getElementById("btn-location");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported");
+      return;
     }
-  });
 
-  // Hook up toolbar buttons
-  document.getElementById("btn-location")?.addEventListener("click", () => {
-    console.log("Use My Location clicked");
-    alert("Use My Location feature not yet implemented.");
-  });
-  document.getElementById("btn-filter")?.addEventListener("click", () => {
-    console.log("Filter button clicked");
-    document.getElementById("filter-panel")?.classList.toggle("visible");
-  });
-  document.getElementById("btn-custom-location")?.addEventListener("click", () => {
-    console.log("Custom Location button clicked");
-    document.getElementById("location-panel")?.classList.toggle("visible");
-  });
-  document.getElementById("btn-satellite")?.addEventListener("click", () => {
-    console.log("Satellite button clicked");
-    document.getElementById("satellite-panel")?.classList.toggle("visible");
-  });
+    navigator.geolocation.getCurrentPosition(pos => {
+      const { latitude, longitude } = pos.coords;
+      map.setView([latitude, longitude], 6);
 
+      if (locationMarker) map.removeLayer(locationMarker);
+      locationMarker = L.marker([latitude, longitude]).addTo(map);
+
+      updateAPA(latitude, longitude);
+    }, err => {
+      alert("Unable to get location.");
+    });
+  });
+}
+
+function setupToolbarToggles() {
+  const toggle = (id) => {
+    const panel = document.getElementById(id);
+    if (panel) panel.classList.toggle("visible");
+  };
+
+  document.getElementById("btn-filter")?.addEventListener("click", () => toggle("filter-panel"));
+  document.getElementById("btn-custom-location")?.addEventListener("click", () => toggle("location-panel"));
+  document.getElementById("btn-satellite")?.addEventListener("click", () => toggle("satellite-panel"));
+}
+
+function setupHelpTooltip() {
   document.getElementById("hide-help-tooltip")?.addEventListener("click", () => {
     document.getElementById("help-tooltip")?.classList.add("hidden");
   });
+}
 
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js?v=1.6.9.3").then(reg => {
-      console.log("Service Worker registered with scope:", reg.scope);
-    });
-  }
+document.addEventListener("DOMContentLoaded", () => {
+  initMap();
+  populateLocationDropdown();
+  handleLocationSelect();
+  setupGeolocation();
+  setupToolbarToggles();
+  setupHelpTooltip();
+
+  console.log("APA system ready.");
 });
