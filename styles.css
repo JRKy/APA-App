@@ -1,4 +1,4 @@
-/* APA App Styles - v1.7.9 */
+/* APA App Styles - v1.7.10 */
 
 body, html {
   height: 100%;
@@ -11,6 +11,13 @@ body, html {
 
 input, select, button, label {
   touch-action: manipulation;
+}
+
+label {
+  margin-bottom: 4px;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 14px;
 }
 
 header {
@@ -98,19 +105,14 @@ header h1 {
   padding: 0 4px;
 }
 
-.tool-panel label {
-  display: block;
-  font-weight: bold;
-  margin-top: 6px;
-}
-
 .tool-panel input,
 .tool-panel select,
 .tool-panel button {
   width: 100%;
   padding: 6px;
-  font-size: 16px; /* prevent iOS zoom */
-  margin-top: 2px;
+  font-size: 16px;
+  margin-top: 4px;
+  margin-bottom: 12px;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
