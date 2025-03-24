@@ -1,4 +1,4 @@
-/* APA App Styles - v1.6.9.12 */
+/* APA App Styles - v1.6.9.8 */
 
 body, html {
   height: 100%;
@@ -33,7 +33,7 @@ header h1 {
 
 .map-tools {
   position: absolute;
-  top: 100px;
+  top: 60px;
   left: 10px;
   z-index: 1001;
   display: flex;
@@ -59,7 +59,7 @@ header h1 {
 
 .tool-panel {
   position: absolute;
-  top: 100px;
+  top: 60px;
   left: 60px;
   background: white;
   padding: 10px;
