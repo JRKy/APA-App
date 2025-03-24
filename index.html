@@ -5,25 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>APA App</title>
 
-  <!-- Version Constants -->
-  <script>
-    const V_APP = "1.6.9.12";
-    const V_SCRIPT = "1.6.9.12";
-    const V_STYLES = "1.6.9.12";
-    const V_DATA = "1.6.9.8";
-    const V_SW = "1.6.9.3";
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("app-version").textContent = V_APP;
-    });
-  </script>
-
-  <!-- Styles -->
-  <link id="style-link" rel="stylesheet" href="styles.css?v=1.6.9.12" />
+  <link rel="stylesheet" href="styles.css?v=1.6.9.12" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#003087" />
   <link rel="icon" href="favicon.ico" />
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+  <script>
+    const APP_VERSION = "1.6.9.12";
+    console.log(`APA App Version: ${APP_VERSION}`);
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("app-version").textContent = APP_VERSION;
+    });
+  </script>
 </head>
 <body>
   <header>
@@ -101,7 +97,7 @@
   <button id="show-apa-btn">Show APA Table</button>
 
   <div id="help-tooltip">
-    🛈 APA Help: Select a location and view satellite pointing angles.
+    ℹ️ <strong>APA Help:</strong> Select a location and view satellite pointing angles.
     <button id="hide-help-tooltip">×</button>
   </div>
 
