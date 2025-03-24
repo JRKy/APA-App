@@ -2,7 +2,7 @@
   "name": "Antenna Pointing Angles (APA)",
   "short_name": "APA",
   "description": "A tool for calculating and visualizing antenna pointing angles for satellite communication.",
-  "version": "1.0.0",
+  "version": "1.7.0",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#003087",
