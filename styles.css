@@ -1,4 +1,4 @@
-/* APA App Styles - v1.6.9.6 */
+/* APA App Styles - v1.6.9.7 */
 
 body, html {
   height: 100%;
@@ -31,51 +31,78 @@ header h1 {
   position: relative;
 }
 
-/* Controls Box */
-.map-controls {
+/* Leaflet Map Button Stack */
+.map-tools {
   position: absolute;
   top: 10px;
   left: 10px;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.map-tools button {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 6px;
+  width: 34px;
+  height: 34px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.map-tools button:hover {
+  background-color: #eee;
+}
+
+/* Tool Panel Styles */
+.tool-panel {
+  position: absolute;
+  top: 60px;
+  left: 60px;
   background: white;
   padding: 10px;
   border-radius: 6px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  z-index: 1000;
+  z-index: 1002;
   font-size: 13px;
-  max-width: 280px;
+  display: none;
+  width: 260px;
+  max-height: 70vh;
   overflow-y: auto;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
-.map-controls label {
-  font-weight: bold;
-  margin-top: 4px;
-}
-
-.map-controls select,
-.map-controls input,
-.map-controls button {
+.tool-panel fieldset {
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
   padding: 6px;
-  font-size: 13px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  width: 100%;
-}
-
-.map-controls fieldset {
-  margin-top: 6px;
-  padding: 8px;
-  border: 1px solid #ccc;
   border-radius: 4px;
 }
 
-.map-controls legend {
+.tool-panel legend {
   font-weight: bold;
   font-size: 12px;
   padding: 0 4px;
+}
+
+.tool-panel label {
+  display: block;
+  font-weight: bold;
+  margin-top: 6px;
+}
+
+.tool-panel input,
+.tool-panel select,
+.tool-panel button {
+  width: 100%;
+  padding: 6px;
+  font-size: 13px;
+  margin-top: 2px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 /* APA Table Panel */
@@ -89,7 +116,7 @@ header h1 {
   overflow-y: auto;
   z-index: 1001;
   position: absolute;
-  top: 60px; /* adjusted to be below new header */
+  top: 60px;
   right: 20px;
   display: none;
 }
