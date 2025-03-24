@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>APA App</title>
-  <link rel="stylesheet" href="styles.css?v=1.7.12" />
+  <link rel="stylesheet" href="styles.css?v=1.7.14" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#003087" />
   <link rel="icon" href="favicon.ico" />
@@ -13,14 +13,14 @@
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
   <script>
-    const APP_VERSION = "1.7.12";
+    const APP_VERSION = "1.7.14";
     console.log(`APA App Version: ${APP_VERSION}`);
   </script>
 </head>
 <body>
   <header>
     <h1>APA App</h1>
-    <span>v1.7.12</span>
+    <span>v1.7.14</span>
   </header>
 
   <div id="map">
@@ -31,47 +31,53 @@
       <button id="btn-satellite" title="Add Satellite">🚁️</button>
     </div>
 
-    <div id="filter-panel" class="tool-panel leaflet-control">
-      <div class="input-group">
-        <label for="aor-filter">AOR:</label>
-        <select id="aor-filter"><option value="">All AORs</option></select>
+    <div class="tool-wrapper">
+      <div id="filter-panel" class="tool-panel leaflet-control">
+        <div class="input-group">
+          <label for="aor-filter">AOR:</label>
+          <select id="aor-filter"><option value="">All AORs</option></select>
+        </div>
+        <div class="input-group">
+          <label for="country-filter">Country:</label>
+          <select id="country-filter"><option value="">All Countries</option></select>
+        </div>
+        <button id="reset-filters">Reset Filters</button>
+        <div class="input-group">
+          <label for="location-select">Locations:</label>
+          <select id="location-select"><option value="">Choose a location...</option></select>
+        </div>
+        <button class="close-panel">×</button>
       </div>
-      <div class="input-group">
-        <label for="country-filter">Country:</label>
-        <select id="country-filter"><option value="">All Countries</option></select>
-      </div>
-      <button id="reset-filters">Reset Filters</button>
-      <div class="input-group">
-        <label for="location-select">Locations:</label>
-        <select id="location-select"><option value="">Choose a location...</option></select>
-      </div>
-      <button class="close-panel">×</button>
     </div>
 
-    <div id="location-panel" class="tool-panel leaflet-control">
-      <div class="input-group">
-        <label for="custom-lat">Latitude:</label>
-        <input id="custom-lat" type="number" step="any" />
+    <div class="tool-wrapper">
+      <div id="location-panel" class="tool-panel leaflet-control">
+        <div class="input-group">
+          <label for="custom-lat">Latitude:</label>
+          <input id="custom-lat" type="number" step="any" />
+        </div>
+        <div class="input-group">
+          <label for="custom-lon">Longitude:</label>
+          <input id="custom-lon" type="number" step="any" />
+        </div>
+        <button id="custom-location-btn">Go</button>
+        <button class="close-panel">×</button>
       </div>
-      <div class="input-group">
-        <label for="custom-lon">Longitude:</label>
-        <input id="custom-lon" type="number" step="any" />
-      </div>
-      <button id="custom-location-btn">Go</button>
-      <button class="close-panel">×</button>
     </div>
 
-    <div id="satellite-panel" class="tool-panel leaflet-control">
-      <div class="input-group">
-        <label for="sat-name">Name:</label>
-        <input id="sat-name" type="text" />
+    <div class="tool-wrapper">
+      <div id="satellite-panel" class="tool-panel leaflet-control">
+        <div class="input-group">
+          <label for="sat-name">Name:</label>
+          <input id="sat-name" type="text" />
+        </div>
+        <div class="input-group">
+          <label for="sat-lon">Longitude:</label>
+          <input id="sat-lon" type="number" step="any" />
+        </div>
+        <button id="add-satellite-btn">Add</button>
+        <button class="close-panel">×</button>
       </div>
-      <div class="input-group">
-        <label for="sat-lon">Longitude:</label>
-        <input id="sat-lon" type="number" step="any" />
-      </div>
-      <button id="add-satellite-btn">Add</button>
-      <button class="close-panel">×</button>
     </div>
   </div>
 
@@ -102,11 +108,11 @@
     <button id="hide-help-tooltip">×</button>
   </div>
 
-  <script src="data.js?v=1.7.12"></script>
-  <script src="script.js?v=1.7.12"></script>
+  <script src="data.js?v=1.7.14"></script>
+  <script src="script.js?v=1.7.14"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.7.12").then(reg => {
+      navigator.serviceWorker.register("sw.js?v=1.7.14").then(reg => {
         console.log("Service Worker registered with scope:", reg.scope);
       });
     }
