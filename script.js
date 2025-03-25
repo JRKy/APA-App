@@ -1,6 +1,6 @@
-// APA App Script - v1.7.17
+// APA App Script - v1.7.18
 
-console.log("APA App v1.7.17 Loaded");
+console.log("APA App v1.7.18 Loaded");
 
 let map;
 let siteMarker;
@@ -11,13 +11,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const locationSelect = document.getElementById("location-select");
   const aorFilter = document.getElementById("aor-filter");
   const countryFilter = document.getElementById("country-filter");
-
   const apaPanel = document.getElementById("apa-panel");
   const apaTableBody = document.querySelector("#apa-table tbody");
   const closePanelBtn = document.getElementById("close-apa-panel");
   const toggleApaBtn = document.getElementById("toggle-apa-panel");
   const helpTooltip = document.getElementById("help-tooltip");
-
   const filterPanel = document.getElementById("filter-panel");
   const btnLocation = document.getElementById("btn-location");
   const btnFilter = document.getElementById("btn-filter");
@@ -225,7 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
     lineLayers = [];
   }
 
-  // Drawer toggle logic
+  // Drawer logic
   const locBtn = document.getElementById("toggle-location-drawer");
   const satBtn = document.getElementById("toggle-satellite-drawer");
   const locDrawer = document.getElementById("location-drawer");
@@ -259,9 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const lon = parseFloat(document.getElementById("sat-lon").value);
     if (name && !isNaN(lon)) {
       SATELLITES.push({ name, longitude: lon, custom: true });
-      if (lastLocation) {
-        updateApaTable(lastLocation.lat, lastLocation.lon);
-      }
+      if (lastLocation) updateApaTable(lastLocation.lat, lastLocation.lon);
       satDrawer.classList.remove("visible");
     }
   });
