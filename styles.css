@@ -87,4 +87,198 @@ header h1 {
   cursor: pointer;
 }
 
-/* map + tool layout remains unchanged below... */
+#map {
+  height: calc(100vh - 40px - 50px);
+  width: 100%;
+  position: relative;
+}
+
+.map-tools {
+  position: absolute;
+  top: 100px;
+  left: 10px;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.map-tools button {
+  background: white;
+  border: 1px solid #999;
+  padding: 0;
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+  line-height: 34px;
+  border-radius: 2px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.map-tools button:hover {
+  background-color: #eee;
+}
+
+.tool-panel {
+  position: absolute;
+  top: 100px;
+  left: 60px;
+  background: white;
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  z-index: 1002;
+  font-size: 13px;
+  display: none;
+  width: 260px;
+  max-height: 70vh;
+  overflow-y: auto;
+  transition: opacity 0.2s ease;
+}
+
+.tool-panel.leaflet-control {
+  border: 1px solid #aaa;
+}
+
+.tool-panel input,
+.tool-panel select,
+.tool-panel button {
+  width: 100%;
+  padding: 6px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.tool-panel .close-panel {
+  margin-top: 8px;
+  padding: 4px;
+  width: 100%;
+  font-size: 14px;
+  border: none;
+  background: #f0f0f0;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+#apa-panel.leaflet-control.apa-control {
+  background: rgba(0, 48, 135, 0.96);
+  color: white;
+  padding: 10px;
+  border-radius: 6px;
+  max-height: 60vh;
+  max-width: 320px;
+  overflow-y: auto;
+  z-index: 1001;
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  display: none;
+}
+
+.apa-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#close-apa-panel {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+#apa-table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+#apa-table th,
+#apa-table td {
+  border: 1px solid white;
+  padding: 4px;
+  text-align: center;
+  word-wrap: break-word;
+  font-size: 13px;
+}
+
+#apa-table th {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+}
+
+.negative {
+  color: #ff5252;
+  font-weight: bold;
+}
+
+.apa-line-label {
+  background: none !important;
+  color: #000;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px #fff;
+}
+
+.delete-sat {
+  font-size: 14px;
+  padding: 2px 4px;
+  border: none;
+  background: none;
+  color: #ffcccc;
+  cursor: pointer;
+}
+.delete-sat:hover {
+  color: #ff5252;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+#help-tooltip {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  background: #003087;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  z-index: 9999;
+  max-width: calc(100% - 40px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+#help-tooltip button {
+  background: none;
+  color: white;
+  font-size: 16px;
+  border: none;
+  margin-left: auto;
+  cursor: pointer;
+}
+
+#help-tooltip.hidden {
+  display: none !important;
+}
+
+#toggle-apa-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 10px;
+  z-index: 1002;
+  padding: 8px 12px;
+  background: #003087;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+}
