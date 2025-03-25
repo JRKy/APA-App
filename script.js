@@ -1,6 +1,6 @@
-// APA App Script - v1.7.16
+// APA App Script - v1.7.17
 
-console.log("APA App v1.7.16 Loaded");
+console.log("APA App v1.7.17 Loaded");
 
 let map;
 let siteMarker;
@@ -28,7 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  // APA panel show/hide
   closePanelBtn.addEventListener("click", () => {
     apaPanel.style.display = "none";
     toggleApaBtn.style.display = "block";
@@ -47,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
     aorFilter.value = "";
     countryFilter.value = "";
     locationSelect.value = "";
+    filterLocations();
     apaTableBody.innerHTML = "";
     clearLines();
   });
@@ -169,9 +169,21 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${sat.longitude}</td>
         <td class="${isNegative ? "negative" : ""}">${el}</td>
         <td>${az}</td>
-        <td></td>`;
+        <td>${sat.custom ? `<button class="delete-sat" data-name="${sat.name}" title="Delete Satellite">❌</button>` : ""}</td>`;
       apaTableBody.appendChild(row);
     });
+
+    apaTableBody.querySelectorAll(".delete-sat").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const name = btn.dataset.name;
+        const index = SATELLITES.findIndex(s => s.name === name && s.custom);
+        if (index !== -1) {
+          SATELLITES.splice(index, 1);
+          updateApaTable(lastLocation.lat, lastLocation.lon);
+        }
+      });
+    });
+
     apaTableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
       cb.addEventListener("change", function () {
         const id = this.id;
@@ -213,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
     lineLayers = [];
   }
 
-  // Drawer toggle logic (merged from v1.7.15)
+  // Drawer toggle logic
   const locBtn = document.getElementById("toggle-location-drawer");
   const satBtn = document.getElementById("toggle-satellite-drawer");
   const locDrawer = document.getElementById("location-drawer");
