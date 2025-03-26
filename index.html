@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>APA App</title>
-  <link rel="stylesheet" href="styles.css?v=1.7.18" />
+  <link rel="stylesheet" href="styles.css?v=1.7.19" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#003087" />
   <link rel="icon" href="favicon.ico" />
@@ -13,19 +13,19 @@
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
   <script>
-    const APP_VERSION = "1.7.18";
+    const APP_VERSION = "1.7.19";
     console.log(`APA App Version: ${APP_VERSION}`);
   </script>
 </head>
 <body>
   <header>
     <h1>APA App</h1>
-    <span>v1.7.18</span>
+    <span>v1.7.19</span>
   </header>
 
   <div class="top-bar">
-    <button id="toggle-location-drawer">+ Add Location</button>
-    <button id="toggle-satellite-drawer">+ Add Satellite</button>
+    <button id="toggle-location-drawer" title="Add Location">📌</button>
+    <button id="toggle-satellite-drawer" title="Add Satellite">🛰️</button>
   </div>
 
   <div id="location-drawer" class="drawer hidden">
@@ -56,8 +56,6 @@
     <div class="map-tools leaflet-bar leaflet-control">
       <button id="btn-location" title="Use My Location">📍</button>
       <button id="btn-filter" title="Filters">🔍</button>
-      <button id="btn-custom-location" title="Custom Location">📌</button>
-      <button id="btn-satellite" title="Add Satellite">🚁️</button>
     </div>
 
     <div class="tool-wrapper">
@@ -75,7 +73,7 @@
           <label for="location-select">Locations:</label>
           <select id="location-select"><option value="">Choose a location...</option></select>
         </div>
-        <button class="close-panel">×</button>
+        <button class="close-panel" id="close-filter-panel">×</button>
       </div>
     </div>
   </div>
@@ -107,11 +105,11 @@
     <button id="hide-help-tooltip">×</button>
   </div>
 
-  <script src="data.js?v=1.7.18"></script>
-  <script src="script.js?v=1.7.18"></script>
+  <script src="data.js?v=1.7.19"></script>
+  <script src="script.js?v=1.7.19"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.7.18").then(reg => {
+      navigator.serviceWorker.register("sw.js?v=1.7.19").then(reg => {
         console.log("Service Worker registered with scope:", reg.scope);
       });
     }
