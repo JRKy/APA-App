@@ -1,6 +1,6 @@
-// APA App Script - v1.7.18
+// APA App Script - v1.7.19
 
-console.log("APA App v1.7.18 Loaded");
+console.log("APA App v1.7.19 Loaded");
 
 let map;
 let siteMarker;
@@ -19,8 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterPanel = document.getElementById("filter-panel");
   const btnLocation = document.getElementById("btn-location");
   const btnFilter = document.getElementById("btn-filter");
+  const closeFilterBtn = document.getElementById("close-filter-panel");
 
-  // Initialize map
   map = L.map("map").setView([20, 0], 2);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; OpenStreetMap contributors'
@@ -38,6 +38,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("hide-help-tooltip").addEventListener("click", () => {
     helpTooltip.classList.add("hidden");
+  });
+
+  btnFilter?.addEventListener("click", () => {
+    filterPanel.style.display = filterPanel.style.display === "block" ? "none" : "block";
+  });
+
+  closeFilterBtn?.addEventListener("click", () => {
+    filterPanel.style.display = "none";
   });
 
   document.getElementById("reset-filters").addEventListener("click", () => {
@@ -72,10 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       alert("Geolocation is not supported.");
     }
-  });
-
-  btnFilter.addEventListener("click", () => {
-    filterPanel.style.display = filterPanel.style.display === "block" ? "none" : "block";
   });
 
   function populateFilters() {
@@ -235,13 +239,8 @@ document.addEventListener("DOMContentLoaded", () => {
     others.forEach(d => d.classList.remove("visible"));
   }
 
-  locBtn?.addEventListener("click", () =>
-    toggleDrawer(locDrawer, [satDrawer])
-  );
-
-  satBtn?.addEventListener("click", () =>
-    toggleDrawer(satDrawer, [locDrawer])
-  );
+  locBtn?.addEventListener("click", () => toggleDrawer(locDrawer, [satDrawer]));
+  satBtn?.addEventListener("click", () => toggleDrawer(satDrawer, [locDrawer]));
 
   document.getElementById("custom-location-btn")?.addEventListener("click", () => {
     const lat = parseFloat(document.getElementById("custom-lat").value);
