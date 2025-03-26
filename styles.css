@@ -1,4 +1,4 @@
-/* APA App Styles - v1.7.18 */
+/* APA App Styles - v1.7.19 */
 
 body, html {
   height: 100%;
@@ -36,9 +36,9 @@ header h1 {
 }
 
 .top-bar button {
-  font-size: 14px;
+  font-size: 16px;
   padding: 4px 10px;
-  border: 1px solid #888;
+  border: 1px solid #bbb;
   background: #fff;
   cursor: pointer;
   border-radius: 4px;
@@ -105,16 +105,16 @@ header h1 {
 
 .map-tools button {
   background: white;
-  border: 1px solid #999;
+  border: 1px solid #bbb;
   padding: 0;
   width: 34px;
   height: 34px;
   font-size: 18px;
   line-height: 34px;
-  border-radius: 2px;
+  border-radius: 4px;
   text-align: center;
   cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
 }
 
 .map-tools button:hover {
@@ -125,7 +125,7 @@ header h1 {
   position: absolute;
   top: 100px;
   left: 60px;
-  background: white;
+  background: #fff;
   padding: 10px;
   border-radius: 6px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.25);
@@ -136,10 +136,7 @@ header h1 {
   max-height: 70vh;
   overflow-y: auto;
   transition: opacity 0.2s ease;
-}
-
-.tool-panel.leaflet-control {
-  border: 1px solid #aaa;
+  border: 1px solid #ccc;
 }
 
 .tool-panel input,
@@ -147,75 +144,81 @@ header h1 {
 .tool-panel button {
   width: 100%;
   padding: 6px;
-  font-size: 16px;
+  font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
 }
 
 .tool-panel .close-panel {
-  margin-top: 8px;
+  margin-top: 10px;
   padding: 4px;
-  width: 100%;
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: bold;
   border: none;
-  background: #f0f0f0;
-  cursor: pointer;
+  background: #eee;
+  color: #333;
   border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
 }
 
 #apa-panel.leaflet-control.apa-control {
-  background: rgba(0, 48, 135, 0.96);
-  color: white;
+  background: #fff;
+  color: #000;
   padding: 10px;
   border-radius: 6px;
   max-height: 60vh;
-  max-width: 320px;
+  max-width: 340px;
   overflow-y: auto;
   z-index: 1001;
   position: absolute;
   top: 60px;
   right: 20px;
   display: none;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
 .apa-panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 8px;
 }
 
 #close-apa-panel {
   background: none;
   border: none;
-  color: white;
-  font-size: 20px;
+  color: #333;
+  font-size: 18px;
   cursor: pointer;
 }
 
 #apa-table {
   width: 100%;
-  margin-top: 10px;
   border-collapse: collapse;
-  table-layout: fixed;
+  font-size: 13px;
 }
 
 #apa-table th,
 #apa-table td {
-  border: 1px solid white;
-  padding: 4px;
+  border: 1px solid #ccc;
+  padding: 6px 4px;
   text-align: center;
-  word-wrap: break-word;
-  font-size: 13px;
 }
 
 #apa-table th {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: #f4f4f4;
   font-weight: bold;
 }
 
+#apa-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
 .negative {
-  color: #ff5252;
+  color: #d00;
   font-weight: bold;
 }
 
@@ -231,12 +234,11 @@ header h1 {
   padding: 2px 4px;
   border: none;
   background: none;
-  color: #ffcccc;
+  color: #666;
   cursor: pointer;
 }
 .delete-sat:hover {
-  color: #ff5252;
-  background: rgba(255, 255, 255, 0.1);
+  color: #c00;
 }
 
 #help-tooltip {
