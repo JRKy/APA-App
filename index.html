@@ -13,21 +13,21 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Removed Leaflet Locate -->
-
-  <link rel="stylesheet" href="styles.css?v=1.7.28" />
+  <link rel="stylesheet" href="styles.css?v=1.7.30" />
 </head>
 <body>
   <header>
     <h1>APA App</h1>
-    <span id="version">APA App Version: 1.7.29</span>
+    <span id="version">APA App Version: 1.7.30</span>
   </header>
 
   <!-- Drawer Buttons -->
   <div class="drawer-buttons top">
     <button id="toggle-location-drawer" title="Add Custom Location">🏢</button>
     <button id="toggle-satellite-drawer" title="Add Custom Satellite">🛰️</button>
-    <button id="toggle-filter-drawer" title="Filters">🔍</button>
+    <button id="toggle-filter-drawer" title="Filters">
+      🔍 <span id="filter-summary" class="filter-badge hidden"></span>
+    </button>
     <button id="btn-my-location" title="Use My Location">🎯</button>
   </div>
 
@@ -60,13 +60,19 @@
     <button id="reset-filters">Reset</button>
   </div>
 
+  <!-- Location Indicator -->
+  <div id="current-location-indicator" class="hidden"></div>
+
   <div id="map"></div>
 
   <!-- APA Panel -->
   <div id="apa-panel" class="leaflet-control apa-control">
     <div class="apa-panel-header">
       <strong>APA Table</strong>
-      <button id="close-apa-panel" title="Close">×</button>
+      <div>
+        <button id="minimize-apa-panel" title="Minimize">−</button>
+        <button id="close-apa-panel" title="Close">×</button>
+      </div>
     </div>
     <table id="apa-table">
       <thead>
@@ -81,17 +87,29 @@
       </thead>
       <tbody></tbody>
     </table>
+    <div id="apa-no-results" class="hidden">No results. Select a location or clear filters.</div>
   </div>
 
   <button id="toggle-apa-panel">Show APA Table</button>
 
+  <!-- Help Tooltip -->
   <div id="help-tooltip">
     Welcome to the APA App! Select a location and view antenna pointing angles.<br />
     <button id="hide-help-tooltip">Got it</button>
   </div>
 
+  <!-- APA Legend -->
+  <button id="legend-toggle" title="Legend">❓</button>
+  <div id="apa-legend" class="hidden">
+    <strong>APA Line Legend</strong><br />
+    🔵 Above horizon<br />
+    🔴 Below horizon<br />
+    APA = Azimuth & Elevation<br />
+    Click satellite name to toggle
+  </div>
+
   <script src="data.js?v=1.7.0"></script>
-  <script src="script.js?v=1.7.29"></script>
+  <script src="script.js?v=1.7.30"></script>
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js?v=1.7.0").then(reg => {
