@@ -1,4 +1,4 @@
-// APA App Script - v1.7.24
+// APA App Script - v1.7.25
 
 let map;
 let siteMarker;
@@ -15,7 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggleApaBtn = document.getElementById("toggle-apa-panel");
   const helpTooltip = document.getElementById("help-tooltip");
   const filterPanel = document.getElementById("filter-panel");
-  const btnLocation = document.getElementById("btn-location");
   const btnFilter = document.getElementById("btn-filter");
   const closeFilterBtn = document.getElementById("close-filter-panel");
 
@@ -43,6 +42,21 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   L.control.layers(baseLayers).addTo(map);
+
+  // ✅ Leaflet Locate control
+  const locateControl = L.control.locate({
+    position: "topleft",
+    strings: { title: "Use My Location" },
+    onLocationError: function (err) {
+      alert("Location failed: " + err.message);
+    },
+    onLocationOutsideMapBounds: function () {},
+    onLocationFound: function (e) {
+      goToLocation(e.latitude, e.longitude);
+    },
+    drawCircle: true,
+    showCompass: true
+  }).addTo(map);
 
   function populateFilters() {
     const uniqueAORs = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
@@ -110,19 +124,12 @@ document.addEventListener("DOMContentLoaded", () => {
   locationSelect.addEventListener("change", function () {
     const selected = this.options[this.selectedIndex];
     if (!selected || !selected.dataset.aor) return;
-
-    // ✅ Sync AOR and Country filters to selected location
     const aor = selected.dataset.aor;
     const country = selected.dataset.country;
     aorFilter.value = aor;
     countryFilter.value = country;
-
-    // ✅ Re-filter locations based on new filter settings
     filterLocations();
-
-    // ✅ Preserve selected value after filtering
     locationSelect.value = `${selected.value}`;
-
     const [lat, lon] = this.value.split(",").map(Number);
     goToLocation(lat, lon);
   });
@@ -134,11 +141,9 @@ document.addEventListener("DOMContentLoaded", () => {
     aorFilter.value = "";
     countryFilter.value = "";
     locationSelect.value = "";
-
     aorFilter.innerHTML = '<option value="">All AORs</option>';
     countryFilter.innerHTML = '<option value="">All Countries</option>';
     populateFilters();
-
     filterLocations();
     apaTableBody.innerHTML = "";
     clearLines();
@@ -160,13 +165,6 @@ document.addEventListener("DOMContentLoaded", () => {
   toggleApaBtn?.addEventListener("click", () => {
     apaPanel.style.display = "block";
     toggleApaBtn.style.display = "none";
-  });
-
-  document.getElementById("btn-location")?.addEventListener("click", () => {
-    navigator.geolocation?.getCurrentPosition(
-      pos => goToLocation(pos.coords.latitude, pos.coords.longitude),
-      err => alert("Failed to get location: " + err.message)
-    );
   });
 
   document.getElementById("custom-location-btn")?.addEventListener("click", () => {
