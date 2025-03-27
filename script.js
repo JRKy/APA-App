@@ -1,4 +1,4 @@
-// APA App Script - v1.7.22
+// APA App Script - v1.7.23
 
 let map;
 let siteMarker;
@@ -72,6 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const opt = document.createElement("option");
         opt.value = `${loc.latitude},${loc.longitude}`;
         opt.textContent = loc.name;
+        opt.dataset.aor = loc.aor;
+        opt.dataset.country = loc.country;
         locationSelect.appendChild(opt);
       }
     });
@@ -105,6 +107,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  locationSelect.addEventListener("change", function () {
+    const selected = this.options[this.selectedIndex];
+    if (selected.dataset.aor) aorFilter.value = selected.dataset.aor;
+    if (selected.dataset.country) countryFilter.value = selected.dataset.country;
+    const [lat, lon] = this.value.split(",").map(Number);
+    goToLocation(lat, lon);
+  });
+
   populateFilters();
   filterLocations();
 
@@ -120,11 +130,6 @@ document.addEventListener("DOMContentLoaded", () => {
     filterLocations();
     apaTableBody.innerHTML = "";
     clearLines();
-  });
-
-  locationSelect.addEventListener("change", function () {
-    const [lat, lon] = this.value.split(",").map(Number);
-    goToLocation(lat, lon);
   });
 
   btnFilter?.addEventListener("click", () => {
