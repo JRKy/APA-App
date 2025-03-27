@@ -1,4 +1,4 @@
-// APA App Script - v1.7.26
+// APA App Script - v1.7.27
 
 let map;
 let siteMarker;
@@ -14,22 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const closePanelBtn = document.getElementById("close-apa-panel");
   const toggleApaBtn = document.getElementById("toggle-apa-panel");
   const helpTooltip = document.getElementById("help-tooltip");
-
-  const drawers = {
-    location: document.getElementById("location-drawer"),
-    satellite: document.getElementById("satellite-drawer"),
-    filter: document.getElementById("filter-drawer"),
-  };
-
-  function toggleDrawer(drawerKey) {
-    for (const key in drawers) {
-      drawers[key].classList.toggle("visible", key === drawerKey && !drawers[key].classList.contains("visible"));
-    }
-  }
-
-  document.getElementById("toggle-location-drawer")?.addEventListener("click", () => toggleDrawer("location"));
-  document.getElementById("toggle-satellite-drawer")?.addEventListener("click", () => toggleDrawer("satellite"));
-  document.getElementById("toggle-filter-drawer")?.addEventListener("click", () => toggleDrawer("filter"));
 
   document.getElementById("hide-help-tooltip")?.addEventListener("click", () => {
     helpTooltip.classList.add("hidden");
@@ -56,18 +40,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   L.control.layers(baseLayers).addTo(map);
 
-  // ✅ Locate Control
-  const locateControl = L.control.locate({
+  // ✅ Fix: Locate sends correct lat/lng to goToLocation()
+  L.control.locate({
     position: "topleft",
     strings: { title: "Use My Location" },
-    locateOptions: { enableHighAccuracy: true },
-    onLocationError: err => alert("Location error: " + err.message),
-    onLocationFound: e => goToLocation(e.latitude, e.longitude),
-    drawCircle: true,
-    showCompass: true
+    showCompass: true,
+    onLocationFound: (e) => {
+      const { lat, lng } = e.latlng || e;
+      if (lat && lng) {
+        goToLocation(lat, lng);
+      }
+    },
+    onLocationError: (err) => alert("Location failed: " + err.message)
   }).addTo(map);
 
   function populateFilters() {
+    aorFilter.innerHTML = '<option value="">All AORs</option>';
+    countryFilter.innerHTML = '<option value="">All Countries</option>';
     const uniqueAORs = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
     const uniqueCountries = [...new Set(LOCATIONS.map(loc => loc.country))].sort();
     uniqueAORs.forEach(aor => {
@@ -143,29 +132,26 @@ document.addEventListener("DOMContentLoaded", () => {
     goToLocation(lat, lon);
   });
 
-  populateFilters();
-  filterLocations();
-
   document.getElementById("reset-filters")?.addEventListener("click", () => {
     aorFilter.value = "";
     countryFilter.value = "";
     locationSelect.value = "";
-    aorFilter.innerHTML = '<option value="">All AORs</option>';
-    countryFilter.innerHTML = '<option value="">All Countries</option>';
     populateFilters();
     filterLocations();
     apaTableBody.innerHTML = "";
     clearLines();
   });
 
-  closePanelBtn?.addEventListener("click", () => {
-    apaPanel.style.display = "none";
-    toggleApaBtn.style.display = "block";
+  document.getElementById("toggle-location-drawer")?.addEventListener("click", () => {
+    toggleDrawer("location-drawer", ["satellite-drawer", "filter-drawer"]);
   });
 
-  toggleApaBtn?.addEventListener("click", () => {
-    apaPanel.style.display = "block";
-    toggleApaBtn.style.display = "none";
+  document.getElementById("toggle-satellite-drawer")?.addEventListener("click", () => {
+    toggleDrawer("satellite-drawer", ["location-drawer", "filter-drawer"]);
+  });
+
+  document.getElementById("toggle-filter-drawer")?.addEventListener("click", () => {
+    toggleDrawer("filter-drawer", ["location-drawer", "satellite-drawer"]);
   });
 
   document.getElementById("custom-location-btn")?.addEventListener("click", () => {
@@ -173,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const lon = parseFloat(document.getElementById("custom-lon").value);
     if (!isNaN(lat) && !isNaN(lon)) {
       goToLocation(lat, lon);
-      drawers.location.classList.remove("visible");
+      document.getElementById("location-drawer").classList.remove("visible");
     }
   });
 
@@ -188,7 +174,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     SATELLITES.push({ name, longitude: lon, custom: true });
     if (lastLocation) updateApaTable(lastLocation.lat, lastLocation.lon);
-    drawers.satellite.classList.remove("visible");
+    document.getElementById("satellite-drawer").classList.remove("visible");
+  });
+
+  closePanelBtn?.addEventListener("click", () => {
+    apaPanel.style.display = "none";
+    toggleApaBtn.style.display = "block";
+  });
+
+  toggleApaBtn?.addEventListener("click", () => {
+    apaPanel.style.display = "block";
+    toggleApaBtn.style.display = "none";
   });
 
   function goToLocation(lat, lon) {
@@ -271,4 +267,14 @@ document.addEventListener("DOMContentLoaded", () => {
     lineLayers.forEach(l => map.removeLayer(l.layer));
     lineLayers = [];
   }
+
+  function toggleDrawer(drawerId, others) {
+    const drawer = document.getElementById(drawerId);
+    const isOpen = drawer.classList.contains("visible");
+    drawer.classList.toggle("visible", !isOpen);
+    others.forEach(id => document.getElementById(id)?.classList.remove("visible"));
+  }
+
+  populateFilters();
+  filterLocations();
 });
