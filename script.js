@@ -1,4 +1,4 @@
-// APA App Script - v1.7.25
+// APA App Script - v1.7.26
 
 let map;
 let siteMarker;
@@ -14,9 +14,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const closePanelBtn = document.getElementById("close-apa-panel");
   const toggleApaBtn = document.getElementById("toggle-apa-panel");
   const helpTooltip = document.getElementById("help-tooltip");
-  const filterPanel = document.getElementById("filter-panel");
-  const btnFilter = document.getElementById("btn-filter");
-  const closeFilterBtn = document.getElementById("close-filter-panel");
+
+  const drawers = {
+    location: document.getElementById("location-drawer"),
+    satellite: document.getElementById("satellite-drawer"),
+    filter: document.getElementById("filter-drawer"),
+  };
+
+  function toggleDrawer(drawerKey) {
+    for (const key in drawers) {
+      drawers[key].classList.toggle("visible", key === drawerKey && !drawers[key].classList.contains("visible"));
+    }
+  }
+
+  document.getElementById("toggle-location-drawer")?.addEventListener("click", () => toggleDrawer("location"));
+  document.getElementById("toggle-satellite-drawer")?.addEventListener("click", () => toggleDrawer("satellite"));
+  document.getElementById("toggle-filter-drawer")?.addEventListener("click", () => toggleDrawer("filter"));
 
   document.getElementById("hide-help-tooltip")?.addEventListener("click", () => {
     helpTooltip.classList.add("hidden");
@@ -43,17 +56,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   L.control.layers(baseLayers).addTo(map);
 
-  // ✅ Leaflet Locate control
+  // ✅ Locate Control
   const locateControl = L.control.locate({
     position: "topleft",
     strings: { title: "Use My Location" },
-    onLocationError: function (err) {
-      alert("Location failed: " + err.message);
-    },
-    onLocationOutsideMapBounds: function () {},
-    onLocationFound: function (e) {
-      goToLocation(e.latitude, e.longitude);
-    },
+    locateOptions: { enableHighAccuracy: true },
+    onLocationError: err => alert("Location error: " + err.message),
+    onLocationFound: e => goToLocation(e.latitude, e.longitude),
     drawCircle: true,
     showCompass: true
   }).addTo(map);
@@ -149,14 +158,6 @@ document.addEventListener("DOMContentLoaded", () => {
     clearLines();
   });
 
-  btnFilter?.addEventListener("click", () => {
-    filterPanel.style.display = filterPanel.style.display === "block" ? "none" : "block";
-  });
-
-  closeFilterBtn?.addEventListener("click", () => {
-    filterPanel.style.display = "none";
-  });
-
   closePanelBtn?.addEventListener("click", () => {
     apaPanel.style.display = "none";
     toggleApaBtn.style.display = "block";
@@ -172,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const lon = parseFloat(document.getElementById("custom-lon").value);
     if (!isNaN(lat) && !isNaN(lon)) {
       goToLocation(lat, lon);
-      document.getElementById("location-drawer").classList.remove("visible");
+      drawers.location.classList.remove("visible");
     }
   });
 
@@ -187,7 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     SATELLITES.push({ name, longitude: lon, custom: true });
     if (lastLocation) updateApaTable(lastLocation.lat, lastLocation.lon);
-    document.getElementById("satellite-drawer").classList.remove("visible");
+    drawers.satellite.classList.remove("visible");
   });
 
   function goToLocation(lat, lon) {
@@ -270,18 +271,4 @@ document.addEventListener("DOMContentLoaded", () => {
     lineLayers.forEach(l => map.removeLayer(l.layer));
     lineLayers = [];
   }
-
-  function toggleDrawer(drawer, others) {
-    const isOpen = drawer.classList.contains("visible");
-    drawer.classList.toggle("visible", !isOpen);
-    others.forEach(d => d.classList.remove("visible"));
-  }
-
-  document.getElementById("toggle-location-drawer")?.addEventListener("click", () =>
-    toggleDrawer(document.getElementById("location-drawer"), [document.getElementById("satellite-drawer")])
-  );
-
-  document.getElementById("toggle-satellite-drawer")?.addEventListener("click", () =>
-    toggleDrawer(document.getElementById("satellite-drawer"), [document.getElementById("location-drawer")])
-  );
 });
