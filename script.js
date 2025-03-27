@@ -1,4 +1,4 @@
-// APA App Script - v1.7.21
+// APA App Script - v1.7.22
 
 let map;
 let siteMarker;
@@ -112,6 +112,11 @@ document.addEventListener("DOMContentLoaded", () => {
     aorFilter.value = "";
     countryFilter.value = "";
     locationSelect.value = "";
+
+    aorFilter.innerHTML = '<option value="">All AORs</option>';
+    countryFilter.innerHTML = '<option value="">All Countries</option>';
+    populateFilters();
+
     filterLocations();
     apaTableBody.innerHTML = "";
     clearLines();
@@ -251,7 +256,6 @@ document.addEventListener("DOMContentLoaded", () => {
     lineLayers = [];
   }
 
-  // Drawer toggles
   function toggleDrawer(drawer, others) {
     const isOpen = drawer.classList.contains("visible");
     drawer.classList.toggle("visible", !isOpen);
