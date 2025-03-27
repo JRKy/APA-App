@@ -163,6 +163,10 @@ header h1 {
   width: 100%;
 }
 
+/* APA App Styles - v1.7.20 */
+
+/* ... [unchanged CSS above] ... */
+
 #apa-panel.leaflet-control.apa-control {
   background: #fff;
   color: #000;
@@ -173,12 +177,15 @@ header h1 {
   overflow-y: auto;
   z-index: 1001;
   position: absolute;
-  top: 80px; /* increased from 60px */
+  top: 100px; /* bumped down from 80px */
   right: 20px;
   display: none;
   border: 1px solid #ccc;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
+
+/* ... [rest unchanged] ... */
+
 
 .apa-panel-header {
   display: flex;
