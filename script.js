@@ -173,6 +173,24 @@ document.addEventListener("DOMContentLoaded", () => {
     updateFilterSummary();
   });
 
+  function filterLocations() {
+    const selectedAOR = aorFilter.value;
+    const selectedCountry = countryFilter.value;
+    locationSelect.innerHTML = '<option value="">Choose a location...</option>';
+    LOCATIONS.forEach(loc => {
+      const matchAOR = !selectedAOR || loc.aor === selectedAOR;
+      const matchCountry = !selectedCountry || loc.country === selectedCountry;
+      if (matchAOR && matchCountry) {
+        const opt = document.createElement("option");
+        opt.value = `${loc.latitude},${loc.longitude}`;
+        opt.textContent = loc.name;
+        opt.dataset.aor = loc.aor;
+        opt.dataset.country = loc.country;
+        locationSelect.appendChild(opt);
+      }
+    });
+  }
+
   function updateFilterSummary() {
     const aor = aorFilter.value;
     const country = countryFilter.value;
@@ -199,9 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateApaTable(lat, lon) {
     apaTableBody.innerHTML = "";
     clearLines();
-
     let count = 0;
-
     SATELLITES.forEach((sat, idx) => {
       const az = ((sat.longitude - lon + 360) % 360).toFixed(2);
       const el = (90 - Math.abs(lat) - Math.abs(sat.longitude - lon)).toFixed(2);
