@@ -1,4 +1,3 @@
-<!-- index.html - APA App v1.7.25 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,36 +17,51 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
   <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles.css?v=1.7.25" />
+  <link rel="stylesheet" href="styles.css?v=1.7.26" />
 </head>
 <body>
   <header>
     <h1>APA App</h1>
-    <span id="version">APA App Version: 1.7.25</span>
+    <span id="version">APA App Version: 1.7.26</span>
   </header>
 
-  <div id="map"></div>
-
-  <!-- Map Tools -->
-  <div class="map-tools">
-    <button id="btn-filter" title="Filter">🔍</button>
+  <!-- Drawer Buttons -->
+  <div class="drawer-buttons top">
+    <button id="toggle-location-drawer" title="Add Custom Location">🏢</button>
+    <button id="toggle-satellite-drawer" title="Add Custom Satellite">🛰️</button>
+    <button id="toggle-filter-drawer" title="Filters">🔍</button>
   </div>
 
-  <!-- Filter Panel -->
-  <div id="filter-panel" class="tool-panel">
-    <button id="close-filter-panel" title="Close">×</button>
+  <!-- Location Drawer -->
+  <div id="location-drawer" class="drawer">
+    <label for="custom-lat">Latitude:</label>
+    <input type="number" id="custom-lat" step="0.000001" placeholder="e.g. 34.05" />
+    <label for="custom-lon">Longitude:</label>
+    <input type="number" id="custom-lon" step="0.000001" placeholder="e.g. -118.25" />
+    <button id="custom-location-btn">📍 Go</button>
+  </div>
+
+  <!-- Satellite Drawer -->
+  <div id="satellite-drawer" class="drawer">
+    <label for="sat-name">Name:</label>
+    <input type="text" id="sat-name" maxlength="32" placeholder="Satellite Name" />
+    <label for="sat-lon">Longitude:</label>
+    <input type="number" id="sat-lon" step="0.01" placeholder="Satellite Longitude" />
+    <button id="add-satellite-btn">🛰️ Add</button>
+  </div>
+
+  <!-- Filter Drawer -->
+  <div id="filter-drawer" class="drawer">
     <label for="aor-filter">AOR:</label>
     <select id="aor-filter"></select>
-
     <label for="country-filter">Country:</label>
     <select id="country-filter"></select>
-
     <label for="location-select">Location:</label>
     <select id="location-select"></select>
-
     <button id="reset-filters">Reset</button>
   </div>
+
+  <div id="map"></div>
 
   <!-- APA Panel -->
   <div id="apa-panel" class="leaflet-control apa-control">
@@ -72,39 +86,13 @@
 
   <button id="toggle-apa-panel">Show APA Table</button>
 
-  <!-- Top Drawer for Custom Location -->
-  <div id="location-drawer" class="drawer">
-    <label for="custom-lat">Latitude:</label>
-    <input type="number" id="custom-lat" step="0.000001" placeholder="e.g. 34.05" />
-    <label for="custom-lon">Longitude:</label>
-    <input type="number" id="custom-lon" step="0.000001" placeholder="e.g. -118.25" />
-    <button id="custom-location-btn">📍 Go</button>
-  </div>
-
-  <!-- Top Drawer for Custom Satellite -->
-  <div id="satellite-drawer" class="drawer">
-    <label for="sat-name">Name:</label>
-    <input type="text" id="sat-name" maxlength="32" placeholder="Satellite Name" />
-    <label for="sat-lon">Longitude:</label>
-    <input type="number" id="sat-lon" step="0.01" placeholder="Satellite Longitude" />
-    <button id="add-satellite-btn">🛰️ Add</button>
-  </div>
-
-  <!-- Drawer Buttons -->
-  <div class="drawer-buttons">
-    <button id="toggle-location-drawer" title="Add Custom Location">🏢</button>
-    <button id="toggle-satellite-drawer" title="Add Custom Satellite">🛰️</button>
-  </div>
-
-  <!-- Help Tooltip -->
   <div id="help-tooltip">
     Welcome to the APA App! Select a location and view antenna pointing angles.<br />
     <button id="hide-help-tooltip">Got it</button>
   </div>
 
-  <!-- Scripts -->
   <script src="data.js?v=1.7.0"></script>
-  <script src="script.js?v=1.7.25"></script>
+  <script src="script.js?v=1.7.26"></script>
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js?v=1.7.0").then(reg => {
