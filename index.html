@@ -13,16 +13,14 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Leaflet Locate Control -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
-  <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+  <!-- Removed Leaflet Locate -->
 
-  <link rel="stylesheet" href="styles.css?v=1.7.26" />
+  <link rel="stylesheet" href="styles.css?v=1.7.28" />
 </head>
 <body>
   <header>
     <h1>APA App</h1>
-    <span id="version">APA App Version: 1.7.26</span>
+    <span id="version">APA App Version: 1.7.29</span>
   </header>
 
   <!-- Drawer Buttons -->
@@ -30,6 +28,7 @@
     <button id="toggle-location-drawer" title="Add Custom Location">🏢</button>
     <button id="toggle-satellite-drawer" title="Add Custom Satellite">🛰️</button>
     <button id="toggle-filter-drawer" title="Filters">🔍</button>
+    <button id="btn-my-location" title="Use My Location">🎯</button>
   </div>
 
   <!-- Location Drawer -->
@@ -92,7 +91,7 @@
   </div>
 
   <script src="data.js?v=1.7.0"></script>
-  <script src="script.js?v=1.7.26"></script>
+  <script src="script.js?v=1.7.29"></script>
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js?v=1.7.0").then(reg => {
