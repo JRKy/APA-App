@@ -1,4 +1,4 @@
-// APA App Script - v1.7.27
+// APA App Script - v1.7.28
 
 let map;
 let siteMarker;
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   L.control.layers(baseLayers).addTo(map);
 
-  // ✅ Fix: Locate sends correct lat/lng to goToLocation()
+  // ✅ Leaflet Locate control with APA panel fix
   L.control.locate({
     position: "topleft",
     strings: { title: "Use My Location" },
@@ -192,8 +192,16 @@ document.addEventListener("DOMContentLoaded", () => {
     map.setView([lat, lon], 8);
     if (siteMarker) map.removeLayer(siteMarker);
     siteMarker = L.marker([lat, lon]).addTo(map);
+
+    // ✅ Ensure APA table visibility, even on mobile
     apaPanel.style.display = "block";
     toggleApaBtn.style.display = "none";
+
+    setTimeout(() => {
+      apaPanel.style.display = "block";
+      toggleApaBtn.style.display = "none";
+    }, 50);
+
     updateApaTable(lat, lon);
   }
 
