@@ -1,4 +1,4 @@
-// APA App Script - v1.7.28
+// APA App Script - v1.7.29
 
 let map;
 let siteMarker;
@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const closePanelBtn = document.getElementById("close-apa-panel");
   const toggleApaBtn = document.getElementById("toggle-apa-panel");
   const helpTooltip = document.getElementById("help-tooltip");
+  const locateBtn = document.getElementById("btn-my-location");
 
   document.getElementById("hide-help-tooltip")?.addEventListener("click", () => {
     helpTooltip.classList.add("hidden");
@@ -40,19 +41,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   L.control.layers(baseLayers).addTo(map);
 
-  // ✅ Leaflet Locate control with APA panel fix
-  L.control.locate({
-    position: "topleft",
-    strings: { title: "Use My Location" },
-    showCompass: true,
-    onLocationFound: (e) => {
-      const { lat, lng } = e.latlng || e;
-      if (lat && lng) {
-        goToLocation(lat, lng);
+  locateBtn?.addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        goToLocation(lat, lon);
+      },
+      (error) => {
+        alert("Failed to get location: " + error.message);
       }
-    },
-    onLocationError: (err) => alert("Location failed: " + err.message)
-  }).addTo(map);
+    );
+  });
 
   function populateFilters() {
     aorFilter.innerHTML = '<option value="">All AORs</option>';
@@ -192,16 +197,8 @@ document.addEventListener("DOMContentLoaded", () => {
     map.setView([lat, lon], 8);
     if (siteMarker) map.removeLayer(siteMarker);
     siteMarker = L.marker([lat, lon]).addTo(map);
-
-    // ✅ Ensure APA table visibility, even on mobile
     apaPanel.style.display = "block";
     toggleApaBtn.style.display = "none";
-
-    setTimeout(() => {
-      apaPanel.style.display = "block";
-      toggleApaBtn.style.display = "none";
-    }, 50);
-
     updateApaTable(lat, lon);
   }
 
