@@ -1,4 +1,4 @@
-// APA App Script - v1.7.29
+// APA App Script - v1.7.30
 
 let map;
 let siteMarker;
@@ -12,12 +12,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const apaPanel = document.getElementById("apa-panel");
   const apaTableBody = document.querySelector("#apa-table tbody");
   const closePanelBtn = document.getElementById("close-apa-panel");
+  const minimizePanelBtn = document.getElementById("minimize-apa-panel");
   const toggleApaBtn = document.getElementById("toggle-apa-panel");
   const helpTooltip = document.getElementById("help-tooltip");
   const locateBtn = document.getElementById("btn-my-location");
+  const currentLocationIndicator = document.getElementById("current-location-indicator");
+  const filterSummary = document.getElementById("filter-summary");
+  const legendToggle = document.getElementById("legend-toggle");
+  const apaLegend = document.getElementById("apa-legend");
+  const noResultsMessage = document.getElementById("apa-no-results");
 
   document.getElementById("hide-help-tooltip")?.addEventListener("click", () => {
     helpTooltip.classList.add("hidden");
+  });
+
+  legendToggle?.addEventListener("click", () => {
+    apaLegend.classList.toggle("hidden");
   });
 
   const baseLayers = {
@@ -51,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
       (position) => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
-        goToLocation(lat, lon);
+        goToLocation(lat, lon, "GPS");
       },
       (error) => {
         alert("Failed to get location: " + error.message);
@@ -59,45 +69,69 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 
-  function populateFilters() {
-    aorFilter.innerHTML = '<option value="">All AORs</option>';
-    countryFilter.innerHTML = '<option value="">All Countries</option>';
-    const uniqueAORs = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
-    const uniqueCountries = [...new Set(LOCATIONS.map(loc => loc.country))].sort();
-    uniqueAORs.forEach(aor => {
-      const opt = document.createElement("option");
-      opt.value = aor;
-      opt.textContent = aor;
-      aorFilter.appendChild(opt);
-    });
-    uniqueCountries.forEach(country => {
-      const opt = document.createElement("option");
-      opt.value = country;
-      opt.textContent = country;
-      countryFilter.appendChild(opt);
-    });
-  }
+  closePanelBtn?.addEventListener("click", () => {
+    apaPanel.style.display = "none";
+    toggleApaBtn.style.display = "block";
+  });
 
-  function filterLocations() {
-    const selectedAOR = aorFilter.value;
-    const selectedCountry = countryFilter.value;
-    locationSelect.innerHTML = '<option value="">Choose a location...</option>';
-    LOCATIONS.forEach(loc => {
-      const matchAOR = !selectedAOR || loc.aor === selectedAOR;
-      const matchCountry = !selectedCountry || loc.country === selectedCountry;
-      if (matchAOR && matchCountry) {
-        const opt = document.createElement("option");
-        opt.value = `${loc.latitude},${loc.longitude}`;
-        opt.textContent = loc.name;
-        opt.dataset.aor = loc.aor;
-        opt.dataset.country = loc.country;
-        locationSelect.appendChild(opt);
-      }
-    });
-  }
+  minimizePanelBtn?.addEventListener("click", () => {
+    apaPanel.classList.toggle("minimized");
+  });
+
+  toggleApaBtn?.addEventListener("click", () => {
+    apaPanel.style.display = "block";
+    toggleApaBtn.style.display = "none";
+  });
+
+  document.getElementById("toggle-location-drawer")?.addEventListener("click", () => {
+    toggleDrawer("location-drawer", ["satellite-drawer", "filter-drawer"]);
+  });
+
+  document.getElementById("toggle-satellite-drawer")?.addEventListener("click", () => {
+    toggleDrawer("satellite-drawer", ["location-drawer", "filter-drawer"]);
+  });
+
+  document.getElementById("toggle-filter-drawer")?.addEventListener("click", () => {
+    toggleDrawer("filter-drawer", ["location-drawer", "satellite-drawer"]);
+  });
+
+  document.getElementById("custom-location-btn")?.addEventListener("click", () => {
+    const lat = parseFloat(document.getElementById("custom-lat").value);
+    const lon = parseFloat(document.getElementById("custom-lon").value);
+    if (!isNaN(lat) && !isNaN(lon)) {
+      goToLocation(lat, lon, `(${lat.toFixed(2)}, ${lon.toFixed(2)})`);
+      document.getElementById("location-drawer").classList.remove("visible");
+    }
+  });
+
+  document.getElementById("add-satellite-btn")?.addEventListener("click", () => {
+    const name = document.getElementById("sat-name").value.trim();
+    const lon = parseFloat(document.getElementById("sat-lon").value);
+    const exists = SATELLITES.some(s => s.name === name || s.longitude === lon);
+    if (!name || isNaN(lon)) return;
+    if (exists) {
+      alert("Satellite already exists.");
+      return;
+    }
+    SATELLITES.push({ name, longitude: lon, custom: true });
+    if (lastLocation) updateApaTable(lastLocation.lat, lastLocation.lon);
+    document.getElementById("satellite-drawer").classList.remove("visible");
+  });
+
+  document.getElementById("reset-filters")?.addEventListener("click", () => {
+    aorFilter.value = "";
+    countryFilter.value = "";
+    locationSelect.value = "";
+    populateFilters();
+    filterLocations();
+    apaTableBody.innerHTML = "";
+    clearLines();
+    updateFilterSummary();
+  });
 
   aorFilter.addEventListener("change", () => {
     filterLocations();
+    updateFilterSummary();
     const selectedAOR = aorFilter.value;
     const countriesInAOR = LOCATIONS.filter(loc => !selectedAOR || loc.aor === selectedAOR).map(loc => loc.country);
     const uniqueCountries = [...new Set(countriesInAOR)].sort();
@@ -112,6 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   countryFilter.addEventListener("change", () => {
     filterLocations();
+    updateFilterSummary();
     const selectedCountry = countryFilter.value;
     const aorsInCountry = LOCATIONS.filter(loc => !selectedCountry || loc.country === selectedCountry).map(loc => loc.aor);
     const uniqueAORs = [...new Set(aorsInCountry)].sort();
@@ -134,65 +169,22 @@ document.addEventListener("DOMContentLoaded", () => {
     filterLocations();
     locationSelect.value = `${selected.value}`;
     const [lat, lon] = this.value.split(",").map(Number);
-    goToLocation(lat, lon);
+    goToLocation(lat, lon, selected.textContent);
+    updateFilterSummary();
   });
 
-  document.getElementById("reset-filters")?.addEventListener("click", () => {
-    aorFilter.value = "";
-    countryFilter.value = "";
-    locationSelect.value = "";
-    populateFilters();
-    filterLocations();
-    apaTableBody.innerHTML = "";
-    clearLines();
-  });
-
-  document.getElementById("toggle-location-drawer")?.addEventListener("click", () => {
-    toggleDrawer("location-drawer", ["satellite-drawer", "filter-drawer"]);
-  });
-
-  document.getElementById("toggle-satellite-drawer")?.addEventListener("click", () => {
-    toggleDrawer("satellite-drawer", ["location-drawer", "filter-drawer"]);
-  });
-
-  document.getElementById("toggle-filter-drawer")?.addEventListener("click", () => {
-    toggleDrawer("filter-drawer", ["location-drawer", "satellite-drawer"]);
-  });
-
-  document.getElementById("custom-location-btn")?.addEventListener("click", () => {
-    const lat = parseFloat(document.getElementById("custom-lat").value);
-    const lon = parseFloat(document.getElementById("custom-lon").value);
-    if (!isNaN(lat) && !isNaN(lon)) {
-      goToLocation(lat, lon);
-      document.getElementById("location-drawer").classList.remove("visible");
+  function updateFilterSummary() {
+    const aor = aorFilter.value;
+    const country = countryFilter.value;
+    if (aor || country) {
+      filterSummary.classList.remove("hidden");
+      filterSummary.textContent = `Filters: ${aor || ""}${aor && country ? " / " : ""}${country || ""}`;
+    } else {
+      filterSummary.classList.add("hidden");
     }
-  });
+  }
 
-  document.getElementById("add-satellite-btn")?.addEventListener("click", () => {
-    const name = document.getElementById("sat-name").value.trim();
-    const lon = parseFloat(document.getElementById("sat-lon").value);
-    const exists = SATELLITES.some(s => s.name === name || s.longitude === lon);
-    if (!name || isNaN(lon)) return;
-    if (exists) {
-      alert("Satellite already exists.");
-      return;
-    }
-    SATELLITES.push({ name, longitude: lon, custom: true });
-    if (lastLocation) updateApaTable(lastLocation.lat, lastLocation.lon);
-    document.getElementById("satellite-drawer").classList.remove("visible");
-  });
-
-  closePanelBtn?.addEventListener("click", () => {
-    apaPanel.style.display = "none";
-    toggleApaBtn.style.display = "block";
-  });
-
-  toggleApaBtn?.addEventListener("click", () => {
-    apaPanel.style.display = "block";
-    toggleApaBtn.style.display = "none";
-  });
-
-  function goToLocation(lat, lon) {
+  function goToLocation(lat, lon, label = "") {
     lastLocation = { lat, lon };
     map.setView([lat, lon], 8);
     if (siteMarker) map.removeLayer(siteMarker);
@@ -200,11 +192,16 @@ document.addEventListener("DOMContentLoaded", () => {
     apaPanel.style.display = "block";
     toggleApaBtn.style.display = "none";
     updateApaTable(lat, lon);
+    currentLocationIndicator.textContent = `Current Location: ${label || `${lat.toFixed(2)}, ${lon.toFixed(2)}`}`;
+    currentLocationIndicator.classList.remove("hidden");
   }
 
   function updateApaTable(lat, lon) {
     apaTableBody.innerHTML = "";
     clearLines();
+
+    let count = 0;
+
     SATELLITES.forEach((sat, idx) => {
       const az = ((sat.longitude - lon + 360) % 360).toFixed(2);
       const el = (90 - Math.abs(lat) - Math.abs(sat.longitude - lon)).toFixed(2);
@@ -219,7 +216,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${az}</td>
         <td>${sat.custom ? `<button class="delete-sat" data-name="${sat.name}" title="Delete Satellite">❌</button>` : ""}</td>`;
       apaTableBody.appendChild(row);
+      count++;
     });
+
+    noResultsMessage.classList.toggle("hidden", count > 0);
 
     apaTableBody.querySelectorAll(".delete-sat").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -278,6 +278,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const isOpen = drawer.classList.contains("visible");
     drawer.classList.toggle("visible", !isOpen);
     others.forEach(id => document.getElementById(id)?.classList.remove("visible"));
+  }
+
+  function populateFilters() {
+    aorFilter.innerHTML = '<option value="">All AORs</option>';
+    countryFilter.innerHTML = '<option value="">All Countries</option>';
+    const uniqueAORs = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
+    const uniqueCountries = [...new Set(LOCATIONS.map(loc => loc.country))].sort();
+    uniqueAORs.forEach(aor => {
+      const opt = document.createElement("option");
+      opt.value = aor;
+      opt.textContent = aor;
+      aorFilter.appendChild(opt);
+    });
+    uniqueCountries.forEach(country => {
+      const opt = document.createElement("option");
+      opt.value = country;
+      opt.textContent = country;
+      countryFilter.appendChild(opt);
+    });
   }
 
   populateFilters();
