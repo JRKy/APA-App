@@ -1,4 +1,4 @@
-// APA App Script - v1.7.23
+// APA App Script - v1.7.24
 
 let map;
 let siteMarker;
@@ -109,8 +109,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   locationSelect.addEventListener("change", function () {
     const selected = this.options[this.selectedIndex];
-    if (selected.dataset.aor) aorFilter.value = selected.dataset.aor;
-    if (selected.dataset.country) countryFilter.value = selected.dataset.country;
+    if (!selected || !selected.dataset.aor) return;
+
+    // ✅ Sync AOR and Country filters to selected location
+    const aor = selected.dataset.aor;
+    const country = selected.dataset.country;
+    aorFilter.value = aor;
+    countryFilter.value = country;
+
+    // ✅ Re-filter locations based on new filter settings
+    filterLocations();
+
+    // ✅ Preserve selected value after filtering
+    locationSelect.value = `${selected.value}`;
+
     const [lat, lon] = this.value.split(",").map(Number);
     goToLocation(lat, lon);
   });
