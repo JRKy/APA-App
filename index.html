@@ -1,83 +1,55 @@
+<!-- index.html - APA App v1.7.25 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>APA App</title>
-  <link rel="stylesheet" href="styles.css?v=1.7.20" />
-  <link rel="manifest" href="manifest.json" />
+  <meta name="description" content="Antenna Pointing Angles Calculator PWA" />
   <meta name="theme-color" content="#003087" />
-  <link rel="icon" href="favicon.ico" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon.png" />
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <script>
-    const APP_VERSION = "1.7.20";
-    console.log(`APA App Version: ${APP_VERSION}`);
-  </script>
+  <!-- Leaflet Locate Control -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+  <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css?v=1.7.25" />
 </head>
 <body>
   <header>
     <h1>APA App</h1>
-    <span>v1.7.20</span>
+    <span id="version">APA App Version: 1.7.25</span>
   </header>
 
-  <div class="top-bar">
-    <button id="toggle-location-drawer" title="Add Location">🏢</button>
-    <button id="toggle-satellite-drawer" title="Add Satellite">🛰️</button>
+  <div id="map"></div>
+
+  <!-- Map Tools -->
+  <div class="map-tools">
+    <button id="btn-filter" title="Filter">🔍</button>
   </div>
 
-  <div id="location-drawer" class="drawer hidden">
-    <div class="input-group">
-      <label for="custom-lat">Latitude:</label>
-      <input id="custom-lat" type="number" step="any" />
-    </div>
-    <div class="input-group">
-      <label for="custom-lon">Longitude:</label>
-      <input id="custom-lon" type="number" step="any" />
-    </div>
-    <button id="custom-location-btn">Go</button>
+  <!-- Filter Panel -->
+  <div id="filter-panel" class="tool-panel">
+    <button id="close-filter-panel" title="Close">×</button>
+    <label for="aor-filter">AOR:</label>
+    <select id="aor-filter"></select>
+
+    <label for="country-filter">Country:</label>
+    <select id="country-filter"></select>
+
+    <label for="location-select">Location:</label>
+    <select id="location-select"></select>
+
+    <button id="reset-filters">Reset</button>
   </div>
 
-  <div id="satellite-drawer" class="drawer hidden">
-    <div class="input-group">
-      <label for="sat-name">Name:</label>
-      <input id="sat-name" type="text" />
-    </div>
-    <div class="input-group">
-      <label for="sat-lon">Longitude:</label>
-      <input id="sat-lon" type="number" step="any" />
-    </div>
-    <button id="add-satellite-btn">Add</button>
-  </div>
-
-  <div id="map">
-    <div class="map-tools leaflet-bar leaflet-control">
-      <button id="btn-location" title="Use My Location">🎯</button>
-      <button id="btn-filter" title="Filters">🔍</button>
-    </div>
-
-    <div class="tool-wrapper">
-      <div id="filter-panel" class="tool-panel leaflet-control">
-        <div class="input-group">
-          <label for="aor-filter">AOR:</label>
-          <select id="aor-filter"><option value="">All AORs</option></select>
-        </div>
-        <div class="input-group">
-          <label for="country-filter">Country:</label>
-          <select id="country-filter"><option value="">All Countries</option></select>
-        </div>
-        <button id="reset-filters">Reset Filters</button>
-        <div class="input-group">
-          <label for="location-select">Locations:</label>
-          <select id="location-select"><option value="">Choose a location...</option></select>
-        </div>
-        <button class="close-panel" id="close-filter-panel">×</button>
-      </div>
-    </div>
-  </div>
-
+  <!-- APA Panel -->
   <div id="apa-panel" class="leaflet-control apa-control">
     <div class="apa-panel-header">
       <strong>APA Table</strong>
@@ -87,10 +59,10 @@
       <thead>
         <tr>
           <th>Show</th>
-          <th>Satellite</th>
-          <th>Lon (°)</th>
-          <th>El (°)</th>
-          <th>Az (°)</th>
+          <th>Name</th>
+          <th>Longitude</th>
+          <th>Elevation</th>
+          <th>Azimuth</th>
           <th></th>
         </tr>
       </thead>
@@ -98,18 +70,44 @@
     </table>
   </div>
 
-  <button id="toggle-apa-panel">▲ APA</button>
+  <button id="toggle-apa-panel">Show APA Table</button>
 
-  <div id="help-tooltip">
-    ℹ️ Select a location and view satellite pointing angles.
-    <button id="hide-help-tooltip">×</button>
+  <!-- Top Drawer for Custom Location -->
+  <div id="location-drawer" class="drawer">
+    <label for="custom-lat">Latitude:</label>
+    <input type="number" id="custom-lat" step="0.000001" placeholder="e.g. 34.05" />
+    <label for="custom-lon">Longitude:</label>
+    <input type="number" id="custom-lon" step="0.000001" placeholder="e.g. -118.25" />
+    <button id="custom-location-btn">📍 Go</button>
   </div>
 
-  <script src="data.js?v=1.7.20"></script>
-  <script src="script.js?v=1.7.20"></script>
+  <!-- Top Drawer for Custom Satellite -->
+  <div id="satellite-drawer" class="drawer">
+    <label for="sat-name">Name:</label>
+    <input type="text" id="sat-name" maxlength="32" placeholder="Satellite Name" />
+    <label for="sat-lon">Longitude:</label>
+    <input type="number" id="sat-lon" step="0.01" placeholder="Satellite Longitude" />
+    <button id="add-satellite-btn">🛰️ Add</button>
+  </div>
+
+  <!-- Drawer Buttons -->
+  <div class="drawer-buttons">
+    <button id="toggle-location-drawer" title="Add Custom Location">🏢</button>
+    <button id="toggle-satellite-drawer" title="Add Custom Satellite">🛰️</button>
+  </div>
+
+  <!-- Help Tooltip -->
+  <div id="help-tooltip">
+    Welcome to the APA App! Select a location and view antenna pointing angles.<br />
+    <button id="hide-help-tooltip">Got it</button>
+  </div>
+
+  <!-- Scripts -->
+  <script src="data.js?v=1.7.0"></script>
+  <script src="script.js?v=1.7.25"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.7.20").then(reg => {
+      navigator.serviceWorker.register("sw.js?v=1.7.0").then(reg => {
         console.log("Service Worker registered with scope:", reg.scope);
       });
     }
