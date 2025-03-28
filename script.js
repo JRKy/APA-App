@@ -1,4 +1,4 @@
-// APA App Script - v1.7.34
+// APA App Script - v1.7.30
 
 let map;
 let siteMarker;
@@ -12,7 +12,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const apaPanel = document.getElementById("apa-panel");
   const apaTableBody = document.querySelector("#apa-table tbody");
   const closePanelBtn = document.getElementById("close-apa-panel");
-  const minimizePanelBtn = const toggleApaBtn = document.getElementById("toggle-apa-panel");
+  const minimizePanelBtn = document.getElementById("minimize-apa-panel");
+  const toggleApaBtn = document.getElementById("toggle-apa-panel");
   const helpTooltip = document.getElementById("help-tooltip");
   const locateBtn = document.getElementById("btn-my-location");
   const currentLocationIndicator = document.getElementById("current-location-indicator");
@@ -317,10 +318,3 @@ document.addEventListener("DOMContentLoaded", () => {
   populateFilters();
   filterLocations();
 });
-
-// Initialize Leaflet Map
-const map = L.map("map").setView([20, 0], 2);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19,
-  attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-}).addTo(map);
