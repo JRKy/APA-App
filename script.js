@@ -1,6 +1,6 @@
-// APA App Logic - v1.7.32
+// APA App Logic - v1.7.33
 
-console.log("APA App Script v1.7.32 Loaded");
+console.log("APA App Script v1.7.33 Loaded");
 
 let selectedLocation = null;
 let customSatellites = [];
@@ -54,7 +54,6 @@ function toggleDrawer(id) {
 window.addEventListener("DOMContentLoaded", () => {
   populateDropdowns();
   populateLocationSelect();
-  populateApaTable();
 });
 
 function populateDropdowns() {
