@@ -21,7 +21,6 @@
     <span id="version">APA App Version: 1.7.31</span>
   </header>
 
-  <!-- Drawer Buttons -->
   <div class="drawer-buttons top">
     <button id="toggle-location-drawer" title="Add Custom Location">🏢</button>
     <button id="toggle-satellite-drawer" title="Add Custom Satellite">🛰️</button>
@@ -31,7 +30,6 @@
     <button id="btn-my-location" title="Use My Location">🎯</button>
   </div>
 
-  <!-- Location Drawer -->
   <div id="location-drawer" class="drawer">
     <label for="custom-lat">Latitude:</label>
     <input type="number" id="custom-lat" step="0.000001" placeholder="e.g. 34.05" />
@@ -40,7 +38,6 @@
     <button id="custom-location-btn">📍 Go</button>
   </div>
 
-  <!-- Satellite Drawer -->
   <div id="satellite-drawer" class="drawer">
     <label for="sat-name">Name:</label>
     <input type="text" id="sat-name" maxlength="32" placeholder="Satellite Name" />
@@ -49,7 +46,6 @@
     <button id="add-satellite-btn">🛰️ Add</button>
   </div>
 
-  <!-- Filter Drawer -->
   <div id="filter-drawer" class="drawer">
     <label for="aor-filter">AOR:</label>
     <select id="aor-filter"></select>
@@ -60,12 +56,9 @@
     <button id="reset-filters">Reset</button>
   </div>
 
-  <!-- Current Location Display -->
   <div id="current-location-indicator" class="hidden"></div>
-
   <div id="map"></div>
 
-  <!-- APA Panel -->
   <div id="apa-panel" class="leaflet-control apa-control">
     <div class="apa-panel-header">
       <strong>APA Table</strong>
@@ -92,13 +85,11 @@
 
   <button id="toggle-apa-panel">Show APA Table</button>
 
-  <!-- Help Tooltip -->
   <div id="help-tooltip">
     Welcome to the APA App! Select a location and view antenna pointing angles.<br />
     <button id="hide-help-tooltip">Got it</button>
   </div>
 
-  <!-- APA Legend -->
   <button id="legend-toggle" title="Legend">❓</button>
   <div id="apa-legend" class="hidden">
     <strong>APA Line Legend</strong><br />
@@ -109,7 +100,7 @@
   </div>
 
   <script src="data.js?v=1.7.0"></script>
-  <script src="script.js?v=1.7.30"></script>
+  <script src="script.js?v=1.7.31"></script>
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js?v=1.7.0").then(reg => {
