@@ -60,7 +60,7 @@ header h1 {
 .drawer-buttons.top {
   position: absolute;
   top: 52px;
-  left: 60px;
+  left: 60px; /* Shifted right to avoid zoom controls */
   z-index: 1002;
   display: flex;
   gap: 6px;
@@ -145,20 +145,16 @@ header h1 {
   display: none;
 }
 
+
+
 .apa-panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-#close-apa-panel {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  margin-left: 4px;
-}
+#close-apa-panel,
+
 
 #apa-table {
   width: 100%;
