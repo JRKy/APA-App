@@ -1,320 +1,283 @@
-// APA App Script - v1.7.30
+// APA App Logic - v1.7.32
 
-let map;
-let siteMarker;
-let lineLayers = [];
-let lastLocation = null;
+console.log("APA App Script v1.7.32 Loaded");
 
-document.addEventListener("DOMContentLoaded", () => {
+let selectedLocation = null;
+let customSatellites = [];
+let apaLines = {};
+let filters = {
+  aor: "",
+  country: "",
+  location: ""
+};
+
+const apaPanel = document.getElementById("apa-panel");
+const toggleApaBtn = document.getElementById("toggle-apa-panel");
+const closeApaBtn = document.getElementById("close-apa-panel");
+const helpTooltip = document.getElementById("help-tooltip");
+const hideHelpTooltipBtn = document.getElementById("hide-help-tooltip");
+const legendToggleBtn = document.getElementById("legend-toggle");
+const legendPanel = document.getElementById("apa-legend");
+const currentLocationLabel = document.getElementById("current-location-indicator");
+
+document.getElementById("toggle-location-drawer").onclick = () =>
+  toggleDrawer("location-drawer");
+document.getElementById("toggle-satellite-drawer").onclick = () =>
+  toggleDrawer("satellite-drawer");
+document.getElementById("toggle-filter-drawer").onclick = () =>
+  toggleDrawer("filter-drawer");
+
+document.getElementById("hide-help-tooltip").onclick = () =>
+  helpTooltip.classList.add("hidden");
+
+legendToggleBtn.onclick = () =>
+  legendPanel.classList.toggle("hidden");
+
+toggleApaBtn.onclick = () => {
+  apaPanel.style.display = "block";
+  toggleApaBtn.style.display = "none";
+};
+
+closeApaBtn.onclick = () => {
+  apaPanel.style.display = "none";
+  toggleApaBtn.style.display = "block";
+};
+
+function toggleDrawer(id) {
+  document.querySelectorAll(".drawer").forEach((d) => {
+    if (d.id === id) d.classList.toggle("visible");
+    else d.classList.remove("visible");
+  });
+}
+
+// Populate dropdowns
+window.addEventListener("DOMContentLoaded", () => {
+  populateDropdowns();
+  populateLocationSelect();
+  populateApaTable();
+});
+
+function populateDropdowns() {
+  const aors = [...new Set(LOCATIONS.map((l) => l.aor))].sort();
+  const countries = [...new Set(LOCATIONS.map((l) => l.country))].sort();
+
+  const aorSelect = document.getElementById("aor-filter");
+  const countrySelect = document.getElementById("country-filter");
+
+  aorSelect.innerHTML = '<option value="">All AORs</option>';
+  countrySelect.innerHTML = '<option value="">All Countries</option>';
+
+  aors.forEach((aor) =>
+    aorSelect.insertAdjacentHTML("beforeend", `<option value="${aor}">${aor}</option>`)
+  );
+  countries.forEach((c) =>
+    countrySelect.insertAdjacentHTML("beforeend", `<option value="${c}">${c}</option>`)
+  );
+
+  aorSelect.onchange = updateFilters;
+  countrySelect.onchange = updateFilters;
+  document.getElementById("location-select").onchange = onLocationChange;
+  document.getElementById("reset-filters").onclick = resetFilters;
+}
+
+function updateFilters() {
+  filters.aor = document.getElementById("aor-filter").value;
+  filters.country = document.getElementById("country-filter").value;
+  filters.location = "";
+  populateLocationSelect();
+  updateFilterSummary();
+}
+
+function resetFilters() {
+  filters = { aor: "", country: "", location: "" };
+  document.getElementById("aor-filter").value = "";
+  document.getElementById("country-filter").value = "";
+  document.getElementById("location-select").value = "";
+  populateLocationSelect();
+  updateFilterSummary();
+  renderApaTable();
+}
+
+function updateFilterSummary() {
+  const badge = document.getElementById("filter-summary");
+  if (filters.aor || filters.country) {
+    badge.textContent = `${filters.aor || "Any"} / ${filters.country || "Any"}`;
+    badge.classList.remove("hidden");
+  } else {
+    badge.textContent = "";
+    badge.classList.add("hidden");
+  }
+}
+
+function populateLocationSelect() {
   const locationSelect = document.getElementById("location-select");
-  const aorFilter = document.getElementById("aor-filter");
-  const countryFilter = document.getElementById("country-filter");
-  const apaPanel = document.getElementById("apa-panel");
-  const apaTableBody = document.querySelector("#apa-table tbody");
-  const closePanelBtn = document.getElementById("close-apa-panel");
-  const minimizePanelBtn = document.getElementById("minimize-apa-panel");
-  const toggleApaBtn = document.getElementById("toggle-apa-panel");
-  const helpTooltip = document.getElementById("help-tooltip");
-  const locateBtn = document.getElementById("btn-my-location");
-  const currentLocationIndicator = document.getElementById("current-location-indicator");
-  const filterSummary = document.getElementById("filter-summary");
-  const legendToggle = document.getElementById("legend-toggle");
-  const apaLegend = document.getElementById("apa-legend");
-  const noResultsMessage = document.getElementById("apa-no-results");
+  locationSelect.innerHTML = '<option value="">Choose a location...</option>';
 
-  document.getElementById("hide-help-tooltip")?.addEventListener("click", () => {
-    helpTooltip.classList.add("hidden");
+  const filtered = LOCATIONS.filter((loc) => {
+    return (!filters.aor || loc.aor === filters.aor) &&
+           (!filters.country || loc.country === filters.country);
   });
 
-  legendToggle?.addEventListener("click", () => {
-    apaLegend.classList.toggle("hidden");
-  });
-
-  const baseLayers = {
-    "Map": L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; OpenStreetMap contributors'
-    }),
-    "Satellite": L.tileLayer("https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
-      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-      attribution: "&copy; Google Satellite"
-    }),
-    "Terrain": L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; OpenTopoMap contributors'
-    })
-  };
-
-  map = L.map("map", {
-    center: [20, 0],
-    zoom: 2,
-    layers: [baseLayers.Map]
-  });
-
-  L.control.layers(baseLayers).addTo(map);
-
-  locateBtn?.addEventListener("click", () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser.");
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        goToLocation(lat, lon, "GPS");
-      },
-      (error) => {
-        alert("Failed to get location: " + error.message);
-      }
+  filtered.forEach((loc, i) => {
+    locationSelect.insertAdjacentHTML(
+      "beforeend",
+      `<option value="${i}">${loc.name}</option>`
     );
   });
+}
 
-  closePanelBtn?.addEventListener("click", () => {
-    apaPanel.style.display = "none";
-    toggleApaBtn.style.display = "block";
-  });
+function onLocationChange(e) {
+  const selectedIndex = e.target.value;
+  if (selectedIndex === "") return;
 
-  minimizePanelBtn?.addEventListener("click", () => {
-    apaPanel.classList.toggle("minimized");
-  });
+  selectedLocation = LOCATIONS[selectedIndex];
+  filters.aor = selectedLocation.aor;
+  filters.country = selectedLocation.country;
+  filters.location = selectedLocation.name;
 
-  toggleApaBtn?.addEventListener("click", () => {
-    apaPanel.style.display = "block";
-    toggleApaBtn.style.display = "none";
-  });
+  document.getElementById("aor-filter").value = selectedLocation.aor;
+  document.getElementById("country-filter").value = selectedLocation.country;
+  updateFilterSummary();
+  renderApaTable();
+}
 
-  document.getElementById("toggle-location-drawer")?.addEventListener("click", () => {
-    toggleDrawer("location-drawer", ["satellite-drawer", "filter-drawer"]);
-  });
+document.getElementById("btn-my-location").onclick = () => {
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude, longitude } = pos.coords;
+      selectedLocation = { name: "Current Location", latitude, longitude };
+      currentLocationLabel.textContent = `📍 ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+      currentLocationLabel.classList.remove("hidden");
+      renderApaTable();
+    },
+    () => alert("Unable to get your location.")
+  );
+};
 
-  document.getElementById("toggle-satellite-drawer")?.addEventListener("click", () => {
-    toggleDrawer("satellite-drawer", ["location-drawer", "filter-drawer"]);
-  });
+document.getElementById("custom-location-btn").onclick = () => {
+  const lat = parseFloat(document.getElementById("custom-lat").value);
+  const lon = parseFloat(document.getElementById("custom-lon").value);
+  if (!isFinite(lat) || !isFinite(lon)) return alert("Enter valid lat/lon");
+  selectedLocation = { name: "Custom Location", latitude: lat, longitude: lon };
+  currentLocationLabel.textContent = `📍 ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+  currentLocationLabel.classList.remove("hidden");
+  renderApaTable();
+};
 
-  document.getElementById("toggle-filter-drawer")?.addEventListener("click", () => {
-    toggleDrawer("filter-drawer", ["location-drawer", "satellite-drawer"]);
-  });
+document.getElementById("add-satellite-btn").onclick = () => {
+  const name = document.getElementById("sat-name").value.trim();
+  const lon = parseFloat(document.getElementById("sat-lon").value);
+  if (!name || !isFinite(lon)) return alert("Enter valid satellite data");
+  if (SATELLITES.some(s => s.name === name) || customSatellites.some(s => s.name === name)) {
+    return alert("Satellite with this name already exists.");
+  }
+  const sat = { name, longitude: lon };
+  customSatellites.push(sat);
+  renderApaTable();
+};
 
-  document.getElementById("custom-location-btn")?.addEventListener("click", () => {
-    const lat = parseFloat(document.getElementById("custom-lat").value);
-    const lon = parseFloat(document.getElementById("custom-lon").value);
-    if (!isNaN(lat) && !isNaN(lon)) {
-      goToLocation(lat, lon, `(${lat.toFixed(2)}, ${lon.toFixed(2)})`);
-      document.getElementById("location-drawer").classList.remove("visible");
-    }
-  });
+function renderApaTable() {
+  const tbody = document.querySelector("#apa-table tbody");
+  tbody.innerHTML = "";
 
-  document.getElementById("add-satellite-btn")?.addEventListener("click", () => {
-    const name = document.getElementById("sat-name").value.trim();
-    const lon = parseFloat(document.getElementById("sat-lon").value);
-    const exists = SATELLITES.some(s => s.name === name || s.longitude === lon);
-    if (!name || isNaN(lon)) return;
-    if (exists) {
-      alert("Satellite already exists.");
-      return;
-    }
-    SATELLITES.push({ name, longitude: lon, custom: true });
-    if (lastLocation) updateApaTable(lastLocation.lat, lastLocation.lon);
-    document.getElementById("satellite-drawer").classList.remove("visible");
-  });
+  if (!selectedLocation) {
+    document.getElementById("apa-no-results").classList.remove("hidden");
+    return;
+  }
 
-  document.getElementById("reset-filters")?.addEventListener("click", () => {
-    aorFilter.value = "";
-    countryFilter.value = "";
-    locationSelect.value = "";
-    populateFilters();
-    filterLocations();
-    apaTableBody.innerHTML = "";
-    clearLines();
-    updateFilterSummary();
-  });
+  document.getElementById("apa-no-results").classList.add("hidden");
 
-  aorFilter.addEventListener("change", () => {
-    filterLocations();
-    updateFilterSummary();
-    const selectedAOR = aorFilter.value;
-    const countriesInAOR = LOCATIONS.filter(loc => !selectedAOR || loc.aor === selectedAOR).map(loc => loc.country);
-    const uniqueCountries = [...new Set(countriesInAOR)].sort();
-    countryFilter.innerHTML = '<option value="">All Countries</option>';
-    uniqueCountries.forEach(c => {
-      const opt = document.createElement("option");
-      opt.value = c;
-      opt.textContent = c;
-      countryFilter.appendChild(opt);
-    });
-  });
+  const allSats = [...SATELLITES, ...customSatellites];
 
-  countryFilter.addEventListener("change", () => {
-    filterLocations();
-    updateFilterSummary();
-    const selectedCountry = countryFilter.value;
-    const aorsInCountry = LOCATIONS.filter(loc => !selectedCountry || loc.country === selectedCountry).map(loc => loc.aor);
-    const uniqueAORs = [...new Set(aorsInCountry)].sort();
-    aorFilter.innerHTML = '<option value="">All AORs</option>';
-    uniqueAORs.forEach(a => {
-      const opt = document.createElement("option");
-      opt.value = a;
-      opt.textContent = a;
-      aorFilter.appendChild(opt);
-    });
-  });
+  allSats.forEach((sat, index) => {
+    const el = calculateElevation(selectedLocation, sat);
+    const az = calculateAzimuth(selectedLocation, sat);
 
-  locationSelect.addEventListener("change", function () {
-    const selected = this.options[this.selectedIndex];
-    if (!selected || !selected.dataset.aor) return;
-    const aor = selected.dataset.aor;
-    const country = selected.dataset.country;
-    aorFilter.value = aor;
-    countryFilter.value = country;
-    filterLocations();
-    locationSelect.value = `${selected.value}`;
-    const [lat, lon] = this.value.split(",").map(Number);
-    goToLocation(lat, lon, selected.textContent);
-    updateFilterSummary();
-  });
+    const row = document.createElement("tr");
 
-  function filterLocations() {
-    const selectedAOR = aorFilter.value;
-    const selectedCountry = countryFilter.value;
-    locationSelect.innerHTML = '<option value="">Choose a location...</option>';
-    LOCATIONS.forEach(loc => {
-      const matchAOR = !selectedAOR || loc.aor === selectedAOR;
-      const matchCountry = !selectedCountry || loc.country === selectedCountry;
-      if (matchAOR && matchCountry) {
-        const opt = document.createElement("option");
-        opt.value = `${loc.latitude},${loc.longitude}`;
-        opt.textContent = loc.name;
-        opt.dataset.aor = loc.aor;
-        opt.dataset.country = loc.country;
-        locationSelect.appendChild(opt);
+    const showCell = document.createElement("td");
+    const showCheckbox = document.createElement("input");
+    showCheckbox.type = "checkbox";
+    showCheckbox.checked = true;
+    showCheckbox.addEventListener("change", () => {
+      const key = sat.name;
+      if (showCheckbox.checked) {
+        drawApaLine(selectedLocation, sat);
+      } else {
+        if (apaLines[key]) {
+          map.removeLayer(apaLines[key]);
+          delete apaLines[key];
+        }
       }
     });
-  }
+    showCell.appendChild(showCheckbox);
 
-  function updateFilterSummary() {
-    const aor = aorFilter.value;
-    const country = countryFilter.value;
-    if (aor || country) {
-      filterSummary.classList.remove("hidden");
-      filterSummary.textContent = `Filters: ${aor || ""}${aor && country ? " / " : ""}${country || ""}`;
-    } else {
-      filterSummary.classList.add("hidden");
+    const nameCell = document.createElement("td");
+    nameCell.textContent = sat.name;
+
+    const lonCell = document.createElement("td");
+    lonCell.textContent = sat.longitude.toFixed(2);
+
+    const elCell = document.createElement("td");
+    elCell.textContent = el.toFixed(1);
+    if (el < 0) elCell.classList.add("negative");
+
+    const azCell = document.createElement("td");
+    azCell.textContent = az.toFixed(1);
+
+    const deleteCell = document.createElement("td");
+    if (customSatellites.includes(sat)) {
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "🗑️";
+      delBtn.onclick = () => {
+        customSatellites = customSatellites.filter(s => s.name !== sat.name);
+        renderApaTable();
+      };
+      deleteCell.appendChild(delBtn);
     }
+
+    row.append(showCell, nameCell, lonCell, elCell, azCell, deleteCell);
+    tbody.appendChild(row);
+
+    drawApaLine(selectedLocation, sat);
+  });
+}
+
+// Placeholder functions
+function calculateAzimuth(loc, sat) {
+  return 180 + (sat.longitude - loc.longitude); // placeholder logic
+}
+
+function calculateElevation(loc, sat) {
+  const diff = Math.abs(sat.longitude - loc.longitude);
+  return 90 - diff; // placeholder logic
+}
+
+function drawApaLine(loc, sat) {
+  const key = sat.name;
+  if (apaLines[key]) {
+    map.removeLayer(apaLines[key]);
   }
 
-  function goToLocation(lat, lon, label = "") {
-    lastLocation = { lat, lon };
-    map.setView([lat, lon], 8);
-    if (siteMarker) map.removeLayer(siteMarker);
-    siteMarker = L.marker([lat, lon]).addTo(map);
-    apaPanel.style.display = "block";
-    toggleApaBtn.style.display = "none";
-    updateApaTable(lat, lon);
-    currentLocationIndicator.textContent = `Current Location: ${label || `${lat.toFixed(2)}, ${lon.toFixed(2)}`}`;
-    currentLocationIndicator.classList.remove("hidden");
-  }
+  const latlngs = [
+    [loc.latitude, loc.longitude],
+    [loc.latitude, sat.longitude]
+  ];
 
-  function updateApaTable(lat, lon) {
-    apaTableBody.innerHTML = "";
-    clearLines();
-    let count = 0;
-    SATELLITES.forEach((sat, idx) => {
-      const az = ((sat.longitude - lon + 360) % 360).toFixed(2);
-      const el = (90 - Math.abs(lat) - Math.abs(sat.longitude - lon)).toFixed(2);
-      const isNegative = el < 0;
-      const id = `sat-${idx}`;
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td><input type="checkbox" id="${id}" data-lat="${lat}" data-lon="${lon}" data-satlon="${sat.longitude}" data-name="${sat.name}" ${isNegative ? "" : "checked"}></td>
-        <td>${sat.name}</td>
-        <td>${sat.longitude}</td>
-        <td class="${isNegative ? "negative" : ""}">${el}</td>
-        <td>${az}</td>
-        <td>${sat.custom ? `<button class="delete-sat" data-name="${sat.name}" title="Delete Satellite">❌</button>` : ""}</td>`;
-      apaTableBody.appendChild(row);
-      count++;
-    });
+  const color = calculateElevation(loc, sat) >= 0 ? "blue" : "red";
 
-    noResultsMessage.classList.toggle("hidden", count > 0);
+  const line = L.polyline(latlngs, {
+    color,
+    weight: 2,
+    opacity: 0.9,
+    dashArray: "5,5"
+  }).addTo(map);
 
-    apaTableBody.querySelectorAll(".delete-sat").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const name = btn.dataset.name;
-        const index = SATELLITES.findIndex(s => s.name === name && s.custom);
-        if (index !== -1) {
-          SATELLITES.splice(index, 1);
-          updateApaTable(lastLocation.lat, lastLocation.lon);
-        }
-      });
-    });
+  line.bindTooltip(sat.name, {
+    permanent: true,
+    direction: "center",
+    className: "apa-line-label"
+  });
 
-    apaTableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
-      cb.addEventListener("change", function () {
-        const id = this.id;
-        const lat = parseFloat(this.dataset.lat);
-        const lon = parseFloat(this.dataset.lon);
-        const satLon = parseFloat(this.dataset.satlon);
-        const name = this.dataset.name;
-        const existing = lineLayers.find(l => l.id === id);
-        if (existing) {
-          map.removeLayer(existing.layer);
-          lineLayers = lineLayers.filter(l => l.id !== id);
-        }
-        if (this.checked) {
-          const el = 90 - Math.abs(lat) - Math.abs(satLon - lon);
-          drawLine(lat, lon, satLon, name, el, id);
-        }
-      });
-      if (cb.checked) cb.dispatchEvent(new Event("change"));
-    });
-  }
-
-  function drawLine(lat, lon, satLon, label, el, id) {
-    const color = el < 0 ? "#ff5252" : "#00bcd4";
-    const polyline = L.polyline([[lat, lon], [0, satLon]], {
-      color,
-      weight: 2,
-      opacity: 0.9
-    }).addTo(map);
-    polyline.bindTooltip(label, {
-      permanent: true,
-      direction: "center",
-      className: "apa-line-label"
-    });
-    lineLayers.push({ id, layer: polyline });
-  }
-
-  function clearLines() {
-    lineLayers.forEach(l => map.removeLayer(l.layer));
-    lineLayers = [];
-  }
-
-  function toggleDrawer(drawerId, others) {
-    const drawer = document.getElementById(drawerId);
-    const isOpen = drawer.classList.contains("visible");
-    drawer.classList.toggle("visible", !isOpen);
-    others.forEach(id => document.getElementById(id)?.classList.remove("visible"));
-  }
-
-  function populateFilters() {
-    aorFilter.innerHTML = '<option value="">All AORs</option>';
-    countryFilter.innerHTML = '<option value="">All Countries</option>';
-    const uniqueAORs = [...new Set(LOCATIONS.map(loc => loc.aor))].sort();
-    const uniqueCountries = [...new Set(LOCATIONS.map(loc => loc.country))].sort();
-    uniqueAORs.forEach(aor => {
-      const opt = document.createElement("option");
-      opt.value = aor;
-      opt.textContent = aor;
-      aorFilter.appendChild(opt);
-    });
-    uniqueCountries.forEach(country => {
-      const opt = document.createElement("option");
-      opt.value = country;
-      opt.textContent = country;
-      countryFilter.appendChild(opt);
-    });
-  }
-
-  populateFilters();
-  filterLocations();
-});
+  apaLines[key] = line;
+}
