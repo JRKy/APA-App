@@ -13,12 +13,12 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=1.7.31" />
+  <link rel="stylesheet" href="styles.css?v=1.7.32" />
 </head>
 <body>
   <header>
     <h1>APA App</h1>
-    <span id="version">APA App Version: 1.7.31</span>
+    <span id="version">APA App Version: 1.7.32</span>
   </header>
 
   <div class="drawer-buttons top">
@@ -63,7 +63,6 @@
     <div class="apa-panel-header">
       <strong>APA Table</strong>
       <div>
-        <button id="minimize-apa-panel" title="Minimize">−</button>
         <button id="close-apa-panel" title="Close">×</button>
       </div>
     </div>
@@ -86,8 +85,7 @@
   <button id="toggle-apa-panel">Show APA Table</button>
 
   <div id="help-tooltip">
-    Welcome to the APA App! Select a location and view antenna pointing angles.<br />
-    <button id="hide-help-tooltip">Got it</button>
+    Welcome to the APA App! Select a location and view antenna pointing angles. <button id="hide-help-tooltip">Got it</button>
   </div>
 
   <button id="legend-toggle" title="Legend">❓</button>
@@ -100,7 +98,7 @@
   </div>
 
   <script src="data.js?v=1.7.0"></script>
-  <script src="script.js?v=1.7.31"></script>
+  <script src="script.js?v=1.7.32"></script>
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js?v=1.7.0").then(reg => {
