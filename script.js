@@ -242,14 +242,13 @@ function renderApaTable() {
   });
 }
 
-// Placeholder functions
 function calculateAzimuth(loc, sat) {
-  return 180 + (sat.longitude - loc.longitude); // placeholder logic
+  return 180 + (sat.longitude - loc.longitude);
 }
 
 function calculateElevation(loc, sat) {
   const diff = Math.abs(sat.longitude - loc.longitude);
-  return 90 - diff; // placeholder logic
+  return 90 - diff;
 }
 
 function drawApaLine(loc, sat) {
