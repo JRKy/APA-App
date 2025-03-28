@@ -140,7 +140,7 @@ header h1 {
   overflow-y: auto;
   z-index: 1001;
   position: absolute;
-  top: 60px;
+  top: 120px;
   right: 20px;
   display: none;
 }
