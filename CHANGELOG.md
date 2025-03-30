@@ -1,3 +1,22 @@
+## [1.9.0] - 2025-03-30
+
+### Added
+- Keyboard navigation for APA table and controls
+- Enhanced WAI-ARIA support for better screen reader compatibility
+- Smoother transitions between views
+- Expanded tutorial with step-by-step guidance
+
+### Changed
+- Updated version references to v1.9.0 across all files
+- Improved mobile layout for better usability on smaller screens
+- Optimized map redraws (debounced on zoom/pan)
+- Enhanced dark mode contrast for better accessibility
+
+### Fixed
+- Polar plot disappearing on some location changes
+- APA panel resize behavior on mobile devices
+- Inconsistent satellite highlighting across map views
+
 ## [1.8.0] - 2025-03-30
 
 ### Added
