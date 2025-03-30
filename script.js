@@ -1576,11 +1576,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 1000);
 });
 
+// The code up to line 1578 remains unchanged
+
 // Add a helper class for the grid lines since they're added via a separate library
-class L.LatLngGraticule extends L.LayerGroup {
-  constructor(options) {
-    super();
-    this.options = Object.assign({
+// Define L.LatLngGraticule as a Leaflet class extension
+L.LatLngGraticule = L.LayerGroup.extend({
+  initialize: function(options) {
+    L.LayerGroup.prototype.initialize.call(this);
+    this.options = L.extend({
       showLabel: true,
       opacity: 0.5,
       weight: 1,
@@ -1588,7 +1591,7 @@ class L.LatLngGraticule extends L.LayerGroup {
       font: '12px Helvetica, sans-serif',
       fontColor: '#555',
       dashArray: [0, 0],
-      format: n => Math.abs(n) + (n < 0 ? 'S' : 'N'),
+      format: function(n) { return Math.abs(n) + (n < 0 ? 'S' : 'N'); },
       zoomInterval: [
         {start: 2, end: 3, interval: 30},
         {start: 4, end: 4, interval: 10},
@@ -1604,23 +1607,23 @@ class L.LatLngGraticule extends L.LayerGroup {
       weight: this.options.weight,
       dashArray: this.options.dashArray
     };
-  }
+  },
   
-  onAdd(map) {
+  onAdd: function(map) {
     this._map = map;
     this._update();
     
     this._map.on('zoomend', this._update, this);
     return this;
-  }
+  },
   
-  onRemove(map) {
+  onRemove: function(map) {
     map.off('zoomend', this._update, this);
     this.clearLayers();
-  }
+  },
 
-  setStyle(style) {
-    Object.assign(this.options, style);
+  setStyle: function(style) {
+    L.extend(this.options, style);
     this.lineStyle = {
       stroke: true,
       color: this.options.color,
@@ -1629,9 +1632,9 @@ class L.LatLngGraticule extends L.LayerGroup {
       dashArray: this.options.dashArray
     };
     this._update();
-  }
+  },
   
-  _update() {
+  _update: function() {
     this.clearLayers();
     
     const zoom = this._map.getZoom();
@@ -1647,9 +1650,9 @@ class L.LatLngGraticule extends L.LayerGroup {
     if (interval > 0) {
       this._drawGraticule(interval);
     }
-  }
+  },
   
-  _drawGraticule(interval) {
+  _drawGraticule: function(interval) {
     const latLines = [];
     const lngLines = [];
     
@@ -1675,9 +1678,9 @@ class L.LatLngGraticule extends L.LayerGroup {
         this._addLabel(lat, 0, lat + '°');
       }
     }
-  }
+  },
   
-  _addLabel(lat, lng, label) {
+  _addLabel: function(lat, lng, label) {
     const point = this._map.latLngToLayerPoint([lat, lng]);
     
     L.marker([lat, lng], {
@@ -1688,8 +1691,9 @@ class L.LatLngGraticule extends L.LayerGroup {
       })
     }).addTo(this);
   }
-}
+});
 
+// Function to create an instance
 L.latlngGraticule = function(options) {
   return new L.LatLngGraticule(options);
 };
