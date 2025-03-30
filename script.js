@@ -1,5 +1,4 @@
-// APA App Script - v1.8.1b
-console.log("APA App v1.8.1b Loaded");
+console.log("APA App v1.8.0 Loaded");
 
 let map;
 let siteMarker;
@@ -66,17 +65,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const name = document.getElementById("sat-name").value.trim();
     const lon = parseFloat(document.getElementById("sat-lon").value);
     if (name && !isNaN(lon)) {
-      const exists = SATELLITES.some(s => s.name === name || s.longitude === lon);
-      if (exists) {
-        alert("Satellite with this name or longitude already exists.");
-        return;
-      }
       SATELLITES.push({ name, longitude: lon, custom: true });
-
       const selectedValue = locationSelect.value;
       if (selectedValue) {
         const [lat, lon] = selectedValue.split(",").map(Number);
-        goToLocation(lat, lon); // this handles drawing + table update
+        updateApaTable(lat, lon);
       }
     }
   });
@@ -122,20 +115,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   locationSelect.addEventListener("change", function () {
     const [lat, lon] = this.value.split(",").map(Number);
-    syncFiltersToLocation(lat, lon);
     goToLocation(lat, lon);
   });
-
-  function syncFiltersToLocation(lat, lon) {
-    const match = LOCATIONS.find(loc =>
-      parseFloat(loc.latitude).toFixed(4) === lat.toFixed(4) &&
-      parseFloat(loc.longitude).toFixed(4) === lon.toFixed(4));
-    if (match) {
-      aorFilter.value = match.aor;
-      countryFilter.value = match.country;
-      filterLocations();
-    }
-  }
 
   function populateFilters() {
     aorFilter.innerHTML = '<option value="">All AORs</option>';
@@ -236,10 +217,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const lon = parseFloat(this.dataset.lon);
         const satLon = parseFloat(this.dataset.satlon);
         const name = this.dataset.name;
-        if (isNaN(satLon)) {
-          console.warn("Skipping drawLine: invalid satLon", this.dataset);
-          return;
-        }
         const existing = lineLayers.find(l => l.id === id);
         if (existing) {
           map.removeLayer(existing.layer);
@@ -259,7 +236,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const index = SATELLITES.findIndex(s => s.name === name);
         if (index !== -1) {
           SATELLITES.splice(index, 1);
-          if (!locationSelect.value) return;
           const [lat, lon] = locationSelect.value.split(",").map(Number);
           updateApaTable(lat, lon);
         }
@@ -287,7 +263,6 @@ document.addEventListener("DOMContentLoaded", () => {
     lineLayers = [];
   }
 
-  // Init map
   map = L.map("map").setView([20, 0], 2);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; OpenStreetMap contributors'
