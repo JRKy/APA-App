@@ -1,4 +1,4 @@
-// APA App Script - v1.8.0 with Enhanced UI
+// APA App Script - v1.9.0 with Enhanced UI
 
 // Global variables
 let map;
