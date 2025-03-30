@@ -179,6 +179,19 @@ header h1 {
   text-shadow: 1px 1px 2px #fff;
 }
 
+.delete-sat {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.delete-sat:hover {
+  color: #ffaaaa;
+}
+
 #help-tooltip {
   position: fixed;
   bottom: 10px;
