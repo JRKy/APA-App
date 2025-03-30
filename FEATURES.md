@@ -1,12 +1,12 @@
 # APA App Feature Tracker
 
-## ✅ Core Features
+## 🚧 Core Features
 - [✓] Interactive Leaflet map with OpenStreetMap
 - [✓] Satellite data with az/el calculation
 - [✓] Toggleable satellite visibility
 - [✓] APA plot lines and color-coded elevation
-- [✓] APA table with drag, resize, and persistent layout
-- [✓] Sortable APA table columns
+- [ ] APA table with drag, resize, and persistent layout
+- [ ] Sortable APA table columns
 
 ## ✅ Location Features
 - [✓] Location dropdown populated from data
@@ -22,7 +22,7 @@
 - [✓] Support for all MUOS satellites
 
 ## 🛠️ UI/UX Enhancements
-- [✓] Docked APA table panel (snap corner)
+- [ ] Docked APA table panel (snap corner)
 - [✓] Minimize and restore APA panel
 - [✓] Hide/show help tooltip
 - [✓] Responsive mobile layout
