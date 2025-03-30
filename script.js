@@ -16,54 +16,41 @@ document.addEventListener("DOMContentLoaded", () => {
   const locationDrawer = document.getElementById("location-drawer");
   const satelliteDrawer = document.getElementById("satellite-drawer");
   const filterDrawer = document.getElementById("filter-drawer");
-  const toggleLocationDrawer = document.getElementById("toggle-location-drawer");
-  const toggleSatelliteDrawer = document.getElementById("toggle-satellite-drawer");
-  const toggleFilterDrawer = document.getElementById("toggle-filter-drawer");
-  const currentLocationIndicator = document.getElementById("current-location-indicator");
 
-  // Initialize Map
-  map = L.map("map").setView([20, 0], 2);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
+  document.getElementById("toggle-location-drawer").addEventListener("click", () => {
+    toggleDrawer(locationDrawer);
+  });
 
-  function hideAllDrawers() {
-    locationDrawer.classList.remove("visible");
-    satelliteDrawer.classList.remove("visible");
-    filterDrawer.classList.remove("visible");
+  document.getElementById("toggle-satellite-drawer").addEventListener("click", () => {
+    toggleDrawer(satelliteDrawer);
+  });
+
+  document.getElementById("toggle-filter-drawer").addEventListener("click", () => {
+    toggleDrawer(filterDrawer);
+  });
+
+  function toggleDrawer(drawer) {
+    [locationDrawer, satelliteDrawer, filterDrawer].forEach(d => {
+      if (d !== drawer) d.classList.remove("visible");
+    });
+    drawer.classList.toggle("visible");
   }
-
-  toggleLocationDrawer.addEventListener("click", () => {
-    const visible = locationDrawer.classList.contains("visible");
-    hideAllDrawers();
-    if (!visible) locationDrawer.classList.add("visible");
-  });
-
-  toggleSatelliteDrawer.addEventListener("click", () => {
-    const visible = satelliteDrawer.classList.contains("visible");
-    hideAllDrawers();
-    if (!visible) satelliteDrawer.classList.add("visible");
-  });
-
-  toggleFilterDrawer.addEventListener("click", () => {
-    const visible = filterDrawer.classList.contains("visible");
-    hideAllDrawers();
-    if (!visible) filterDrawer.classList.add("visible");
-  });
 
   document.getElementById("btn-my-location").addEventListener("click", () => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        goToLocation(lat, lon);
-        currentLocationIndicator.textContent = "Current Location Selected";
-        currentLocationIndicator.classList.remove("hidden");
-      }, (err) => {
-        alert("Location error: " + err.message);
-      });
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          goToLocation(lat, lon);
+          const indicator = document.getElementById("current-location-indicator");
+          indicator.textContent = "Current Location Selected";
+          indicator.classList.remove("hidden");
+        },
+        (err) => alert("Failed to get location: " + err.message)
+      );
     } else {
-      alert("Geolocation not supported.");
+      alert("Geolocation is not supported.");
     }
   });
 
@@ -79,16 +66,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const name = document.getElementById("sat-name").value.trim();
     const lon = parseFloat(document.getElementById("sat-lon").value);
     if (name && !isNaN(lon)) {
-      const exists = SATELLITES.some(s => s.name === name || s.longitude === lon);
-      if (!exists) {
-        SATELLITES.push({ name, longitude: lon });
-        const selected = locationSelect.value;
-        if (selected) {
-          const [lat, lon] = selected.split(",").map(Number);
-          updateApaTable(lat, lon);
-        }
-      } else {
-        alert("Satellite already exists.");
+      SATELLITES.push({ name, longitude: lon });
+      const selectedValue = locationSelect.value;
+      if (selectedValue) {
+        const [lat, lon] = selectedValue.split(",").map(Number);
+        updateApaTable(lat, lon);
       }
     }
   });
@@ -111,8 +93,8 @@ document.addEventListener("DOMContentLoaded", () => {
     aorFilter.value = "";
     countryFilter.value = "";
     locationSelect.value = "";
-    clearLines();
     apaTableBody.innerHTML = "";
+    clearLines();
     populateFilters();
     filterLocations();
   });
@@ -122,12 +104,6 @@ document.addEventListener("DOMContentLoaded", () => {
     filterLocations();
   }
 
-  locationSelect.addEventListener("change", function () {
-    const [lat, lon] = this.value.split(",").map(Number);
-    syncFiltersToLocation(lat, lon);
-    goToLocation(lat, lon);
-  });
-
   aorFilter.addEventListener("change", () => {
     filterLocations();
     updateCountryFilter();
@@ -136,6 +112,12 @@ document.addEventListener("DOMContentLoaded", () => {
   countryFilter.addEventListener("change", () => {
     filterLocations();
     updateAorFilter();
+  });
+
+  locationSelect.addEventListener("change", function () {
+    const [lat, lon] = this.value.split(",").map(Number);
+    syncFiltersToLocation(lat, lon);
+    goToLocation(lat, lon);
   });
 
   function syncFiltersToLocation(lat, lon) {
@@ -211,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function goToLocation(lat, lon) {
-    map.setView([lat, lon], 7);
+    map.setView([lat, lon], 8);
     if (siteMarker) map.removeLayer(siteMarker);
     siteMarker = L.marker([lat, lon]).addTo(map);
     apaPanel.style.display = "block";
@@ -222,6 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateApaTable(lat, lon) {
     apaTableBody.innerHTML = "";
     clearLines();
+    let anyShown = false;
     SATELLITES.forEach((sat, idx) => {
       const az = ((sat.longitude - lon + 360) % 360).toFixed(2);
       const el = (90 - Math.abs(lat) - Math.abs(sat.longitude - lon)).toFixed(2);
