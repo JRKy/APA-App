@@ -1,5 +1,5 @@
-// APA App Script - v1.8.1a
-console.log("APA App v1.8.1a Loaded");
+// APA App Script - v1.8.1b
+console.log("APA App v1.8.1b Loaded");
 
 let map;
 let siteMarker;
@@ -72,16 +72,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       SATELLITES.push({ name, longitude: lon, custom: true });
+
       const selectedValue = locationSelect.value;
       if (selectedValue) {
         const [lat, lon] = selectedValue.split(",").map(Number);
-        updateApaTable(lat, lon);
-
-        // Force redraw of the newest satellite
-        const newCheckbox = document.querySelector(`#sat-${SATELLITES.length - 1}`);
-        if (newCheckbox && newCheckbox.checked) {
-          newCheckbox.dispatchEvent(new Event("change"));
-        }
+        goToLocation(lat, lon); // this handles drawing + table update
       }
     }
   });
@@ -264,6 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const index = SATELLITES.findIndex(s => s.name === name);
         if (index !== -1) {
           SATELLITES.splice(index, 1);
+          if (!locationSelect.value) return;
           const [lat, lon] = locationSelect.value.split(",").map(Number);
           updateApaTable(lat, lon);
         }
