@@ -1,3 +1,19 @@
+## [1.8.0] - 2025-03-30
+
+### Added
+- Sticky APA table header
+- Close buttons on all drawers
+- Exclusive drawer toggle behavior (only one drawer opens at a time)
+
+### Changed
+- Updated version references to v1.8.0 across all files
+- Refined APA panel spacing for improved mobile usability
+- Cleaned up and synced FEATURES.md to match implemented functionality
+
+### Fixed
+- Overlapping drawer behavior on smaller screens
+- Inconsistent APA panel positioning
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

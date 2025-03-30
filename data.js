@@ -1,34 +1,15 @@
-// Version 1.7.0
+// Version 1.8.0
 
 const SATELLITES = [
-  {
-    "name": "ALT-3",
-    "longitude": 100
-  },
-  {
-    "name": "WGS-10",
-    "longitude": -10
-  },
-  {
-    "name": "MUOS-1",
-    "longitude": -100
-  },
-  {
-    "name": "MUOS-2",
-    "longitude": -177
-  },
-  {
-    "name": "MUOS-3",
-    "longitude": -16
-  },
-  {
-    "name": "MUOS-4",
-    "longitude": 75
-  },
-  {
-    "name": "MUOS-5",
-    "longitude": -80
-  }
+  { name: "MUOS-1", longitude: -177 },
+  { name: "MUOS-2", longitude: -100 },
+  { name: "MUOS-3", longitude: -15 },
+  { name: "MUOS-4", longitude: 75 },
+  { name: "MUOS-5", longitude: 105 },
+  { name: "ALT1", longitude: -127 },
+  { name: "ALT2", longitude: -24 },
+  { name: "ALT3", longitude: 110 },
+  { name: "ALT4", longitude: 100 }
 ];
 
 const LOCATIONS = [
@@ -55,4 +36,4 @@ const LOCATIONS = [
   { name: "Schriever SFB, CO", latitude: 29.74215, longitude: -90.81037, country: "USA", aor: "NORTHCOM" }
 ];
 
-console.log(`Data Loaded: ${SATELLITES.length} satellites, ${LOCATIONS.length} locations (v1.7.0)`);
+console.log(`Data Loaded: ${SATELLITES.length} satellites, ${LOCATIONS.length} locations (v1.8.0)`);

@@ -1,4 +1,4 @@
-// APA App Script - v1.7.30
+// APA App Script - v1.8.0
 
 let map;
 let siteMarker;
