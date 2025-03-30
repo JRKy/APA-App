@@ -12,27 +12,30 @@
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Interact.js for drag/resize -->
+  <script src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=1.8.0" />
+  <link rel="stylesheet" href="styles.css?v=1.8.1" />
 </head>
 <body>
   <header>
     <h1>APA App</h1>
-    <span id="version">Version: 1.8.0</span>
+    <span id="version">Version: 1.8.1</span>
   </header>
 
-  <!-- Drawer Buttons -->
-  <div class="drawer-buttons top">
-    <button id="toggle-location-drawer" title="Add Custom Location">🏢</button>
-    <button id="toggle-satellite-drawer" title="Add Custom Satellite">🛰️</button>
-    <button id="toggle-filter-drawer" title="Filters">
-      🔍 <span id="filter-summary" class="filter-badge hidden"></span>
-    </button>
-    <button id="btn-my-location" title="Use My Location">🎯</button>
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button id="toggle-main-menu" title="Menu">☰</button>
+  </nav>
+  <div id="main-menu" class="drawer hidden">
+    <button id="toggle-location-drawer">🏢 Custom Location</button>
+    <button id="toggle-satellite-drawer">🛰️ Add Satellite</button>
+    <button id="toggle-filter-drawer">🔍 Filters</button>
+    <button id="btn-my-location">🎯 My Location</button>
   </div>
 
   <!-- Location Drawer -->
-  <div id="location-drawer" class="drawer">
+  <div id="location-drawer" class="drawer hidden">
     <label for="custom-lat">Latitude:</label>
     <input type="number" id="custom-lat" step="0.000001" placeholder="e.g. 34.05" />
     <label for="custom-lon">Longitude:</label>
@@ -41,7 +44,7 @@
   </div>
 
   <!-- Satellite Drawer -->
-  <div id="satellite-drawer" class="drawer">
+  <div id="satellite-drawer" class="drawer hidden">
     <label for="sat-name">Name:</label>
     <input type="text" id="sat-name" maxlength="32" placeholder="Satellite Name" />
     <label for="sat-lon">Longitude:</label>
@@ -50,7 +53,7 @@
   </div>
 
   <!-- Filter Drawer -->
-  <div id="filter-drawer" class="drawer">
+  <div id="filter-drawer" class="drawer hidden">
     <label for="aor-filter">AOR:</label>
     <select id="aor-filter"></select>
     <label for="country-filter">Country:</label>
@@ -70,7 +73,6 @@
     <div class="apa-panel-header">
       <strong>APA Table</strong>
       <div>
-        
         <button id="close-apa-panel" title="Close">×</button>
       </div>
     </div>
@@ -92,6 +94,9 @@
 
   <button id="toggle-apa-panel">Show APA Table</button>
 
+  <!-- APA Live Region -->
+  <div id="apa-live" aria-live="polite" class="hidden"></div>
+
   <!-- Help Tooltip -->
   <div id="help-tooltip">
     Welcome to the APA App! Select a location and view antenna pointing angles.<br />
@@ -108,11 +113,11 @@
     Click satellite name to toggle
   </div>
 
-  <script src="data.js?v=1.8.0"></script>
-  <script src="script.js?v=1.8.0"></script>
+  <script src="data.js?v=1.8.1"></script>
+  <script src="script.js?v=1.8.1"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=1.8.0").then(reg => {
+      navigator.serviceWorker.register("sw.js?v=1.8.1").then(reg => {
         console.log("Service Worker registered with scope:", reg.scope);
       });
     }
