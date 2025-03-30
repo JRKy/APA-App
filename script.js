@@ -1618,7 +1618,7 @@ class L.LatLngGraticule extends L.LayerGroup {
     map.off('zoomend', this._update, this);
     this.clearLayers();
   }
-  
+
   setStyle(style) {
     Object.assign(this.options, style);
     this.lineStyle = {
