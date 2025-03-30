@@ -17,6 +17,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const satelliteDrawer = document.getElementById("satellite-drawer");
   const filterDrawer = document.getElementById("filter-drawer");
 
+  function toggleDrawer(drawer) {
+    [locationDrawer, satelliteDrawer, filterDrawer].forEach(d => {
+      if (d !== drawer) d.classList.remove("visible");
+    });
+    drawer.classList.toggle("visible");
+  }
+
   document.getElementById("toggle-location-drawer").addEventListener("click", () => {
     toggleDrawer(locationDrawer);
   });
@@ -28,13 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("toggle-filter-drawer").addEventListener("click", () => {
     toggleDrawer(filterDrawer);
   });
-
-  function toggleDrawer(drawer) {
-    [locationDrawer, satelliteDrawer, filterDrawer].forEach(d => {
-      if (d !== drawer) d.classList.remove("visible");
-    });
-    drawer.classList.toggle("visible");
-  }
 
   document.getElementById("btn-my-location").addEventListener("click", () => {
     if (navigator.geolocation) {
@@ -66,7 +66,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const name = document.getElementById("sat-name").value.trim();
     const lon = parseFloat(document.getElementById("sat-lon").value);
     if (name && !isNaN(lon)) {
-      SATELLITES.push({ name, longitude: lon });
+      const exists = SATELLITES.some(s => s.name === name || s.longitude === lon);
+      if (exists) {
+        alert("Satellite with this name or longitude already exists.");
+        return;
+      }
+      SATELLITES.push({ name, longitude: lon, custom: true });
       const selectedValue = locationSelect.value;
       if (selectedValue) {
         const [lat, lon] = selectedValue.split(",").map(Number);
@@ -204,12 +209,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateApaTable(lat, lon) {
     apaTableBody.innerHTML = "";
     clearLines();
-    let anyShown = false;
     SATELLITES.forEach((sat, idx) => {
       const az = ((sat.longitude - lon + 360) % 360).toFixed(2);
       const el = (90 - Math.abs(lat) - Math.abs(sat.longitude - lon)).toFixed(2);
       const isNegative = el < 0;
       const id = `sat-${idx}`;
+      const deleteBtn = sat.custom
+        ? `<button class="delete-sat" data-name="${sat.name}" title="Delete">🗑️</button>`
+        : "";
       const row = document.createElement("tr");
       row.innerHTML = `
         <td><input type="checkbox" id="${id}" data-lat="${lat}" data-lon="${lon}" data-satlon="${sat.longitude}" data-name="${sat.name}" ${isNegative ? "" : "checked"}></td>
@@ -217,7 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${sat.longitude}</td>
         <td class="${isNegative ? "negative" : ""}">${el}</td>
         <td>${az}</td>
-        <td></td>`;
+        <td>${deleteBtn}</td>`;
       apaTableBody.appendChild(row);
     });
 
@@ -240,6 +247,18 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       if (cb.checked) cb.dispatchEvent(new Event("change"));
     });
+
+    apaTableBody.querySelectorAll(".delete-sat").forEach(btn => {
+      btn.addEventListener("click", function () {
+        const name = this.dataset.name;
+        const index = SATELLITES.findIndex(s => s.name === name);
+        if (index !== -1) {
+          SATELLITES.splice(index, 1);
+          const [lat, lon] = locationSelect.value.split(",").map(Number);
+          updateApaTable(lat, lon);
+        }
+      });
+    });
   }
 
   function drawLine(lat, lon, satLon, label, el, id) {
@@ -261,4 +280,10 @@ document.addEventListener("DOMContentLoaded", () => {
     lineLayers.forEach(l => map.removeLayer(l.layer));
     lineLayers = [];
   }
+
+  // Init map
+  map = L.map("map").setView([20, 0], 2);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
 });
