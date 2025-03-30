@@ -33,6 +33,10 @@
 
   <!-- Location Drawer -->
   <div id="location-drawer" class="drawer">
+    <div class="drawer-header">
+      <h3>Custom Location</h3>
+      <button class="drawer-close" title="Close" data-drawer="location-drawer">×</button>
+    </div>
     <label for="custom-lat">Latitude:</label>
     <input type="number" id="custom-lat" step="0.000001" placeholder="e.g. 34.05" />
     <label for="custom-lon">Longitude:</label>
@@ -42,6 +46,10 @@
 
   <!-- Satellite Drawer -->
   <div id="satellite-drawer" class="drawer">
+    <div class="drawer-header">
+      <h3>Custom Satellite</h3>
+      <button class="drawer-close" title="Close" data-drawer="satellite-drawer">×</button>
+    </div>
     <label for="sat-name">Name:</label>
     <input type="text" id="sat-name" maxlength="32" placeholder="Satellite Name" />
     <label for="sat-lon">Longitude:</label>
@@ -51,6 +59,10 @@
 
   <!-- Filter Drawer -->
   <div id="filter-drawer" class="drawer">
+    <div class="drawer-header">
+      <h3>Filters</h3>
+      <button class="drawer-close" title="Close" data-drawer="filter-drawer">×</button>
+    </div>
     <label for="aor-filter">AOR:</label>
     <select id="aor-filter"></select>
     <label for="country-filter">Country:</label>
@@ -70,7 +82,7 @@
     <div class="apa-panel-header">
       <strong>APA Table</strong>
       <div>
-        
+        <button id="minimize-apa-panel" title="Minimize">_</button>
         <button id="close-apa-panel" title="Close">×</button>
       </div>
     </div>
