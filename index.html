@@ -5,13 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>APA App</title>
   <meta name="description" content="Antenna Pointing Angles Calculator PWA" />
-  <meta name="theme-color" content="#003087" />
+  <meta name="theme-color" content="#1a73e8" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.png" />
 
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Google Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
   <link rel="stylesheet" href="styles.css?v=1.8.0" />
 </head>
@@ -23,19 +26,31 @@
 
   <!-- Drawer Buttons -->
   <div class="drawer-buttons top">
-    <button id="toggle-location-drawer" title="Add Custom Location" aria-label="Open location drawer">🏢</button>
-    <button id="toggle-satellite-drawer" title="Add Custom Satellite" aria-label="Open satellite drawer">🛰️</button>
-    <button id="toggle-filter-drawer" title="Filters" aria-label="Open filters">
-      🔍 <span id="filter-summary" class="filter-badge hidden"></span>
+    <button id="toggle-location-drawer" title="Add Custom Location" aria-label="Open location drawer">
+      <span class="material-icons-round">add_location</span>
     </button>
-    <button id="btn-my-location" title="Use My Location" aria-label="Use my current location">🎯</button>
+    <button id="toggle-satellite-drawer" title="Add Custom Satellite" aria-label="Open satellite drawer">
+      <span class="material-icons-round">satellite</span>
+    </button>
+    <button id="toggle-filter-drawer" title="Filters" aria-label="Open filters">
+      <span class="material-icons-round">filter_list</span>
+      <span id="filter-summary" class="filter-badge hidden">0</span>
+    </button>
+    <button id="btn-my-location" title="Use My Location" aria-label="Use my current location">
+      <span class="material-icons-round">my_location</span>
+    </button>
   </div>
+
+  <!-- Drawer Overlay for Mobile -->
+  <div id="drawer-overlay" class="drawer-overlay"></div>
 
   <!-- Location Drawer -->
   <div id="location-drawer" class="drawer" aria-labelledby="location-drawer-title">
     <div class="drawer-header">
       <h3 id="location-drawer-title">Custom Location</h3>
-      <button class="drawer-close" title="Close" data-drawer="location-drawer" aria-label="Close location drawer">×</button>
+      <button class="drawer-close" title="Close" data-drawer="location-drawer" aria-label="Close location drawer">
+        <span class="material-icons-round">close</span>
+      </button>
     </div>
     <label for="custom-lat">Latitude:</label>
     <input type="number" id="custom-lat" step="0.000001" placeholder="e.g. 34.05" aria-describedby="lat-hint" />
@@ -45,14 +60,18 @@
     <input type="number" id="custom-lon" step="0.000001" placeholder="e.g. -118.25" aria-describedby="lon-hint" />
     <span id="lon-hint" class="sr-only">Enter location longitude in decimal degrees</span>
     
-    <button id="custom-location-btn">📍 Go</button>
+    <button id="custom-location-btn">
+      <span class="material-icons-round">pin_drop</span> Go to Location
+    </button>
   </div>
 
   <!-- Satellite Drawer -->
   <div id="satellite-drawer" class="drawer" aria-labelledby="satellite-drawer-title">
     <div class="drawer-header">
       <h3 id="satellite-drawer-title">Custom Satellite</h3>
-      <button class="drawer-close" title="Close" data-drawer="satellite-drawer" aria-label="Close satellite drawer">×</button>
+      <button class="drawer-close" title="Close" data-drawer="satellite-drawer" aria-label="Close satellite drawer">
+        <span class="material-icons-round">close</span>
+      </button>
     </div>
     <label for="sat-name">Name:</label>
     <input type="text" id="sat-name" maxlength="32" placeholder="Satellite Name" aria-describedby="sat-name-hint" />
@@ -62,14 +81,18 @@
     <input type="number" id="sat-lon" step="0.01" placeholder="Satellite Longitude" aria-describedby="sat-lon-hint" />
     <span id="sat-lon-hint" class="sr-only">Enter satellite longitude in decimal degrees</span>
     
-    <button id="add-satellite-btn">🛰️ Add</button>
+    <button id="add-satellite-btn">
+      <span class="material-icons-round">add_circle</span> Add Satellite
+    </button>
   </div>
 
   <!-- Filter Drawer -->
   <div id="filter-drawer" class="drawer" aria-labelledby="filter-drawer-title">
     <div class="drawer-header">
       <h3 id="filter-drawer-title">Filters</h3>
-      <button class="drawer-close" title="Close" data-drawer="filter-drawer" aria-label="Close filter drawer">×</button>
+      <button class="drawer-close" title="Close" data-drawer="filter-drawer" aria-label="Close filter drawer">
+        <span class="material-icons-round">close</span>
+      </button>
     </div>
     <label for="aor-filter">AOR:</label>
     <select id="aor-filter" aria-describedby="aor-hint"></select>
@@ -83,33 +106,47 @@
     <select id="location-select" aria-describedby="location-hint"></select>
     <span id="location-hint" class="sr-only">Select a specific location</span>
     
-    <button id="reset-filters">Reset</button>
+    <button id="reset-filters">
+      <span class="material-icons-round">clear_all</span> Reset Filters
+    </button>
   </div>
 
   <!-- Current Location Display -->
   <div id="current-location-indicator" class="hidden" aria-live="polite"></div>
 
+  <!-- Map Container -->
   <div id="map" role="application" aria-label="Interactive map showing satellite positions and pointing angles"></div>
+
+  <!-- Polar Plot -->
+  <div id="polar-plot-container" class="polar-plot-container hidden">
+    <svg id="polar-plot" class="polar-plot" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Circles will be generated by JavaScript -->
+    </svg>
+  </div>
 
   <!-- APA Panel -->
   <div id="apa-panel" class="leaflet-control apa-control" aria-labelledby="apa-panel-title">
     <div class="apa-panel-header">
-      <strong id="apa-panel-title">APA Table</strong>
-      <div>
-        <button id="minimize-apa-panel" title="Minimize" aria-label="Minimize APA panel">_</button>
-        <button id="close-apa-panel" title="Close" aria-label="Close APA panel">×</button>
+      <strong id="apa-panel-title">Antenna Pointing Angles</strong>
+      <div class="panel-controls">
+        <button id="minimize-apa-panel" title="Minimize" aria-label="Minimize APA panel">
+          <span class="material-icons-round">remove</span>
+        </button>
+        <button id="close-apa-panel" title="Close" aria-label="Close APA panel">
+          <span class="material-icons-round">close</span>
+        </button>
       </div>
     </div>
     <table id="apa-table" aria-describedby="apa-table-desc">
       <caption id="apa-table-desc" class="sr-only">Antenna Pointing Angles for satellites from current location</caption>
       <thead>
         <tr>
-          <th scope="col">Show</th>
+          <th scope="col">Visible</th>
           <th scope="col">Name</th>
           <th scope="col">Longitude</th>
           <th scope="col">Elevation</th>
           <th scope="col">Azimuth</th>
-          <th scope="col"></th>
+          <th scope="col">Actions</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -117,27 +154,88 @@
     <div id="apa-no-results" class="hidden">No results. Select a location or clear filters.</div>
   </div>
 
-  <button id="toggle-apa-panel" aria-label="Show APA Table">Show APA Table</button>
+  <button id="toggle-apa-panel" aria-label="Show APA Table">
+    <span class="material-icons-round">table_chart</span> Show APA Table
+  </button>
 
   <!-- Help Tooltip -->
   <div id="help-tooltip" aria-live="polite">
-    Welcome to the APA App! Select a location and view antenna pointing angles.<br />
+    <div class="help-header">Welcome to APA App!</div>
+    <p>Select a location and view antenna pointing angles for satellites.</p>
     <button id="hide-help-tooltip">Got it</button>
+    <button id="show-tutorial" class="help-secondary">Show Tutorial</button>
   </div>
 
-  <!-- Dark Mode Toggle -->
-  <button id="dark-mode-toggle" title="Toggle Dark Mode" aria-label="Switch between light and dark mode">🌙</button>
+  <!-- Floating Controls -->
+  <button id="dark-mode-toggle" class="floating-control" title="Toggle Dark Mode" aria-label="Switch between light and dark mode">
+    <span class="material-icons-round">dark_mode</span>
+  </button>
+
+  <button id="toggle-polar-plot" class="floating-control" title="Toggle Polar Plot" aria-label="Toggle satellite polar plot">
+    <span class="material-icons-round">radar</span>
+  </button>
+
+  <button id="legend-toggle" class="floating-control" title="Legend" aria-label="Toggle legend visibility">
+    <span class="material-icons-round">help</span>
+  </button>
 
   <!-- APA Legend -->
-  <button id="legend-toggle" title="Legend" aria-label="Toggle legend visibility">❓</button>
   <div id="apa-legend" class="hidden" aria-labelledby="legend-title">
-    <strong id="legend-title">APA Line Legend</strong><br />
-    🔵 Above horizon<br />
-    🔴 Below horizon<br />
-    APA = Azimuth & Elevation<br />
-    Click satellite name to toggle
+    <strong id="legend-title">APA Legend</strong>
+    
+    <div class="legend-section">
+      <div class="legend-subtitle">Satellite Lines</div>
+      <div class="legend-item">
+        <div class="legend-color above"></div>
+        <span>Above horizon - Visible</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color below"></div>
+        <span>Below horizon - Not visible</span>
+      </div>
+    </div>
+    
+    <div class="legend-section">
+      <div class="legend-subtitle">Elevation Quality</div>
+      <div class="legend-item">
+        <div class="legend-color excellent"></div>
+        <span>Excellent (>30°)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color good"></div>
+        <span>Good (15-30°)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color marginal"></div>
+        <span>Marginal (5-15°)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color poor"></div>
+        <span>Poor (0-5°)</span>
+      </div>
+    </div>
+    
+    <div class="legend-note">
+      Click satellite name to view details
+    </div>
   </div>
 
+  <!-- Tutorial Overlay (Hidden by Default) -->
+  <div id="tutorial-overlay" class="tutorial-overlay hidden">
+    <div class="tutorial-card">
+      <div class="tutorial-header">Getting Started</div>
+      <div class="tutorial-content" id="tutorial-content">
+        Welcome to the APA App! This tutorial will guide you through the basic features.
+      </div>
+      <div class="tutorial-footer">
+        <button id="tutorial-prev" class="tutorial-button secondary" disabled>Previous</button>
+        <div id="tutorial-progress">1/5</div>
+        <button id="tutorial-next" class="tutorial-button primary">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
   <script src="data.js?v=1.8.0"></script>
   <script src="script.js?v=1.8.0"></script>
   <script>
