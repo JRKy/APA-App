@@ -318,19 +318,3 @@ document.addEventListener("DOMContentLoaded", () => {
   populateFilters();
   filterLocations();
 });
-
-// Unified Drawer Toggle Logic
-function closeAllDrawers() {
-  document.querySelectorAll('.drawer').forEach(d => d.classList.remove('visible'));
-}
-
-function toggleDrawer(drawerId) {
-  const drawer = document.getElementById(drawerId);
-  const isVisible = drawer.classList.contains('visible');
-  closeAllDrawers();
-  if (!isVisible) drawer.classList.add('visible');
-}
-
-document.getElementById('toggle-location-drawer').addEventListener('click', () => toggleDrawer('location-drawer'));
-document.getElementById('toggle-satellite-drawer').addEventListener('click', () => toggleDrawer('satellite-drawer'));
-document.getElementById('toggle-filter-drawer').addEventListener('click', () => toggleDrawer('filter-drawer'));
