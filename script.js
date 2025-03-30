@@ -5,12 +5,22 @@ let siteMarker;
 let lineLayers = [];
 let lastLocation = null;
 
+// Utility functions
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const locationSelect = document.getElementById("location-select");
   const aorFilter = document.getElementById("aor-filter");
   const countryFilter = document.getElementById("country-filter");
   const apaPanel = document.getElementById("apa-panel");
   const apaTableBody = document.querySelector("#apa-table tbody");
+  const apaTableHeaders = document.querySelectorAll("#apa-table th");
   const closePanelBtn = document.getElementById("close-apa-panel");
   const minimizePanelBtn = document.getElementById("minimize-apa-panel");
   const toggleApaBtn = document.getElementById("toggle-apa-panel");
@@ -21,12 +31,37 @@ document.addEventListener("DOMContentLoaded", () => {
   const legendToggle = document.getElementById("legend-toggle");
   const apaLegend = document.getElementById("apa-legend");
   const noResultsMessage = document.getElementById("apa-no-results");
+  const darkModeToggle = document.getElementById("dark-mode-toggle");
+
+  // Initialize dark mode from localStorage if available
+  if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark-mode");
+    if (darkModeToggle) {
+      darkModeToggle.textContent = "☀️";
+      darkModeToggle.title = "Switch to Light Mode";
+    }
+  }
+
+  // Dark mode toggle functionality
+  darkModeToggle?.addEventListener("click", () => {
+    document.body.classList.toggle("dark-mode");
+    const isDarkMode = document.body.classList.contains("dark-mode");
+    darkModeToggle.textContent = isDarkMode ? "☀️" : "🌙";
+    darkModeToggle.title = isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode";
+    localStorage.setItem("darkMode", isDarkMode);
+  });
 
   const hideHelpBtn = document.getElementById("hide-help-tooltip");
   if (hideHelpBtn) {
     hideHelpBtn.addEventListener("click", () => {
       helpTooltip.classList.add("hidden");
+      localStorage.setItem("helpDismissed", "true");
     });
+  }
+
+  // Check if help tooltip should be shown
+  if (localStorage.getItem("helpDismissed") === "true") {
+    helpTooltip.classList.add("hidden");
   }
 
   legendToggle?.addEventListener("click", () => {
@@ -37,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "Map": L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; OpenStreetMap contributors'
     }),
-    "Satellite": L.tileLayer("https://{s}.google.com/vt/lyrs=s&x={y}&y={y}&z={z}", {
+    "Satellite": L.tileLayer("https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
       subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
       attribution: "&copy; Google Satellite"
     }),
@@ -53,6 +88,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   L.control.layers(baseLayers).addTo(map);
+
+  // Add debounced map event handlers for better performance
+  map.on('zoomend moveend', debounce(() => {
+    if (lastLocation) {
+      updateSatelliteLines(lastLocation.lat, lastLocation.lon);
+    }
+  }, 100));
 
   locateBtn?.addEventListener("click", () => {
     if (!navigator.geolocation) {
@@ -79,7 +121,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   minimizePanelBtn?.addEventListener("click", () => {
     apaPanel.classList.toggle("minimized");
+    localStorage.setItem("apaPanelMinimized", apaPanel.classList.contains("minimized"));
   });
+
+  // Restore APA panel state from localStorage
+  if (localStorage.getItem("apaPanelMinimized") === "true") {
+    apaPanel.classList.add("minimized");
+  }
 
   toggleApaBtn?.addEventListener("click", () => {
     apaPanel.style.display = "block";
@@ -119,6 +167,9 @@ document.addEventListener("DOMContentLoaded", () => {
     SATELLITES.push({ name, longitude: lon, custom: true });
     if (lastLocation) updateApaTable(lastLocation.lat, lastLocation.lon);
     document.getElementById("satellite-drawer").classList.remove("visible");
+
+    // Save custom satellites to localStorage
+    saveCustomSatellites();
   });
 
   document.getElementById("reset-filters")?.addEventListener("click", () => {
@@ -176,6 +227,18 @@ document.addEventListener("DOMContentLoaded", () => {
     updateFilterSummary();
   });
 
+  // Make APA panel draggable
+  setupDraggablePanel();
+
+  // Add column sorting to APA table
+  setupTableSorting();
+
+  // Add keyboard navigation support
+  setupKeyboardNavigation();
+
+  // Restore custom satellites from localStorage
+  loadCustomSatellites();
+
   function filterLocations() {
     const selectedAOR = aorFilter.value;
     const selectedCountry = countryFilter.value;
@@ -215,6 +278,9 @@ document.addEventListener("DOMContentLoaded", () => {
     updateApaTable(lat, lon);
     currentLocationIndicator.textContent = `Current Location: ${label || `${lat.toFixed(2)}, ${lon.toFixed(2)}`}`;
     currentLocationIndicator.classList.remove("hidden");
+
+    // Save last location to localStorage
+    localStorage.setItem("lastLocation", JSON.stringify({ lat, lon, label }));
   }
 
   function updateApaTable(lat, lon) {
@@ -247,6 +313,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (index !== -1) {
           SATELLITES.splice(index, 1);
           updateApaTable(lastLocation.lat, lastLocation.lon);
+          // Save updated satellites list to localStorage
+          saveCustomSatellites();
         }
       });
     });
@@ -272,6 +340,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function updateSatelliteLines(lat, lon) {
+    // Only redraw lines if they already exist
+    if (lineLayers.length > 0) {
+      clearLines();
+      apaTableBody.querySelectorAll("input[type=checkbox]:checked").forEach(cb => {
+        const satLon = parseFloat(cb.dataset.satlon);
+        const name = cb.dataset.name;
+        const el = 90 - Math.abs(lat) - Math.abs(satLon - lon);
+        drawLine(lat, lon, satLon, name, el, cb.id);
+      });
+    }
+  }
+
   function drawLine(lat, lon, satLon, label, el, id) {
     const color = el < 0 ? "#ff5252" : "#00bcd4";
     const polyline = L.polyline([[lat, lon], [0, satLon]], {
@@ -285,6 +366,16 @@ document.addEventListener("DOMContentLoaded", () => {
       className: "apa-line-label"
     });
     lineLayers.push({ id, layer: polyline });
+  }
+
+  function drawSatelliteIcon(lon) {
+    const satIcon = L.divIcon({
+      html: `<div class="satellite-icon">🛰️</div>`,
+      className: 'satellite-marker',
+      iconSize: [24, 24]
+    });
+    
+    return L.marker([0, lon], { icon: satIcon }).addTo(map);
   }
 
   function clearLines() {
@@ -334,6 +425,267 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function setupDraggablePanel() {
+    const apaPanelHeader = document.querySelector('.apa-panel-header');
+    let isDragging = false;
+    let dragOffsetX, dragOffsetY;
+    
+    if (!apaPanelHeader) return;
+    
+    apaPanelHeader.style.cursor = 'grab';
+    
+    // Restore panel position from localStorage
+    const savedPosition = localStorage.getItem('apaPanelPosition');
+    if (savedPosition) {
+      try {
+        const pos = JSON.parse(savedPosition);
+        apaPanel.style.top = pos.top;
+        apaPanel.style.right = pos.right;
+      } catch (e) {
+        console.error('Failed to restore panel position:', e);
+      }
+    }
+    
+    apaPanelHeader.addEventListener('mousedown', (e) => {
+      // Skip if clicking on buttons
+      if (e.target.tagName === 'BUTTON') return;
+      
+      isDragging = true;
+      dragOffsetX = e.clientX - apaPanel.getBoundingClientRect().left;
+      dragOffsetY = e.clientY - apaPanel.getBoundingClientRect().top;
+      apaPanelHeader.style.cursor = 'grabbing';
+      
+      // Prevent text selection during dragging
+      e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      
+      const panelWidth = apaPanel.getBoundingClientRect().width;
+      const screenWidth = window.innerWidth;
+      
+      apaPanel.style.right = 'auto'; // Remove right positioning
+      apaPanel.style.left = (e.clientX - dragOffsetX) + 'px';
+      apaPanel.style.top = (e.clientY - dragOffsetY) + 'px';
+    });
+    
+    document.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      
+      isDragging = false;
+      apaPanelHeader.style.cursor = 'grab';
+      
+      // Save panel position to localStorage
+      const rect = apaPanel.getBoundingClientRect();
+      localStorage.setItem('apaPanelPosition', JSON.stringify({
+        top: apaPanel.style.top,
+        left: apaPanel.style.left
+      }));
+    });
+    
+    // Add touch support for mobile
+    apaPanelHeader.addEventListener('touchstart', (e) => {
+      // Skip if touching buttons
+      if (e.target.tagName === 'BUTTON') return;
+      
+      isDragging = true;
+      const touch = e.touches[0];
+      dragOffsetX = touch.clientX - apaPanel.getBoundingClientRect().left;
+      dragOffsetY = touch.clientY - apaPanel.getBoundingClientRect().top;
+      
+      e.preventDefault();
+    });
+    
+    document.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      
+      const touch = e.touches[0];
+      apaPanel.style.right = 'auto';
+      apaPanel.style.left = (touch.clientX - dragOffsetX) + 'px';
+      apaPanel.style.top = (touch.clientY - dragOffsetY) + 'px';
+      
+      e.preventDefault();
+    });
+    
+    document.addEventListener('touchend', () => {
+      if (!isDragging) return;
+      
+      isDragging = false;
+      
+      // Save panel position to localStorage
+      const rect = apaPanel.getBoundingClientRect();
+      localStorage.setItem('apaPanelPosition', JSON.stringify({
+        top: apaPanel.style.top,
+        left: apaPanel.style.left
+      }));
+    });
+  }
+
+  function setupTableSorting() {
+    apaTableHeaders.forEach((header, index) => {
+      // Skip first column (checkbox) and last column (actions)
+      if (index === 0 || index === apaTableHeaders.length - 1) return;
+      
+      header.classList.add('sortable');
+      header.title = 'Click to sort';
+      header.dataset.sortDir = 'none';
+      
+      header.addEventListener('click', () => {
+        // Clear sort indicators from other headers
+        apaTableHeaders.forEach(h => {
+          if (h !== header) {
+            h.dataset.sortDir = 'none';
+            h.classList.remove('sort-asc', 'sort-desc');
+          }
+        });
+        
+        const sortDir = header.dataset.sortDir === 'asc' ? 'desc' : 'asc';
+        header.dataset.sortDir = sortDir;
+        header.classList.toggle('sort-asc', sortDir === 'asc');
+        header.classList.toggle('sort-desc', sortDir === 'desc');
+        
+        const rows = Array.from(apaTableBody.querySelectorAll('tr'));
+        const sortedRows = rows.sort((a, b) => {
+          const aVal = a.cells[index].textContent.trim();
+          const bVal = b.cells[index].textContent.trim();
+          
+          // Numeric sorting
+          if (!isNaN(parseFloat(aVal)) && !isNaN(parseFloat(bVal))) {
+            return sortDir === 'asc' 
+              ? parseFloat(aVal) - parseFloat(bVal)
+              : parseFloat(bVal) - parseFloat(aVal);
+          }
+          
+          // Alphabetical sorting
+          return sortDir === 'asc'
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        });
+        
+        // Remove existing rows
+        while (apaTableBody.firstChild) {
+          apaTableBody.removeChild(apaTableBody.firstChild);
+        }
+        
+        // Append sorted rows
+        sortedRows.forEach(row => apaTableBody.appendChild(row));
+        
+        // Announce sorting for screen readers
+        const announcement = document.createElement('div');
+        announcement.className = 'sr-only';
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.textContent = `Table sorted by ${header.textContent} in ${sortDir === 'asc' ? 'ascending' : 'descending'} order`;
+        document.body.appendChild(announcement);
+        
+        // Remove announcement after it's been read
+        setTimeout(() => {
+          document.body.removeChild(announcement);
+        }, 1000);
+      });
+    });
+  }
+
+  function setupKeyboardNavigation() {
+    // Add tab indices to interactive elements
+    const tabbableElements = [
+      ...document.querySelectorAll('.drawer button, .drawer input, .drawer select'),
+      ...document.querySelectorAll('.drawer-buttons button'),
+      minimizePanelBtn,
+      closePanelBtn,
+      toggleApaBtn
+    ].filter(el => el); // Filter out null elements
+    
+    tabbableElements.forEach((el, i) => {
+      el.setAttribute('tabindex', i + 1);
+    });
+    
+    // Arrow key navigation in APA table
+    apaTableBody.addEventListener('keydown', (e) => {
+      if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+      
+      const currentCell = document.activeElement.closest('td');
+      if (!currentCell) return;
+      
+      const currentRow = currentCell.parentElement;
+      const rows = Array.from(apaTableBody.rows);
+      const rowIndex = rows.indexOf(currentRow);
+      const cellIndex = Array.from(currentRow.cells).indexOf(currentCell);
+      
+      switch (e.key) {
+        case 'ArrowUp':
+          if (rowIndex > 0) {
+            const targetCell = rows[rowIndex - 1].cells[cellIndex];
+            const focusableElement = targetCell.querySelector('button, input') || targetCell;
+            focusableElement.focus();
+          }
+          break;
+        case 'ArrowDown':
+          if (rowIndex < rows.length - 1) {
+            const targetCell = rows[rowIndex + 1].cells[cellIndex];
+            const focusableElement = targetCell.querySelector('button, input') || targetCell;
+            focusableElement.focus();
+          }
+          break;
+        case 'ArrowLeft':
+          if (cellIndex > 0) {
+            const targetCell = currentRow.cells[cellIndex - 1];
+            const focusableElement = targetCell.querySelector('button, input') || targetCell;
+            focusableElement.focus();
+          }
+          break;
+        case 'ArrowRight':
+          if (cellIndex < currentRow.cells.length - 1) {
+            const targetCell = currentRow.cells[cellIndex + 1];
+            const focusableElement = targetCell.querySelector('button, input') || targetCell;
+            focusableElement.focus();
+          }
+          break;
+      }
+      
+      e.preventDefault();
+    });
+  }
+
+  function saveCustomSatellites() {
+    const customSats = SATELLITES.filter(sat => sat.custom);
+    if (customSats.length > 0) {
+      localStorage.setItem('customSatellites', JSON.stringify(customSats));
+    } else {
+      localStorage.removeItem('customSatellites');
+    }
+  }
+
+  function loadCustomSatellites() {
+    const savedSats = localStorage.getItem('customSatellites');
+    if (savedSats) {
+      try {
+        const customSats = JSON.parse(savedSats);
+        // Filter out duplicates
+        customSats.forEach(sat => {
+          if (!SATELLITES.some(s => s.name === sat.name || s.longitude === sat.longitude)) {
+            SATELLITES.push(sat);
+          }
+        });
+      } catch (e) {
+        console.error('Failed to load custom satellites:', e);
+      }
+    }
+  }
+
+  // Restore last location from localStorage
+  function restoreLastLocation() {
+    const savedLocation = localStorage.getItem('lastLocation');
+    if (savedLocation) {
+      try {
+        const location = JSON.parse(savedLocation);
+        goToLocation(location.lat, location.lon, location.label);
+      } catch (e) {
+        console.error('Failed to restore last location:', e);
+      }
+    }
+  }
+
   // Add event listeners for all drawer close buttons
   document.querySelectorAll('.drawer-close').forEach(closeBtn => {
     closeBtn.addEventListener('click', function() {
@@ -356,6 +708,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Initialize app
   populateFilters();
   filterLocations();
+  
+  // Restore last location if available
+  setTimeout(restoreLastLocation, 500);
+  
+  // Announce app is ready for screen readers
+  const announcement = document.createElement('div');
+  announcement.className = 'sr-only';
+  announcement.setAttribute('aria-live', 'assertive');
+  announcement.textContent = 'APA App is ready. Use the buttons to select a location and view satellite pointing angles.';
+  document.body.appendChild(announcement);
+  
+  setTimeout(() => {
+    document.body.removeChild(announcement);
+  }, 1000);
 });
