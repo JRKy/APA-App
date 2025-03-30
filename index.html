@@ -23,78 +23,93 @@
 
   <!-- Drawer Buttons -->
   <div class="drawer-buttons top">
-    <button id="toggle-location-drawer" title="Add Custom Location">🏢</button>
-    <button id="toggle-satellite-drawer" title="Add Custom Satellite">🛰️</button>
-    <button id="toggle-filter-drawer" title="Filters">
+    <button id="toggle-location-drawer" title="Add Custom Location" aria-label="Open location drawer">🏢</button>
+    <button id="toggle-satellite-drawer" title="Add Custom Satellite" aria-label="Open satellite drawer">🛰️</button>
+    <button id="toggle-filter-drawer" title="Filters" aria-label="Open filters">
       🔍 <span id="filter-summary" class="filter-badge hidden"></span>
     </button>
-    <button id="btn-my-location" title="Use My Location">🎯</button>
+    <button id="btn-my-location" title="Use My Location" aria-label="Use my current location">🎯</button>
   </div>
 
   <!-- Location Drawer -->
-  <div id="location-drawer" class="drawer">
+  <div id="location-drawer" class="drawer" aria-labelledby="location-drawer-title">
     <div class="drawer-header">
-      <h3>Custom Location</h3>
-      <button class="drawer-close" title="Close" data-drawer="location-drawer">×</button>
+      <h3 id="location-drawer-title">Custom Location</h3>
+      <button class="drawer-close" title="Close" data-drawer="location-drawer" aria-label="Close location drawer">×</button>
     </div>
     <label for="custom-lat">Latitude:</label>
-    <input type="number" id="custom-lat" step="0.000001" placeholder="e.g. 34.05" />
+    <input type="number" id="custom-lat" step="0.000001" placeholder="e.g. 34.05" aria-describedby="lat-hint" />
+    <span id="lat-hint" class="sr-only">Enter location latitude in decimal degrees</span>
+    
     <label for="custom-lon">Longitude:</label>
-    <input type="number" id="custom-lon" step="0.000001" placeholder="e.g. -118.25" />
+    <input type="number" id="custom-lon" step="0.000001" placeholder="e.g. -118.25" aria-describedby="lon-hint" />
+    <span id="lon-hint" class="sr-only">Enter location longitude in decimal degrees</span>
+    
     <button id="custom-location-btn">📍 Go</button>
   </div>
 
   <!-- Satellite Drawer -->
-  <div id="satellite-drawer" class="drawer">
+  <div id="satellite-drawer" class="drawer" aria-labelledby="satellite-drawer-title">
     <div class="drawer-header">
-      <h3>Custom Satellite</h3>
-      <button class="drawer-close" title="Close" data-drawer="satellite-drawer">×</button>
+      <h3 id="satellite-drawer-title">Custom Satellite</h3>
+      <button class="drawer-close" title="Close" data-drawer="satellite-drawer" aria-label="Close satellite drawer">×</button>
     </div>
     <label for="sat-name">Name:</label>
-    <input type="text" id="sat-name" maxlength="32" placeholder="Satellite Name" />
+    <input type="text" id="sat-name" maxlength="32" placeholder="Satellite Name" aria-describedby="sat-name-hint" />
+    <span id="sat-name-hint" class="sr-only">Enter a unique satellite name</span>
+    
     <label for="sat-lon">Longitude:</label>
-    <input type="number" id="sat-lon" step="0.01" placeholder="Satellite Longitude" />
+    <input type="number" id="sat-lon" step="0.01" placeholder="Satellite Longitude" aria-describedby="sat-lon-hint" />
+    <span id="sat-lon-hint" class="sr-only">Enter satellite longitude in decimal degrees</span>
+    
     <button id="add-satellite-btn">🛰️ Add</button>
   </div>
 
   <!-- Filter Drawer -->
-  <div id="filter-drawer" class="drawer">
+  <div id="filter-drawer" class="drawer" aria-labelledby="filter-drawer-title">
     <div class="drawer-header">
-      <h3>Filters</h3>
-      <button class="drawer-close" title="Close" data-drawer="filter-drawer">×</button>
+      <h3 id="filter-drawer-title">Filters</h3>
+      <button class="drawer-close" title="Close" data-drawer="filter-drawer" aria-label="Close filter drawer">×</button>
     </div>
     <label for="aor-filter">AOR:</label>
-    <select id="aor-filter"></select>
+    <select id="aor-filter" aria-describedby="aor-hint"></select>
+    <span id="aor-hint" class="sr-only">Filter by Area of Responsibility</span>
+    
     <label for="country-filter">Country:</label>
-    <select id="country-filter"></select>
+    <select id="country-filter" aria-describedby="country-hint"></select>
+    <span id="country-hint" class="sr-only">Filter by Country</span>
+    
     <label for="location-select">Location:</label>
-    <select id="location-select"></select>
+    <select id="location-select" aria-describedby="location-hint"></select>
+    <span id="location-hint" class="sr-only">Select a specific location</span>
+    
     <button id="reset-filters">Reset</button>
   </div>
 
   <!-- Current Location Display -->
-  <div id="current-location-indicator" class="hidden"></div>
+  <div id="current-location-indicator" class="hidden" aria-live="polite"></div>
 
-  <div id="map"></div>
+  <div id="map" role="application" aria-label="Interactive map showing satellite positions and pointing angles"></div>
 
   <!-- APA Panel -->
-  <div id="apa-panel" class="leaflet-control apa-control">
+  <div id="apa-panel" class="leaflet-control apa-control" aria-labelledby="apa-panel-title">
     <div class="apa-panel-header">
-      <strong>APA Table</strong>
+      <strong id="apa-panel-title">APA Table</strong>
       <div>
-        <button id="minimize-apa-panel" title="Minimize">_</button>
-        <button id="close-apa-panel" title="Close">×</button>
+        <button id="minimize-apa-panel" title="Minimize" aria-label="Minimize APA panel">_</button>
+        <button id="close-apa-panel" title="Close" aria-label="Close APA panel">×</button>
       </div>
     </div>
-    <table id="apa-table">
+    <table id="apa-table" aria-describedby="apa-table-desc">
+      <caption id="apa-table-desc" class="sr-only">Antenna Pointing Angles for satellites from current location</caption>
       <thead>
         <tr>
-          <th>Show</th>
-          <th>Name</th>
-          <th>Longitude</th>
-          <th>Elevation</th>
-          <th>Azimuth</th>
-          <th></th>
+          <th scope="col">Show</th>
+          <th scope="col">Name</th>
+          <th scope="col">Longitude</th>
+          <th scope="col">Elevation</th>
+          <th scope="col">Azimuth</th>
+          <th scope="col"></th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -102,18 +117,21 @@
     <div id="apa-no-results" class="hidden">No results. Select a location or clear filters.</div>
   </div>
 
-  <button id="toggle-apa-panel">Show APA Table</button>
+  <button id="toggle-apa-panel" aria-label="Show APA Table">Show APA Table</button>
 
   <!-- Help Tooltip -->
-  <div id="help-tooltip">
+  <div id="help-tooltip" aria-live="polite">
     Welcome to the APA App! Select a location and view antenna pointing angles.<br />
     <button id="hide-help-tooltip">Got it</button>
   </div>
 
+  <!-- Dark Mode Toggle -->
+  <button id="dark-mode-toggle" title="Toggle Dark Mode" aria-label="Switch between light and dark mode">🌙</button>
+
   <!-- APA Legend -->
-  <button id="legend-toggle" title="Legend">❓</button>
-  <div id="apa-legend" class="hidden">
-    <strong>APA Line Legend</strong><br />
+  <button id="legend-toggle" title="Legend" aria-label="Toggle legend visibility">❓</button>
+  <div id="apa-legend" class="hidden" aria-labelledby="legend-title">
+    <strong id="legend-title">APA Line Legend</strong><br />
     🔵 Above horizon<br />
     🔴 Below horizon<br />
     APA = Azimuth & Elevation<br />
