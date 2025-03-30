@@ -22,9 +22,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const apaLegend = document.getElementById("apa-legend");
   const noResultsMessage = document.getElementById("apa-no-results");
 
-  document.getElementById("hide-help-tooltip")?.addEventListener("click", () => {
-    helpTooltip.classList.add("hidden");
-  });
+  const hideHelpBtn = document.getElementById("hide-help-tooltip");
+  if (hideHelpBtn) {
+    hideHelpBtn.addEventListener("click", () => {
+      helpTooltip.classList.add("hidden");
+    });
+  }
 
   legendToggle?.addEventListener("click", () => {
     apaLegend.classList.toggle("hidden");
@@ -34,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "Map": L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; OpenStreetMap contributors'
     }),
-    "Satellite": L.tileLayer("https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
+    "Satellite": L.tileLayer("https://{s}.google.com/vt/lyrs=s&x={y}&y={y}&z={z}", {
       subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
       attribution: "&copy; Google Satellite"
     }),
@@ -291,9 +294,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function toggleDrawer(drawerId, others) {
     const drawer = document.getElementById(drawerId);
+    if (!drawer) return;
+    
     const isOpen = drawer.classList.contains("visible");
-    drawer.classList.toggle("visible", !isOpen);
-    others.forEach(id => document.getElementById(id)?.classList.remove("visible"));
+    
+    // Close all drawers first
+    document.querySelectorAll('.drawer.visible').forEach(openDrawer => {
+      openDrawer.classList.remove("visible");
+    });
+    
+    // Then open the requested drawer if it wasn't already open
+    if (!isOpen) {
+      drawer.classList.add("visible");
+      
+      // If this is an input drawer, focus the first input
+      const firstInput = drawer.querySelector('input, select');
+      if (firstInput) {
+        setTimeout(() => firstInput.focus(), 100);
+      }
+    }
   }
 
   function populateFilters() {
@@ -314,6 +333,28 @@ document.addEventListener("DOMContentLoaded", () => {
       countryFilter.appendChild(opt);
     });
   }
+
+  // Add event listeners for all drawer close buttons
+  document.querySelectorAll('.drawer-close').forEach(closeBtn => {
+    closeBtn.addEventListener('click', function() {
+      const drawerId = this.dataset.drawer;
+      if (drawerId) {
+        const drawer = document.getElementById(drawerId);
+        if (drawer) {
+          drawer.classList.remove('visible');
+        }
+      }
+    });
+  });
+
+  // Add escape key functionality to close all drawers
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.drawer.visible').forEach(drawer => {
+        drawer.classList.remove('visible');
+      });
+    }
+  });
 
   populateFilters();
   filterLocations();
