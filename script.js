@@ -1,4 +1,4 @@
-// APA App Script - v1.8.0
+// APA App Script - v1.8.1
 
 let map;
 let siteMarker;
@@ -12,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const apaPanel = document.getElementById("apa-panel");
   const apaTableBody = document.querySelector("#apa-table tbody");
   const closePanelBtn = document.getElementById("close-apa-panel");
-  const minimizePanelBtn = document.getElementById("minimize-apa-panel");
   const toggleApaBtn = document.getElementById("toggle-apa-panel");
   const helpTooltip = document.getElementById("help-tooltip");
   const locateBtn = document.getElementById("btn-my-location");
@@ -21,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const legendToggle = document.getElementById("legend-toggle");
   const apaLegend = document.getElementById("apa-legend");
   const noResultsMessage = document.getElementById("apa-no-results");
+  const apaLive = document.getElementById("apa-live");
 
   document.getElementById("hide-help-tooltip")?.addEventListener("click", () => {
     helpTooltip.classList.add("hidden");
@@ -32,14 +32,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const baseLayers = {
     "Map": L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; OpenStreetMap contributors'
+      attribution: '© OpenStreetMap contributors'
     }),
     "Satellite": L.tileLayer("https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
       subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-      attribution: "&copy; Google Satellite"
+      attribution: "© Google Satellite"
     }),
     "Terrain": L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; OpenTopoMap contributors'
+      attribution: '© OpenTopoMap contributors'
     })
   };
 
@@ -56,7 +56,6 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Geolocation is not supported by your browser.");
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const lat = position.coords.latitude;
@@ -70,29 +69,29 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   closePanelBtn?.addEventListener("click", () => {
-    apaPanel.style.display = "none";
+    apaPanel.classList.remove("visible");
     toggleApaBtn.style.display = "block";
   });
 
-  minimizePanelBtn?.addEventListener("click", () => {
-    apaPanel.classList.toggle("minimized");
-  });
-
   toggleApaBtn?.addEventListener("click", () => {
-    apaPanel.style.display = "block";
+    apaPanel.classList.add("visible");
     toggleApaBtn.style.display = "none";
   });
 
+  document.getElementById("toggle-main-menu")?.addEventListener("click", () => {
+    toggleDrawer("main-menu", ["location-drawer", "satellite-drawer", "filter-drawer"]);
+  });
+
   document.getElementById("toggle-location-drawer")?.addEventListener("click", () => {
-    toggleDrawer("location-drawer", ["satellite-drawer", "filter-drawer"]);
+    toggleDrawer("location-drawer", ["main-menu", "satellite-drawer", "filter-drawer"]);
   });
 
   document.getElementById("toggle-satellite-drawer")?.addEventListener("click", () => {
-    toggleDrawer("satellite-drawer", ["location-drawer", "filter-drawer"]);
+    toggleDrawer("satellite-drawer", ["main-menu", "location-drawer", "filter-drawer"]);
   });
 
   document.getElementById("toggle-filter-drawer")?.addEventListener("click", () => {
-    toggleDrawer("filter-drawer", ["location-drawer", "satellite-drawer"]);
+    toggleDrawer("filter-drawer", ["main-menu", "location-drawer", "satellite-drawer"]);
   });
 
   document.getElementById("custom-location-btn")?.addEventListener("click", () => {
@@ -173,6 +172,80 @@ document.addEventListener("DOMContentLoaded", () => {
     updateFilterSummary();
   });
 
+  // Offline Feedback
+  window.addEventListener("offline", () => {
+    const toast = document.createElement("div");
+    toast.textContent = "Offline - Using cached data";
+    toast.style.cssText = "position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #ff5252; color: white; padding: 10px; border-radius: 5px; z-index: 9999;";
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  });
+  window.addEventListener("online", () => {
+    location.reload();
+  });
+
+  // APA Table Sorting
+  const apaTableHeaders = document.querySelectorAll("#apa-table th");
+  let sortDirection = 1;
+  let lastSorted = -1;
+  apaTableHeaders.forEach((th, index) => {
+    if (index === 0 || index === 5) return; // Skip "Show" and delete columns
+    th.addEventListener("click", () => {
+      sortDirection = lastSorted === index ? -sortDirection : 1;
+      lastSorted = index;
+      const rows = Array.from(apaTableBody.querySelectorAll("tr"));
+      rows.sort((a, b) => {
+        const aVal = a.cells[index].textContent.trim();
+        const bVal = b.cells[index].textContent.trim();
+        return [1, 2, 3, 4].includes(index)
+          ? sortDirection * (parseFloat(aVal) - parseFloat(bVal))
+          : sortDirection * aVal.localeCompare(bVal);
+      });
+      apaTableBody.innerHTML = "";
+      rows.forEach(row => apaTableBody.appendChild(row));
+    });
+  });
+
+  // Persistent APA Panel Layout
+  interact("#apa-panel")
+    .draggable({
+      listeners: {
+        move(event) {
+          const target = event.target;
+          const x = (parseFloat(target.dataset.x) || 0) + event.dx;
+          const y = (parseFloat(target.dataset.y) || 0) + event.dy;
+          target.style.transform = `translate(${x}px, ${y}px)`;
+          target.dataset.x = x;
+          target.dataset.y = y;
+          localStorage.setItem("apaPanelPos", JSON.stringify({ x, y }));
+        }
+      }
+    })
+    .resizable({
+      edges: { bottom: true, right: true },
+      listeners: {
+        move(event) {
+          const target = event.target;
+          target.style.width = `${event.rect.width}px`;
+          target.style.height = `${event.rect.height}px`;
+          localStorage.setItem("apaPanelSize", JSON.stringify({ width: event.rect.width, height: event.rect.height }));
+        }
+      }
+    });
+  const pos = JSON.parse(localStorage.getItem("apaPanelPos") || "{}");
+  const size = JSON.parse(localStorage.getItem("apaPanelSize") || "{}");
+  if (pos.x || pos.y) apaPanel.style.transform = `translate(${pos.x || 0}px, ${pos.y || 0}px)`;
+  if (size.width) apaPanel.style.width = `${size.width}px`;
+  if (size.height) apaPanel.style.height = `${size.height}px`;
+  apaPanel.dataset.x = pos.x || 0;
+  apaPanel.dataset.y = pos.y || 0;
+
+  // Debounced Map Updates
+  const debouncedUpdate = debounce(updateApaTable, 200);
+  map.on("moveend", () => {
+    if (lastLocation) debouncedUpdate(lastLocation.lat, lastLocation.lon);
+  });
+
   function filterLocations() {
     const selectedAOR = aorFilter.value;
     const selectedCountry = countryFilter.value;
@@ -207,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
     map.setView([lat, lon], 8);
     if (siteMarker) map.removeLayer(siteMarker);
     siteMarker = L.marker([lat, lon]).addTo(map);
-    apaPanel.style.display = "block";
+    apaPanel.classList.add("visible");
     toggleApaBtn.style.display = "none";
     updateApaTable(lat, lon);
     currentLocationIndicator.textContent = `Current Location: ${label || `${lat.toFixed(2)}, ${lon.toFixed(2)}`}`;
@@ -215,58 +288,86 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateApaTable(lat, lon) {
-    apaTableBody.innerHTML = "";
-    clearLines();
-    let count = 0;
-    SATELLITES.forEach((sat, idx) => {
+    clearApaTable();
+    const satellitesData = calculateSatelliteData(lat, lon);
+    renderApaTable(satellitesData);
+    bindTableEvents(lat, lon);
+    updateNoResultsMessage(satellitesData.length);
+    apaLive.textContent = `Updated APA table with ${satellitesData.length} satellites for location ${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+  }
+
+  function calculateSatelliteData(lat, lon) {
+    return SATELLITES.map((sat, idx) => {
       const az = ((sat.longitude - lon + 360) % 360).toFixed(2);
-      const el = (90 - Math.abs(lat) - Math.abs(sat.longitude - lon)).toFixed(2);
-      const isNegative = el < 0;
-      const id = `sat-${idx}`;
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td><input type="checkbox" id="${id}" data-lat="${lat}" data-lon="${lon}" data-satlon="${sat.longitude}" data-name="${sat.name}" ${isNegative ? "" : "checked"}></td>
+      const el = calculateElevation(lat, lon, sat.longitude).toFixed(2);
+      return {
+        id: `sat-${idx}`,
+        name: sat.name,
+        longitude: sat.longitude,
+        az,
+        el,
+        isNegative: el < 0,
+        custom: sat.custom
+      };
+    });
+  }
+
+  function calculateElevation(lat, lon, satLon) {
+    const R = 6371; // Earth radius in km
+    const h = 35786; // Geostationary altitude in km
+    const deltaLon = (satLon - lon) * Math.PI / 180;
+    const latRad = lat * Math.PI / 180;
+    const cosC = Math.cos(latRad) * Math.cos(deltaLon);
+    const C = Math.acos(cosC);
+    const sinEl = (h / R * Math.cos(C) - 1) / Math.sqrt(1 + (h / R) ** 2 - 2 * h / R * Math.cos(C));
+    return Math.asin(sinEl) * 180 / Math.PI;
+  }
+
+  function renderApaTable(satellitesData) {
+    apaTableBody.innerHTML = satellitesData.map(sat => `
+      <tr>
+        <td><input type="checkbox" id="${sat.id}" data-lat="${lat}" data-lon="${lon}" data-satlon="${sat.longitude}" data-name="${sat.name}" ${sat.isNegative ? "" : "checked"}></td>
         <td>${sat.name}</td>
         <td>${sat.longitude}</td>
-        <td class="${isNegative ? "negative" : ""}">${el}</td>
-        <td>${az}</td>
-        <td>${sat.custom ? `<button class="delete-sat" data-name="${sat.name}" title="Delete Satellite">❌</button>` : ""}</td>`;
-      apaTableBody.appendChild(row);
-      count++;
-    });
+        <td class="${sat.isNegative ? "negative" : ""}">${sat.el}</td>
+        <td>${sat.az}</td>
+        <td>${sat.custom ? `<button class="delete-sat" data-name="${sat.name}" title="Delete Satellite">❌</button>` : ""}</td>
+      </tr>
+    `).join("");
+  }
 
-    noResultsMessage.classList.toggle("hidden", count > 0);
-
+  function bindTableEvents(lat, lon) {
     apaTableBody.querySelectorAll(".delete-sat").forEach(btn => {
       btn.addEventListener("click", () => {
         const name = btn.dataset.name;
         const index = SATELLITES.findIndex(s => s.name === name && s.custom);
         if (index !== -1) {
           SATELLITES.splice(index, 1);
-          updateApaTable(lastLocation.lat, lastLocation.lon);
+          updateApaTable(lat, lon);
         }
       });
     });
-
     apaTableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
-      cb.addEventListener("change", function () {
-        const id = this.id;
-        const lat = parseFloat(this.dataset.lat);
-        const lon = parseFloat(this.dataset.lon);
-        const satLon = parseFloat(this.dataset.satlon);
-        const name = this.dataset.name;
-        const existing = lineLayers.find(l => l.id === id);
-        if (existing) {
-          map.removeLayer(existing.layer);
-          lineLayers = lineLayers.filter(l => l.id !== id);
-        }
-        if (this.checked) {
-          const el = 90 - Math.abs(lat) - Math.abs(satLon - lon);
-          drawLine(lat, lon, satLon, name, el, id);
-        }
+      cb.addEventListener("change", () => {
+        const { id, dataset } = cb;
+        const satLon = parseFloat(dataset.satlon);
+        const name = dataset.name;
+        toggleLine(id, lat, lon, satLon, name, cb.checked);
       });
       if (cb.checked) cb.dispatchEvent(new Event("change"));
     });
+  }
+
+  function toggleLine(id, lat, lon, satLon, label, checked) {
+    const existing = lineLayers.find(l => l.id === id);
+    if (existing) {
+      map.removeLayer(existing.layer);
+      lineLayers = lineLayers.filter(l => l.id !== id);
+    }
+    if (checked) {
+      const el = calculateElevation(lat, lon, satLon);
+      drawLine(lat, lon, satLon, label, el, id);
+    }
   }
 
   function drawLine(lat, lon, satLon, label, el, id) {
@@ -284,15 +385,25 @@ document.addEventListener("DOMContentLoaded", () => {
     lineLayers.push({ id, layer: polyline });
   }
 
+  function clearApaTable() {
+    apaTableBody.innerHTML = "";
+    clearLines();
+  }
+
   function clearLines() {
     lineLayers.forEach(l => map.removeLayer(l.layer));
     lineLayers = [];
+  }
+
+  function updateNoResultsMessage(count) {
+    noResultsMessage.classList.toggle("hidden", count > 0);
   }
 
   function toggleDrawer(drawerId, others) {
     const drawer = document.getElementById(drawerId);
     const isOpen = drawer.classList.contains("visible");
     drawer.classList.toggle("visible", !isOpen);
+    if (!isOpen) drawer.querySelector("input, select, button")?.focus();
     others.forEach(id => document.getElementById(id)?.classList.remove("visible"));
   }
 
@@ -313,6 +424,14 @@ document.addEventListener("DOMContentLoaded", () => {
       opt.textContent = country;
       countryFilter.appendChild(opt);
     });
+  }
+
+  function debounce(fn, delay) {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => fn(...args), delay);
+    };
   }
 
   populateFilters();
