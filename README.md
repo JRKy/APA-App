@@ -5,27 +5,31 @@ A Progressive Web App (PWA) for calculating and visualizing antenna pointing ang
 ## 🌍 Features
 
 - Interactive Leaflet map with OpenStreetMap base layers
-- Satellite plotting with azimuth and elevation calculation
-- Toggleable APA lines, visibility controls, and map annotations
+- Satellite position visualization with azimuth and elevation calculation
+- Color-coded APA lines and visibility indicators
+- Toggleable satellite visibility and interactive polar plot
 - Location filtering by AOR and Country
 - Support for custom locations and satellites
-- Responsive, accessible UI (WCAG 2.1 AA)
+- Responsive, accessible UI (WCAG 2.1 AA compliant)
 - Offline support with Service Worker
-- Draggable APA table panel with persistent layout
-- Tool buttons for location, filters, custom input, and satellite management
+- Draggable APA table panel with persistent layout and sorting
+- Dark mode with optimized map layers
+- Interactive tutorial and help system
 
 ## 📱 PWA Features
 
 - Installable to home screen (Android, iOS, desktop)
 - Offline fallback support (`sw.js`)
-- App manifest with icons
+- App manifest with icons and configuration
+- Version-based cache management
 
 ## 🛠️ Technologies
 
 - HTML5, CSS3, JavaScript (Vanilla)
 - Leaflet.js for maps and overlays
-- OpenStreetMap tiles
+- OpenStreetMap and additional map tile providers
 - PWA standards: Service Worker, manifest.json
+- Responsive design with mobile-first approach
 
 ## 🚀 Getting Started
 
@@ -43,6 +47,8 @@ Or open `index.html` directly for local development.
 - Follows WCAG 2.1 AA standards
 - Semantic HTML and keyboard navigable components
 - High-contrast visual styles and ARIA roles
+- Screen reader compatibility
+- Responsive touch targets for mobile use
 
 ## 📄 License
 
