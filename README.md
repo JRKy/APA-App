@@ -48,3 +48,16 @@ git clone https://github.com/YOUR_USERNAME/APA-App.git
 cd APA-App
 # Serve with any static server
 npx serve .
+Or open index.html directly for local development.
+
+♿ Accessibility
+
+Follows WCAG 2.1 AA standards
+Semantic HTML and keyboard navigable components
+High-contrast visual styles and ARIA roles
+Screen reader compatibility
+Responsive touch targets for mobile use
+Color-coded indicators with text alternatives
+
+📄 License
+MIT License — customize for your agency/org needs
