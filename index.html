@@ -307,16 +307,35 @@
       // Force display with important style
       drawer.setAttribute('style', 'display: block !important; position: fixed !important; z-index: 9999 !important; top: 100px !important; left: 50px !important; background: white !important; border: 3px solid red !important;');
       console.log(`Debug: Applied force-visible style to ${drawerId}`);
+      
+      // Monitor changes to the element
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach(mutation => {
+          console.log('Mutation detected:', mutation);
+          console.log('Element style after mutation:', drawer.getAttribute('style'));
+          console.log('Element classList after mutation:', drawer.className);
+        });
+      });
+      
+      observer.observe(drawer, { 
+        attributes: true, 
+        attributeOldValue: true,
+        attributeFilter: ['style', 'class']
+      });
+      
+      // Prevent any other code from hiding the drawer
+      const originalRemoveClass = Element.prototype.classList.remove;
+      drawer.classList.remove = function(...classes) {
+        console.log('Attempted to remove classes:', classes);
+        if (classes.includes('visible')) {
+          console.log('Blocking removal of visible class');
+          return;
+        }
+        return originalRemoveClass.apply(this, classes);
+      };
     } else {
       console.error(`Debug: Drawer ${drawerId} not found in DOM`);
     }
-    
-    // Check if drawer exists in DOM
-    const allDrawers = document.querySelectorAll('.drawer');
-    console.log(`Debug: Found ${allDrawers.length} drawers in DOM`);
-    allDrawers.forEach((d, i) => {
-      console.log(`Debug: Drawer ${i+1} ID: ${d.id}`);
-    });
   };
 </script>
 </body>
