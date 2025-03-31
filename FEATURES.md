@@ -38,6 +38,7 @@
 - [✓] Full keyboard navigation for map controls
 - [✓] Enhanced dark mode with improved contrast
 - [✓] Color-coded elevation indicators with text labels
+- [✓] Announce updates for APA values with ARIA live regions
 
 ## ✅ Performance & PWA
 - [✓] Service worker with offline cache
@@ -46,8 +47,10 @@
 - [✓] Async data loading
 - [✓] Optimize map redraws (debounce on zoom/pan)
 
+## ✅ Data Management
+- [✓] Exportable APA data (CSV)
+- [✓] Advanced satellite filtering options
+
 ## 🚧 Planned Future Enhancements
-- [ ] Announce updates for APA values with ARIA live regions
-- [ ] Exportable APA data (CSV/PDF)
+- [ ] Exportable APA data (PDF)
 - [ ] Multiple satellite comparison view
-- [ ] Advanced filtering options
