@@ -44,7 +44,7 @@ A Progressive Web App (PWA) for calculating and visualizing antenna pointing ang
 ## 🚀 Getting Started
 
 ```bash
-git clone https://github.com/JRKy/APA-App.git
+git clone https://github.com/JRKy/apa-app.git
 cd APA-App
 # Serve with any static server
 npx serve .
