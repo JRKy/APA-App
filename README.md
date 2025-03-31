@@ -16,7 +16,7 @@ A Progressive Web App (PWA) for calculating and visualizing antenna pointing ang
 - Dark mode with optimized map layers  
 - Interactive tutorial and help system  
 
-## 🆕 What's New in v1.9.0
+## 🆕 What's New in v2.0.0
 
 - Enhanced keyboard navigation for all components  
 - Improved WAI-ARIA support for screen readers  
