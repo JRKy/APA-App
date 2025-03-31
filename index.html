@@ -297,5 +297,27 @@
       });
     }
   </script>
+  <!-- Add this just before the closing </body> tag in index.html -->
+<script>
+  // Debug helper function for drawer visibility
+  window.toggleDrawerDebug = function(drawerId) {
+    console.log(`Debug toggling drawer: ${drawerId}`);
+    const drawer = document.getElementById(drawerId);
+    if (drawer) {
+      // Force display with important style
+      drawer.setAttribute('style', 'display: block !important; position: fixed !important; z-index: 9999 !important; top: 100px !important; left: 50px !important; background: white !important; border: 3px solid red !important;');
+      console.log(`Debug: Applied force-visible style to ${drawerId}`);
+    } else {
+      console.error(`Debug: Drawer ${drawerId} not found in DOM`);
+    }
+    
+    // Check if drawer exists in DOM
+    const allDrawers = document.querySelectorAll('.drawer');
+    console.log(`Debug: Found ${allDrawers.length} drawers in DOM`);
+    allDrawers.forEach((d, i) => {
+      console.log(`Debug: Drawer ${i+1} ID: ${d.id}`);
+    });
+  };
+</script>
 </body>
 </html>
