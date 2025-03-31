@@ -8,8 +8,6 @@ import { eventBus } from '../core/events.js';
  * Initialize drawer components
  */
 export function initDrawers() {
-  console.log("Initializing drawers...");
-  
   // Set up close buttons for all drawers
   document.querySelectorAll('.drawer-close').forEach(closeBtn => {
     closeBtn.addEventListener('click', function() {
@@ -47,33 +45,27 @@ export function initDrawers() {
 function setupDrawerToggles() {
   // Add direct event listeners to drawer toggle buttons
   document.getElementById("toggle-location-drawer")?.addEventListener("click", function() {
-    console.log("Location drawer toggle clicked (from event listener)");
     forceShowDrawer("location-drawer");
   });
   
   document.getElementById("toggle-satellite-drawer")?.addEventListener("click", function() {
-    console.log("Satellite drawer toggle clicked (from event listener)");
     forceShowDrawer("satellite-drawer");
   });
   
   document.getElementById("toggle-location-filter-drawer")?.addEventListener("click", function() {
-    console.log("Location filter drawer toggle clicked (from event listener)");
     forceShowDrawer("location-filter-drawer");
   });
   
   document.getElementById("toggle-satellite-filter-drawer")?.addEventListener("click", function() {
-    console.log("Satellite filter drawer toggle clicked (from event listener)");
     forceShowDrawer("satellite-filter-drawer");
   });
 }
 
 /**
- * Force show a drawer using direct style manipulation - mimicking the successful test approach
+ * Force show a drawer using direct style manipulation
  * @param {string} drawerId - ID of the drawer to show
  */
 function forceShowDrawer(drawerId) {
-  console.log(`Force showing drawer: ${drawerId}`);
-  
   // Hide all drawers first using direct style manipulation
   document.querySelectorAll('.drawer').forEach(drawer => {
     drawer.style.cssText = 'display: none !important;';
@@ -97,18 +89,15 @@ function forceShowDrawer(drawerId) {
     
     // Publish event
     eventBus.publish('drawerOpened', { drawerId });
-  } else {
-    console.error(`Drawer element not found: ${drawerId}`);
   }
 }
 
 /**
- * Toggle a drawer's visibility (legacy method, now uses forceShowDrawer)
+ * Toggle a drawer's visibility
  * @param {string} drawerId - ID of the drawer to toggle
  * @param {Array} others - IDs of other drawers to close
  */
 export function toggleDrawer(drawerId, others = []) {
-  console.log(`Attempting to toggle drawer: ${drawerId}`);
   forceShowDrawer(drawerId);
 }
 
