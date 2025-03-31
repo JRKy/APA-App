@@ -617,36 +617,37 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
     
-// Add event listeners for visibility toggles
-apaTableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
-  cb.addEventListener("change", function () {
-    const id = this.id;
-    const lat = parseFloat(this.dataset.lat);
-    const lon = parseFloat(this.dataset.lon);
-    const satLon = parseFloat(this.dataset.satlon);
-    const name = this.dataset.name;
+    // Add event listeners for visibility toggles
+    apaTableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
+      cb.addEventListener("change", function () {
+        const id = this.id;
+        const lat = parseFloat(this.dataset.lat);
+        const lon = parseFloat(this.dataset.lon);
+        const satLon = parseFloat(this.dataset.satlon);
+        const name = this.dataset.name;
+        
+        // Find and remove existing line
+        const existing = lineLayers.find(l => l.id === id);
+        if (existing) {
+          map.removeLayer(existing.layer);
+          lineLayers = lineLayers.filter(l => l.id !== id);
+          
+          // Also remove associated coverage cone if it exists
+          const associatedCones = coverageCones.filter(c => c.id === id);
+          associatedCones.forEach(cone => map.removeLayer(cone.circle));
+          coverageCones = coverageCones.filter(c => c.id !== id);
+        }
+        
+        if (this.checked) {
+          const el = 90 - Math.abs(lat) - Math.abs(satLon - lon);
+          drawLine(lat, lon, satLon, name, el, id);
+        }
+      });
+    });
     
-    // Find and remove existing line
-    const existing = lineLayers.find(l => l.id === id);
-    if (existing) {
-      map.removeLayer(existing.layer);
-      lineLayers = lineLayers.filter(l => l.id !== id);
-      
-      // Also remove associated coverage cone if it exists
-      const associatedCones = coverageCones.filter(c => c.id === id);
-      associatedCones.forEach(cone => map.removeLayer(cone.circle));
-      coverageCones = coverageCones.filter(c => c.id !== id);
-    }
-    
-    if (this.checked) {
-      const el = 90 - Math.abs(lat) - Math.abs(satLon - lon);
-      drawLine(lat, lon, satLon, name, el, id);
-    }
-  });
-});
-      
-      // Trigger change event to draw lines for checked satellites
-      if (cb.checked) cb.dispatchEvent(new Event("change"));
+    // Trigger change event to draw lines for checked satellites
+    apaTableBody.querySelectorAll("input[type=checkbox]:checked").forEach(cb => {
+      cb.dispatchEvent(new Event("change"));
     });
     
     // Add event listeners for satellite name clicks
@@ -666,6 +667,23 @@ apaTableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
     if (sortState.column !== null && sortState.direction !== 'none') {
       sortTable(sortState.column, sortState.direction);
     }
+  }
+
+  function calculateDistance(lat1, lon1, lat2, lon2) {
+    // Earth radius in km
+    const R = 6371;
+    
+    // Convert to radians
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c;
+    
+    return distance;
   }
 
   function showSatelliteDetails(satellite, lat, lon) {
@@ -713,23 +731,6 @@ apaTableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
     }
   }
 
-  function calculateDistance(lat1, lon1, lat2, lon2) {
-    // Earth radius in km
-    const R = 6371;
-    
-    // Convert to radians
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const distance = R * c;
-    
-    return distance;
-  }
-
   function updateSatelliteLines(lat, lon) {
     // Only redraw lines if they already exist
     if (lineLayers.length > 0) {
@@ -774,72 +775,71 @@ apaTableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
     orbitPaths.push(equatorLine);
   }
 
-function drawLine(lat, lon, satLon, label, el, id) {
-  // Define line style based on elevation
-  const isVisible = el >= 0;
-  const color = isVisible ? "#1a73e8" : "#ea4335";
-  const className = isVisible ? "apa-line-above" : "apa-line-below";
-  const weight = isVisible ? 2.5 : 1.5;
-  const dashArray = isVisible ? null : "5,5";
-  
-  // Create polyline
-  const polyline = L.polyline([[lat, lon], [0, satLon]], {
-    color,
-    weight,
-    opacity: 0.9,
-    dashArray,
-    className
-  }).addTo(map);
-  
-  // Add tooltip
-  polyline.bindTooltip(`${label} (${el.toFixed(1)}°)`, {
-    permanent: true,
-    direction: "center",
-    className: "apa-line-label"
-  });
-  
-  // Store line reference
-  lineLayers.push({ id, layer: polyline });
-  
-  // Add coverage cone if visible
-  if (isVisible) {
-    drawCoverageCone(lat, lon, satLon, el, id);
+  function drawLine(lat, lon, satLon, label, el, id) {
+    // Define line style based on elevation
+    const isVisible = el >= 0;
+    const color = isVisible ? "#1a73e8" : "#ea4335";
+    const className = isVisible ? "apa-line-above" : "apa-line-below";
+    const weight = isVisible ? 2.5 : 1.5;
+    const dashArray = isVisible ? null : "5,5";
+    
+    // Create polyline
+    const polyline = L.polyline([[lat, lon], [0, satLon]], {
+      color,
+      weight,
+      opacity: 0.9,
+      dashArray,
+      className
+    }).addTo(map);
+    
+    // Add tooltip
+    polyline.bindTooltip(`${label} (${el.toFixed(1)}°)`, {
+      permanent: true,
+      direction: "center",
+      className: "apa-line-label"
+    });
+    
+    // Store line reference
+    lineLayers.push({ id, layer: polyline });
+    
+    // Add coverage cone if visible
+    if (isVisible) {
+      drawCoverageCone(lat, lon, satLon, el, id);
+    }
   }
-}
 
-function drawCoverageCone(lat, lon, satLon, el, id) {
-  // Skip if elevation is too low
-  if (el < 0) return;
-  
-  // Calculate coverage radius (simplified)
-  const coverageRadius = Math.min(Math.max(el * 20, 200), 1000);
-  
-  // Determine color class based on elevation
-  let colorClass = 'coverage-cone';
-  if (el >= 30) {
-    colorClass = 'coverage-cone-excellent';
-  } else if (el >= 15) {
-    colorClass = 'coverage-cone-good';
-  } else if (el >= 5) {
-    colorClass = 'coverage-cone-marginal';
-  } else {
-    colorClass = 'coverage-cone-poor';
+  function drawCoverageCone(lat, lon, satLon, el, id) {
+    // Skip if elevation is too low
+    if (el < 0) return;
+    
+    // Calculate coverage radius (simplified)
+    const coverageRadius = Math.min(Math.max(el * 20, 200), 1000);
+    
+    // Determine color class based on elevation
+    let colorClass = 'coverage-cone';
+    if (el >= 30) {
+      colorClass = 'coverage-cone-excellent';
+    } else if (el >= 15) {
+      colorClass = 'coverage-cone-good';
+    } else if (el >= 5) {
+      colorClass = 'coverage-cone-marginal';
+    } else {
+      colorClass = 'coverage-cone-poor';
+    }
+    
+    // Create circle with appropriate color
+    const coverageCircle = L.circle([lat, lon], {
+      radius: coverageRadius * 1000, // Convert to meters
+      className: colorClass,
+      interactive: false
+    }).addTo(map);
+    
+    // Store the circle with its associated satellite ID
+    coverageCones.push({
+      id: id,
+      circle: coverageCircle
+    });
   }
-  
-  // Create circle with appropriate color
-  const coverageCircle = L.circle([lat, lon], {
-    radius: coverageRadius * 1000, // Convert to meters
-    className: colorClass,
-    interactive: false
-  }).addTo(map);
-  
-  // Store the circle with its associated satellite ID
-  coverageCones.push({
-    id: id,
-    circle: coverageCircle
-  });
-}
-
 
   function addSatelliteMarker(satellite, isBelow) {
     // Remove existing marker for this satellite
@@ -885,7 +885,7 @@ function drawCoverageCone(lat, lon, satLon, el, id) {
     orbitPaths = [];
     
     // Remove coverage cones
-    coverageCones.forEach(c => map.removeLayer(c));
+    coverageCones.forEach(c => map.removeLayer(c.circle));
     coverageCones = [];
   }
 
@@ -1599,8 +1599,6 @@ function drawCoverageCone(lat, lon, satLon, el, id) {
     }, 1000);
   }, 1000);
 });
-
-// The code up to line 1578 remains unchanged
 
 // Add a helper class for the grid lines since they're added via a separate library
 // Define L.LatLngGraticule as a Leaflet class extension
