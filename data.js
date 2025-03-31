@@ -6,17 +6,17 @@ const SATELLITES = [
   { name: "MUOS-3", longitude: -15 },
   { name: "MUOS-4", longitude: 75 },
   { name: "MUOS-5", longitude: 105 },
-  { name: "ALT1", longitude: -127 },
-  { name: "ALT2", longitude: -24 },
-  { name: "ALT3", longitude: 110 },
-  { name: "ALT4", longitude: 100 }
+  { name: "ALT-1", longitude: -127 },
+  { name: "ALT-2", longitude: -24 },
+  { name: "ALT-3", longitude: 110 },
+  { name: "ALT-4", longitude: 100 }
 ];
 
 const LOCATIONS = [
   { name: "NSA Bahrain", latitude: 26.2076027857257, longitude: 50.6111061537939, country: "Bahrain", aor: "CENTCOM" },
   { name: "Camp Arifjan", latitude: 28.88745959804, longitude: 48.1699731354169, country: "Kuwait", aor: "CENTCOM" },
   { name: "Al Udeid AB", latitude: 25.1235678538811, longitude: 51.3374629203215, country: "Qatar", aor: "CENTCOM" },
-  { name: "MacDill AFB, FL", latitude: 27.8510433301987, longitude: -82.5090662423147, country: "USA", aor: "NORTHCOM" },
+  { name: "MacDill AFB, FL", latitude: 27.8510433301987, longitude: -82.5090662423147, country: "USA", aor: "CENTCOM" },
   { name: "Ramstein AB", latitude: 49.4401704826424, longitude: 7.59720948275646, country: "Germany", aor: "EUCOM" },
   { name: "Clay Kaserne", latitude: 50.0407041208674, longitude: 8.32711774313159, country: "Germany", aor: "EUCOM" },
   { name: "Panzer Kaserne", latitude: 48.6858355365503, longitude: 9.04351944045798, country: "Germany", aor: "EUCOM" },
