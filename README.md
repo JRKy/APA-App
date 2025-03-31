@@ -9,12 +9,21 @@ A Progressive Web App (PWA) for calculating and visualizing antenna pointing ang
 - Color-coded APA lines and visibility indicators  
 - Toggleable satellite visibility and interactive polar plot  
 - Location filtering by AOR and Country  
+- Advanced satellite filtering options (elevation, type, visibility)
 - Support for custom locations and satellites  
+- Exportable data (CSV) for further analysis
 - Responsive, accessible UI (WCAG 2.1 AA compliant)  
 - Offline support with Service Worker  
 - Draggable APA table panel with persistent layout and sorting  
 - Dark mode with optimized map layers  
 - Interactive tutorial and help system  
+
+## 🆕 What's New in v2.1.0
+
+- ARIA live regions for better accessibility
+- CSV export functionality for APA data
+- Advanced satellite filtering options
+- Enhanced user experience with improved notifications
 
 ## 🆕 What's New in v2.0.0
 
