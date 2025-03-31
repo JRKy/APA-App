@@ -10,7 +10,10 @@ import { eventBus } from '../core/events.js';
 export function initPolarPlot() {
   const polarPlot = document.getElementById("polar-plot");
   
-  if (!polarPlot) return;
+  if (!polarPlot) {
+    console.error("Polar plot SVG not found during initialization!");
+    return;
+  }
   
   // Clear any existing elements
   while (polarPlot.firstChild) {
@@ -107,6 +110,7 @@ export function initPolarPlot() {
   
   // Subscribe to location changes
   eventBus.subscribe('locationChanged', (data) => {
+    console.log("Location changed event received", data);
     if (!isPolarPlotHidden()) {
       updatePolarPlot(data.lat, data.lon);
     }
@@ -119,29 +123,47 @@ export function initPolarPlot() {
  */
 export function togglePolarPlotVisibility(visible) {
   const polarPlotContainer = document.getElementById("polar-plot-container");
-  if (!polarPlotContainer) return;
-  
+  if (!polarPlotContainer) {
+    console.error("Polar plot container not found!");
+    return;
+  }
+
+  console.log("Current container classes:", polarPlotContainer.classList);
+
   // If visible is provided, set that state, otherwise toggle
   if (visible !== undefined) {
     polarPlotContainer.classList.toggle("hidden", !visible);
   } else {
     polarPlotContainer.classList.toggle("hidden");
   }
-  
+
+  console.log("New container classes:", polarPlotContainer.classList);
+
   // Save state
   const isVisible = !polarPlotContainer.classList.contains("hidden");
   savePolarPlotVisible(isVisible);
-  
+  console.log("Polar plot visibility:", isVisible);
+
   // If now visible, update if we have a location
   if (isVisible) {
     const checkbox = document.querySelector("input[type=checkbox][data-lat]");
     if (checkbox) {
       const lat = parseFloat(checkbox.dataset.lat);
       const lon = parseFloat(checkbox.dataset.lon);
-      updatePolarPlot(lat, lon);
+      console.log("Updating plot with location:", lat, lon);
+      
+      // Add more detailed logging
+      try {
+        updatePolarPlot(lat, lon);
+        console.log("Polar plot update successful");
+      } catch (error) {
+        console.error("Error updating polar plot:", error);
+      }
+    } else {
+      console.warn("No location checkbox found");
     }
   }
-  
+
   // Publish event
   eventBus.publish('polarPlotVisibilityChanged', isVisible);
 }
@@ -162,15 +184,24 @@ export function isPolarPlotHidden() {
  */
 export function updatePolarPlot(lat, lon) {
   const polarPlot = document.getElementById("polar-plot");
-  if (!polarPlot) return;
+  if (!polarPlot) {
+    console.error("Polar plot SVG not found!");
+    return;
+  }
   
+  console.log("Updating polar plot for location:", lat, lon);
+
   // Remove existing satellite dots
   const existingDots = polarPlot.querySelectorAll(".polar-plot-satellite, .polar-plot-satellite-below");
+  console.log("Existing dots to remove:", existingDots.length);
   existingDots.forEach(dot => dot.remove());
   
   // Get satellites and calculate polar coordinates
   const satellites = getSatellites();
+  console.log("Total satellites:", satellites.length);
+  
   const polarData = calculatePolarCoordinates(lat, lon, satellites);
+  console.log("Polar coordinate data:", polarData);
   
   // Add dots for each satellite
   polarData.forEach(sat => {
@@ -180,6 +211,8 @@ export function updatePolarPlot(lat, lon) {
     // Calculate position (convert from -1 to 1 range to 0-200 SVG coordinates)
     const x = 100 + sat.polarX * 100;
     const y = 100 + sat.polarY * 100;
+    
+    console.log(`Satellite ${sat.name}: x=${x}, y=${y}, elevation=${sat.elevation}, isVisible=${sat.isVisible}`);
     
     // Create dot
     const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -194,15 +227,5 @@ export function updatePolarPlot(lat, lon) {
     dot.appendChild(title);
     
     polarPlot.appendChild(dot);
-    
-    // Add event listener for dot clicks
-    dot.addEventListener('click', () => {
-      // Publish satellite selection event
-      eventBus.publish('satelliteSelected', {
-        satellite: sat,
-        lat,
-        lon
-      });
-    });
   });
 }
