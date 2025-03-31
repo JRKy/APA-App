@@ -663,6 +663,51 @@ body.dark-mode .apa-line-label {
   animation: pulse 2s infinite;
 }
 
+/* Coverage cone styles */
+.coverage-cone {
+  fill: var(--color-primary);
+  fill-opacity: 0.05;
+  stroke: var(--color-primary);
+  stroke-width: 1;
+  stroke-opacity: 0.3;
+}
+
+/* Excellent elevation (>30°) */
+.coverage-cone-excellent {
+  fill: var(--color-accent-green);
+  fill-opacity: 0.05;
+  stroke: var(--color-accent-green);
+  stroke-width: 1;
+  stroke-opacity: 0.3;
+}
+
+/* Good elevation (15-30°) */
+.coverage-cone-good {
+  fill: var(--color-primary);
+  fill-opacity: 0.05;
+  stroke: var(--color-primary);
+  stroke-width: 1;
+  stroke-opacity: 0.3;
+}
+
+/* Marginal elevation (5-15°) */
+.coverage-cone-marginal {
+  fill: var(--color-accent-yellow);
+  fill-opacity: 0.05;
+  stroke: var(--color-accent-yellow);
+  stroke-width: 1;
+  stroke-opacity: 0.3;
+}
+
+/* Poor elevation (0-5°) */
+.coverage-cone-poor {
+  fill: var(--color-accent-orange);
+  fill-opacity: 0.05;
+  stroke: var(--color-accent-orange);
+  stroke-width: 1;
+  stroke-opacity: 0.3;
+}
+
 /* ===== Help and Legend ===== */
 #help-tooltip {
   position: fixed;
