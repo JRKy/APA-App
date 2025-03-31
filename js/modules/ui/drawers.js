@@ -18,7 +18,9 @@ export function initDrawers() {
         const drawer = document.getElementById(drawerId);
         if (drawer) {
           drawer.classList.remove('visible');
+          drawer.style.display = 'none'; // Explicitly hide with inline style
           document.getElementById('drawer-overlay').classList.remove('visible');
+          document.getElementById('drawer-overlay').style.display = 'none'; // Explicitly hide overlay
         }
       }
     });
@@ -76,13 +78,16 @@ function showDrawer(drawerId) {
   // Close all drawers first
   document.querySelectorAll('.drawer').forEach(drawer => {
     drawer.classList.remove('visible');
+    drawer.style.display = 'none'; // Explicitly hide with inline style
   });
   
   // Show the requested drawer
   const drawer = document.getElementById(drawerId);
   if (drawer) {
     drawer.classList.add('visible');
+    drawer.style.display = 'block'; // Explicitly show with inline style
     document.getElementById('drawer-overlay').classList.add('visible');
+    document.getElementById('drawer-overlay').style.display = 'block'; // Explicitly show overlay
     console.log(`Drawer ${drawerId} should now be visible`);
     
     // If this is an input drawer, focus the first input
@@ -122,7 +127,9 @@ export function toggleDrawer(drawerId, others = []) {
   if (!isOpen) {
     console.log(`Opening drawer: ${drawerId}`);
     drawer.classList.add("visible");
+    drawer.style.display = 'block'; // Explicitly show with inline style
     document.getElementById('drawer-overlay').classList.add("visible");
+    document.getElementById('drawer-overlay').style.display = 'block'; // Explicitly show overlay
     
     // If this is an input drawer, focus the first input
     const firstInput = drawer.querySelector('input, select');
@@ -141,8 +148,10 @@ export function toggleDrawer(drawerId, others = []) {
 export function closeAllDrawers() {
   document.querySelectorAll('.drawer.visible').forEach(openDrawer => {
     openDrawer.classList.remove("visible");
+    openDrawer.style.display = 'none'; // Explicitly hide with inline style
   });
   document.getElementById('drawer-overlay').classList.remove("visible");
+  document.getElementById('drawer-overlay').style.display = 'none'; // Explicitly hide overlay
   
   // Publish event
   eventBus.publish('drawersAllClosed');
