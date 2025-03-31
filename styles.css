@@ -359,7 +359,7 @@ header h1 {
   padding: var(--space-md);
   border-radius: var(--radius-md);
   max-height: 70vh;
-  width: 380px;
+  width: 420px; /* UPDATED: Increased from 380px */
   overflow-y: auto;
   z-index: 1001;
   position: fixed;
@@ -370,7 +370,7 @@ header h1 {
   user-select: none;
   resize: both;
   overflow: auto;
-  min-width: 320px;
+  min-width: 360px; /* UPDATED: Increased from 320px */
   min-height: 200px;
   animation: fade-in var(--transition-normal);
   border: 1px solid var(--color-border);
@@ -381,11 +381,13 @@ body.dark-mode #apa-panel.leaflet-control.apa-control {
   border-color: var(--color-dark-border);
 }
 
+/* UPDATED: Added !important to ensure these styles take precedence */
 #apa-panel.minimized {
-  max-height: 40px;
-  overflow: hidden;
-  padding: var(--space-xs) var(--space-md);
-  resize: none;
+  max-height: 40px !important;
+  overflow: hidden !important;
+  padding: var(--space-xs) var(--space-md) !important;
+  resize: none !important;
+  z-index: 1005 !important; /* Higher than current location indicator */
 }
 
 .apa-panel-header {
@@ -455,11 +457,19 @@ body.dark-mode #minimize-apa-panel:hover {
   margin-top: var(--space-sm);
   border-collapse: separate;
   border-spacing: 0;
-  table-layout: fixed;
+  table-layout: auto; /* UPDATED: Changed from fixed to auto */
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   overflow: hidden;
 }
+
+/* UPDATED: Define specific widths for columns */
+#apa-table th:nth-child(1), #apa-table td:nth-child(1) { width: 60px; } /* Visible toggle */
+#apa-table th:nth-child(2), #apa-table td:nth-child(2) { width: 25%; } /* Name */
+#apa-table th:nth-child(3), #apa-table td:nth-child(3) { width: 15%; } /* Longitude */
+#apa-table th:nth-child(4), #apa-table td:nth-child(4) { width: 20%; } /* Elevation */
+#apa-table th:nth-child(5), #apa-table td:nth-child(5) { width: 15%; } /* Azimuth */
+#apa-table th:nth-child(6), #apa-table td:nth-child(6) { width: 60px; } /* Actions */
 
 #apa-table thead {
   position: sticky;
@@ -475,6 +485,13 @@ body.dark-mode #minimize-apa-panel:hover {
   word-wrap: break-word;
   font-size: var(--font-size-sm);
   border-bottom: 1px solid var(--color-border);
+}
+
+/* UPDATED: Added ellipsis for long content */
+#apa-table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #apa-table th {
@@ -887,120 +904,6 @@ body.dark-mode .apa-line-label {
   100% { stroke-opacity: 0.7; }
 }
 
-/* ===== Map Customizations ===== */
-.leaflet-control-zoom {
-  box-shadow: var(--shadow-md) !important;
-  border: none !important;
-  border-radius: var(--radius-sm) !important;
-  overflow: hidden;
-}
-
-.leaflet-control-zoom a {
-  background-color: var(--color-surface) !important;
-  color: var(--color-primary) !important;
-  transition: all var(--transition-fast);
-}
-
-.leaflet-control-zoom a:hover {
-  background-color: var(--color-primary) !important;
-  color: white !important;
-}
-
-body.dark-mode .leaflet-control-zoom a {
-  background-color: var(--color-dark-surface) !important;
-  color: var(--color-dark-primary) !important;
-}
-
-body.dark-mode .leaflet-control-zoom a:hover {
-  background-color: var(--color-dark-primary) !important;
-  color: var(--color-dark-text-primary) !important;
-}
-
-.leaflet-control-layers {
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-md) !important;
-  border: none !important;
-  font-family: 'Inter', sans-serif !important;
-  font-size: var(--font-size-sm) !important;
-}
-
-.leaflet-control-layers-toggle {
-  background-size: 20px 20px !important;
-}
-
-body.dark-mode .leaflet-control-layers {
-  background-color: var(--color-dark-surface) !important;
-  color: var(--color-dark-text-primary) !important;
-}
-
-.leaflet-popup-content-wrapper {
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-lg) !important;
-  padding: var(--space-sm) !important;
-}
-
-.leaflet-popup-content {
-  margin: var(--space-xs) var(--space-sm) !important;
-  font-family: 'Inter', sans-serif !important;
-  font-size: var(--font-size-sm) !important;
-}
-
-.leaflet-popup-tip {
-  box-shadow: var(--shadow-md) !important;
-}
-
-body.dark-mode .leaflet-popup-content-wrapper,
-body.dark-mode .leaflet-popup-tip {
-  background-color: var(--color-dark-surface) !important;
-  color: var(--color-dark-text-primary) !important;
-}
-
-/* ===== Custom Components ===== */
-.satellite-popup {
-  min-width: 200px;
-}
-
-.satellite-popup-header {
-  font-weight: 600;
-  color: var(--color-primary);
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: var(--space-xs);
-  margin-bottom: var(--space-xs);
-}
-
-.satellite-popup-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-sm);
-}
-
-.satellite-popup-label {
-  font-weight: 500;
-  color: var(--color-text-secondary);
-}
-
-.satellite-popup-value {
-  text-align: right;
-  font-weight: 600;
-}
-
-.satellite-orbit {
-  stroke: var(--color-primary);
-  stroke-width: 1;
-  fill: none;
-  stroke-dasharray: 3, 3;
-  opacity: 0.5;
-}
-
-.coverage-cone {
-  fill: var(--color-primary);
-  fill-opacity: 0.05;
-  stroke: var(--color-primary);
-  stroke-width: 1;
-  stroke-opacity: 0.3;
-}
-
 /* ===== Polar Plot ===== */
 .polar-plot-container {
   background-color: var(--color-surface);
@@ -1172,8 +1075,14 @@ body.dark-mode .polar-plot-label {
     resize: none;
   }
   
+  /* UPDATED: Only include mobile-specific overrides */
   #apa-panel.minimized {
-    max-height: 40px;
+    z-index: 1005; /* Higher than current location indicator */
+  }
+  
+  /* UPDATED: Adjust position for location indicator with minimized panel */
+  #current-location-indicator {
+    bottom: 60px; /* Increased to provide more space */
   }
   
   .apa-panel-header {
