@@ -32,23 +32,6 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
   <link rel="stylesheet" href="styles.css?v=2.0.0" />
-
-    <!-- Add the emergency fix right here, after your main stylesheet -->
-  <style>
-    /* Emergency fix for drawer visibility */
-    .drawer.visible {
-      display: block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      z-index: 1500 !important;
-    }
-    
-    .drawer-overlay.visible {
-      display: block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-    }
-  </style>
   
 </head>
 <body>
@@ -59,17 +42,17 @@
 
   <!-- Drawer Buttons -->
   <div class="drawer-buttons top">
-    <button id="toggle-location-drawer" title="Add Custom Location" aria-label="Open location drawer" onclick="console.log('Location button clicked')">
+    <button id="toggle-location-drawer" title="Add Custom Location" aria-label="Open location drawer">      
       <span class="material-icons-round">add_location</span>
     </button>
-    <button id="toggle-satellite-drawer" title="Add Custom Satellite" aria-label="Open satellite drawer" onclick="console.log('Satellite button clicked')">
+    <button id="toggle-satellite-drawer" title="Add Custom Satellite" aria-label="Open satellite drawer">
       <span class="material-icons-round">satellite</span>
     </button>
-    <button id="toggle-location-filter-drawer" title="Location Filters" aria-label="Open location filters" onclick="console.log('Location filter button clicked')">
+    <button id="toggle-location-filter-drawer" title="Location Filters" aria-label="Open location filters">
       <span class="material-icons-round">location_city</span>
       <span id="location-filter-summary" class="filter-badge hidden">0</span>
     </button>
-    <button id="toggle-satellite-filter-drawer" title="Satellite Filters" aria-label="Open satellite filters" onclick="console.log('Satellite filter button clicked')">
+    <button id="toggle-satellite-filter-drawer" title="Satellite Filters" aria-label="Open satellite filters">
       <span class="material-icons-round">satellite_alt</span>
       <span id="satellite-filter-summary" class="filter-badge hidden">0</span>
     </button>
@@ -330,54 +313,5 @@
       });
     }
   </script>
-<script>
-  // Check for drawer elements and add direct test buttons
-  document.addEventListener('DOMContentLoaded', function() {
-    const debugDiv = document.createElement('div');
-    debugDiv.style.position = 'fixed';
-    debugDiv.style.bottom = '10px';
-    debugDiv.style.left = '10px';
-    debugDiv.style.zIndex = '9999';
-    debugDiv.style.background = 'rgba(0,0,0,0.7)';
-    debugDiv.style.color = 'white';
-    debugDiv.style.padding = '10px';
-    debugDiv.style.borderRadius = '5px';
-    
-    // Create test button for each drawer
-    const drawers = document.querySelectorAll('.drawer');
-    drawers.forEach(drawer => {
-      console.log(`Found drawer: ${drawer.id}`);
-      
-      const btn = document.createElement('button');
-      btn.textContent = `Test ${drawer.id}`;
-      btn.style.margin = '5px';
-      btn.style.padding = '5px 10px';
-      
-      btn.addEventListener('click', function() {
-        console.log(`Direct test of ${drawer.id}`);
-        
-        // Hide all drawers first
-        document.querySelectorAll('.drawer').forEach(d => {
-          d.style.cssText = 'display: none !important;';
-        });
-        
-        // Show this drawer with direct DOM manipulation
-        drawer.style.cssText = `
-          display: block !important;
-          position: fixed !important;
-          top: 100px !important;
-          left: 100px !important;
-          z-index: 9999 !important;
-          background: white !important;
-          border: 2px solid red !important;
-        `;
-      });
-      
-      debugDiv.appendChild(btn);
-    });
-    
-    document.body.appendChild(debugDiv);
-  });
-</script>
 </body>
 </html>
