@@ -4,6 +4,7 @@ import { toggleDrawer, closeAllDrawers } from '../ui/drawers.js';
 import { togglePolarPlotVisibility } from '../ui/polarPlot.js';
 import { showTutorial } from '../ui/tutorial.js';
 import { toggleLegend } from '../ui/legend.js';
+import { useMyLocation } from '../data/locations.js';
 
 /**
  * App-wide event bus for communication between modules
@@ -72,6 +73,9 @@ export function initEventListeners() {
   document.getElementById("toggle-filter-drawer")?.addEventListener("click", () => {
     toggleDrawer("filter-drawer", ["location-drawer", "satellite-drawer"]);
   });
+  
+  // My Location button
+  document.getElementById("btn-my-location")?.addEventListener("click", useMyLocation);
   
   // Drawer overlay close
   document.getElementById("drawer-overlay")?.addEventListener("click", closeAllDrawers);
