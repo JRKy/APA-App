@@ -50,7 +50,7 @@ cd APA-App
 npx serve .
 Or open index.html directly for local development.
 
-♿ Accessibility
+## ♿ Accessibility
 
 Follows WCAG 2.1 AA standards
 Semantic HTML and keyboard navigable components
@@ -59,5 +59,5 @@ Screen reader compatibility
 Responsive touch targets for mobile use
 Color-coded indicators with text alternatives
 
-📄 License
+## 📄 License
 MIT License — customize for your agency/org needs
