@@ -617,26 +617,33 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
     
-    // Add event listeners for visibility toggles
-    apaTableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
-      cb.addEventListener("change", function () {
-        const id = this.id;
-        const lat = parseFloat(this.dataset.lat);
-        const lon = parseFloat(this.dataset.lon);
-        const satLon = parseFloat(this.dataset.satlon);
-        const name = this.dataset.name;
-        const existing = lineLayers.find(l => l.id === id);
-        
-        if (existing) {
-          map.removeLayer(existing.layer);
-          lineLayers = lineLayers.filter(l => l.id !== id);
-        }
-        
-        if (this.checked) {
-          const el = 90 - Math.abs(lat) - Math.abs(satLon - lon);
-          drawLine(lat, lon, satLon, name, el, id);
-        }
-      });
+// Add event listeners for visibility toggles
+apaTableBody.querySelectorAll("input[type=checkbox]").forEach(cb => {
+  cb.addEventListener("change", function () {
+    const id = this.id;
+    const lat = parseFloat(this.dataset.lat);
+    const lon = parseFloat(this.dataset.lon);
+    const satLon = parseFloat(this.dataset.satlon);
+    const name = this.dataset.name;
+    
+    // Find and remove existing line
+    const existing = lineLayers.find(l => l.id === id);
+    if (existing) {
+      map.removeLayer(existing.layer);
+      lineLayers = lineLayers.filter(l => l.id !== id);
+      
+      // Also remove associated coverage cone if it exists
+      const associatedCones = coverageCones.filter(c => c.id === id);
+      associatedCones.forEach(cone => map.removeLayer(cone.circle));
+      coverageCones = coverageCones.filter(c => c.id !== id);
+    }
+    
+    if (this.checked) {
+      const el = 90 - Math.abs(lat) - Math.abs(satLon - lon);
+      drawLine(lat, lon, satLon, name, el, id);
+    }
+  });
+});
       
       // Trigger change event to draw lines for checked satellites
       if (cb.checked) cb.dispatchEvent(new Event("change"));
@@ -767,40 +774,40 @@ document.addEventListener("DOMContentLoaded", () => {
     orbitPaths.push(equatorLine);
   }
 
-  function drawLine(lat, lon, satLon, label, el, id) {
-    // Define line style based on elevation
-    const isVisible = el >= 0;
-    const color = isVisible ? "#1a73e8" : "#ea4335";
-    const className = isVisible ? "apa-line-above" : "apa-line-below";
-    const weight = isVisible ? 2.5 : 1.5;
-    const dashArray = isVisible ? null : "5,5";
-    
-    // Create polyline
-    const polyline = L.polyline([[lat, lon], [0, satLon]], {
-      color,
-      weight,
-      opacity: 0.9,
-      dashArray,
-      className
-    }).addTo(map);
-    
-    // Add tooltip
-    polyline.bindTooltip(`${label} (${el.toFixed(1)}°)`, {
-      permanent: true,
-      direction: "center",
-      className: "apa-line-label"
-    });
-    
-    // Store line reference
-    lineLayers.push({ id, layer: polyline });
-    
-    // Add coverage cone if visible
-    if (isVisible) {
-      drawCoverageCone(lat, lon, satLon, el);
-    }
+function drawLine(lat, lon, satLon, label, el, id) {
+  // Define line style based on elevation
+  const isVisible = el >= 0;
+  const color = isVisible ? "#1a73e8" : "#ea4335";
+  const className = isVisible ? "apa-line-above" : "apa-line-below";
+  const weight = isVisible ? 2.5 : 1.5;
+  const dashArray = isVisible ? null : "5,5";
+  
+  // Create polyline
+  const polyline = L.polyline([[lat, lon], [0, satLon]], {
+    color,
+    weight,
+    opacity: 0.9,
+    dashArray,
+    className
+  }).addTo(map);
+  
+  // Add tooltip
+  polyline.bindTooltip(`${label} (${el.toFixed(1)}°)`, {
+    permanent: true,
+    direction: "center",
+    className: "apa-line-label"
+  });
+  
+  // Store line reference
+  lineLayers.push({ id, layer: polyline });
+  
+  // Add coverage cone if visible
+  if (isVisible) {
+    drawCoverageCone(lat, lon, satLon, el, id);
   }
+}
 
-  function drawCoverageCone(lat, lon, satLon, el) {
+function drawCoverageCone(lat, lon, satLon, el, id) {
   // Skip if elevation is too low
   if (el < 0) return;
   
@@ -826,8 +833,12 @@ document.addEventListener("DOMContentLoaded", () => {
     interactive: false
   }).addTo(map);
   
-  coverageCones.push(coverageCircle);
-  }
+  // Store the circle with its associated satellite ID
+  coverageCones.push({
+    id: id,
+    circle: coverageCircle
+  });
+}
 
 
   function addSatelliteMarker(satellite, isBelow) {
