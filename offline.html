@@ -3,31 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline Mode</title>
+    <title>APA App - Offline</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        :root {
+            --color-primary: #1a73e8;
+            --color-primary-dark: #0d47a1;
+            --color-background: #f8f9fa;
+            --color-surface: #ffffff;
+            --color-text-primary: #202124;
+            --color-text-secondary: #5f6368;
+            --color-border: #dadce0;
+            
+            /* Dark Mode Colors */
+            --color-dark-background: #1f2937;
+            --color-dark-surface: #374151;
+            --color-dark-text-primary: #f3f4f6;
+            --color-dark-text-secondary: #d1d5db;
+            --color-dark-primary: #5b9cf7;
+            
+            /* Spacing & Sizing */
+            --space-md: 16px;
+            --space-lg: 24px;
+            --radius-md: 8px;
+        }
+        
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .offline-container {
+            background: var(--color-surface);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
-            padding: 50px;
-            background-color: #f0f0f0;
+            max-width: 400px;
+            width: 90%;
+            margin: 0 auto;
         }
-        h1 {
-            color: #003087;
-        }
-        p {
+        
+        header {
+            background-color: var(--color-primary);
+            color: white;
+            padding: 12px 16px;
+            text-align: center;
             font-size: 18px;
-            color: #333;
+            font-weight: 600;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            margin: -24px -24px 20px -24px;
         }
+        
+        h1 {
+            color: var(--color-primary);
+            font-size: 24px;
+            margin-top: 0;
+        }
+        
+        p {
+            font-size: 16px;
+            color: var(--color-text-secondary);
+            line-height: 1.5;
+        }
+        
+        .icon {
+            font-size: 48px;
+            color: var(--color-primary);
+            margin-bottom: 16px;
+        }
+        
         .version {
-            margin-top: 20px;
+            margin-top: 24px;
             font-size: 14px;
-            color: #666;
+            color: var(--color-text-secondary);
+        }
+        
+        button {
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 16px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: var(--color-primary-dark);
+        }
+        
+        /* Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                --color-background: var(--color-dark-background);
+                --color-surface: var(--color-dark-surface);
+                --color-text-primary: var(--color-dark-text-primary);
+                --color-text-secondary: var(--color-dark-text-secondary);
+                --color-primary: var(--color-dark-primary);
+            }
         }
     </style>
 </head>
 <body>
-    <h1>You're Offline</h1>
-    <p>Check your internet connection and try again.</p>
-    <div class="version">App Version: 1.9.0</div>
+    <div class="offline-container">
+        <header>APA App</header>
+        <span class="material-icons-round icon">wifi_off</span>
+        <h1>You're Offline</h1>
+        <p>Check your internet connection and try again. Some features may still work with previously cached data.</p>
+        <button onclick="window.location.reload()">Retry Connection</button>
+        <div class="version">App Version: 1.9.0</div>
+    </div>
 </body>
 </html>
