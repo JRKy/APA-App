@@ -1,4 +1,4 @@
-const CACHE_NAME = "apa-app-cache-v2.0.0";
+const CACHE_NAME = "apa-app-cache-v2.1.1";
 const OFFLINE_URL = "offline.html";
 
 self.addEventListener("install", (event) => {
@@ -7,9 +7,9 @@ self.addEventListener("install", (event) => {
       return cache.addAll([
         "./",
         "index.html",
-        "styles.css?v=2.0.0",
-        "data.js?v=2.0.0",
-        "js/main.js?v=2.0.0",
+        "styles.css?v=2.1.1",
+        "data.js?v=2.1.1",
+        "js/main.js?v=2.1.1",
         "js/modules/core/config.js",
         "js/modules/core/utils.js",
         "js/modules/core/events.js",
@@ -33,7 +33,7 @@ self.addEventListener("install", (event) => {
       ]);
     })
   );
-  console.log("Installed SW Version: v2.0.0");
+  console.log("Installed SW Version: v2.1.1");
 });
 
 self.addEventListener("fetch", (event) => {
