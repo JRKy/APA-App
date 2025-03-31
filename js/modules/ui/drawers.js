@@ -33,6 +33,23 @@ export function initDrawers() {
   if (addSatelliteBtn) {
     addSatelliteBtn.addEventListener("click", handleAddSatellite);
   }
+  
+  // Set up drawer toggle buttons
+  document.getElementById("toggle-location-drawer")?.addEventListener("click", () => {
+    toggleDrawer("location-drawer", ["satellite-drawer", "location-filter-drawer", "satellite-filter-drawer"]);
+  });
+
+  document.getElementById("toggle-satellite-drawer")?.addEventListener("click", () => {
+    toggleDrawer("satellite-drawer", ["location-drawer", "location-filter-drawer", "satellite-filter-drawer"]);
+  });
+
+  document.getElementById("toggle-location-filter-drawer")?.addEventListener("click", () => {
+    toggleDrawer("location-filter-drawer", ["location-drawer", "satellite-drawer", "satellite-filter-drawer"]);
+  });
+
+  document.getElementById("toggle-satellite-filter-drawer")?.addEventListener("click", () => {
+    toggleDrawer("satellite-filter-drawer", ["location-drawer", "satellite-drawer", "location-filter-drawer"]);
+  });
 }
 
 /**
