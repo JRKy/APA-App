@@ -17,10 +17,9 @@ export function initDrawers() {
       if (drawerId) {
         const drawer = document.getElementById(drawerId);
         if (drawer) {
-          drawer.classList.remove('visible');
-          drawer.style.display = 'none'; // Explicitly hide with inline style
-          document.getElementById('drawer-overlay').classList.remove('visible');
-          document.getElementById('drawer-overlay').style.display = 'none'; // Explicitly hide overlay
+          // Use direct style manipulation to hide
+          drawer.style.cssText = 'display: none !important;';
+          document.getElementById('drawer-overlay').style.cssText = 'display: none !important;';
         }
       }
     });
@@ -49,46 +48,46 @@ function setupDrawerToggles() {
   // Add direct event listeners to drawer toggle buttons
   document.getElementById("toggle-location-drawer")?.addEventListener("click", function() {
     console.log("Location drawer toggle clicked (from event listener)");
-    showDrawer("location-drawer");
+    forceShowDrawer("location-drawer");
   });
   
   document.getElementById("toggle-satellite-drawer")?.addEventListener("click", function() {
     console.log("Satellite drawer toggle clicked (from event listener)");
-    showDrawer("satellite-drawer");
+    forceShowDrawer("satellite-drawer");
   });
   
   document.getElementById("toggle-location-filter-drawer")?.addEventListener("click", function() {
     console.log("Location filter drawer toggle clicked (from event listener)");
-    showDrawer("location-filter-drawer");
+    forceShowDrawer("location-filter-drawer");
   });
   
   document.getElementById("toggle-satellite-filter-drawer")?.addEventListener("click", function() {
     console.log("Satellite filter drawer toggle clicked (from event listener)");
-    showDrawer("satellite-filter-drawer");
+    forceShowDrawer("satellite-filter-drawer");
   });
 }
 
 /**
- * Show a drawer directly (simpler implementation)
+ * Force show a drawer using direct style manipulation - mimicking the successful test approach
  * @param {string} drawerId - ID of the drawer to show
  */
-function showDrawer(drawerId) {
-  console.log(`Attempting to show drawer: ${drawerId}`);
+function forceShowDrawer(drawerId) {
+  console.log(`Force showing drawer: ${drawerId}`);
   
-  // Close all drawers first
+  // Hide all drawers first using direct style manipulation
   document.querySelectorAll('.drawer').forEach(drawer => {
-    drawer.classList.remove('visible');
-    drawer.style.display = 'none'; // Explicitly hide with inline style
+    drawer.style.cssText = 'display: none !important;';
   });
   
-  // Show the requested drawer
+  // Show this drawer with direct style manipulation
   const drawer = document.getElementById(drawerId);
   if (drawer) {
-    drawer.classList.add('visible');
-    drawer.style.display = 'block'; // Explicitly show with inline style
-    document.getElementById('drawer-overlay').classList.add('visible');
-    document.getElementById('drawer-overlay').style.display = 'block'; // Explicitly show overlay
-    console.log(`Drawer ${drawerId} should now be visible`);
+    drawer.style.cssText = `
+      display: block !important;
+      position: absolute !important;
+      z-index: 1500 !important;
+    `;
+    document.getElementById('drawer-overlay').style.cssText = 'display: block !important;';
     
     // If this is an input drawer, focus the first input
     const firstInput = drawer.querySelector('input, select');
@@ -104,54 +103,23 @@ function showDrawer(drawerId) {
 }
 
 /**
- * Toggle a drawer's visibility
+ * Toggle a drawer's visibility (legacy method, now uses forceShowDrawer)
  * @param {string} drawerId - ID of the drawer to toggle
  * @param {Array} others - IDs of other drawers to close
  */
 export function toggleDrawer(drawerId, others = []) {
   console.log(`Attempting to toggle drawer: ${drawerId}`);
-  
-  const drawer = document.getElementById(drawerId);
-  if (!drawer) {
-    console.error(`Drawer not found: ${drawerId}`);
-    return;
-  }
-  
-  const isOpen = drawer.classList.contains("visible");
-  console.log(`Drawer ${drawerId} is currently ${isOpen ? 'open' : 'closed'}`);
-  
-  // Close all drawers first
-  closeAllDrawers();
-  
-  // Then open the requested drawer if it wasn't already open
-  if (!isOpen) {
-    console.log(`Opening drawer: ${drawerId}`);
-    drawer.classList.add("visible");
-    drawer.style.display = 'block'; // Explicitly show with inline style
-    document.getElementById('drawer-overlay').classList.add("visible");
-    document.getElementById('drawer-overlay').style.display = 'block'; // Explicitly show overlay
-    
-    // If this is an input drawer, focus the first input
-    const firstInput = drawer.querySelector('input, select');
-    if (firstInput) {
-      setTimeout(() => firstInput.focus(), 100);
-    }
-    
-    // Publish event
-    eventBus.publish('drawerOpened', { drawerId });
-  }
+  forceShowDrawer(drawerId);
 }
 
 /**
  * Close all open drawers
  */
 export function closeAllDrawers() {
-  document.querySelectorAll('.drawer.visible').forEach(openDrawer => {
-    openDrawer.classList.remove("visible");
-    openDrawer.style.display = 'none'; // Explicitly hide with inline style
+  document.querySelectorAll('.drawer').forEach(drawer => {
+    drawer.style.cssText = 'display: none !important;';
   });
-  document.getElementById('drawer-overlay').classList.remove("visible");
-  document.getElementById('drawer-overlay').style.display = 'none'; // Explicitly hide overlay
+  document.getElementById('drawer-overlay').style.cssText = 'display: none !important;';
   
   // Publish event
   eventBus.publish('drawersAllClosed');
