@@ -99,7 +99,10 @@ export function initPolarPlot() {
   // Set up toggle button handler
   const toggleButton = document.getElementById("toggle-polar-plot");
   if (toggleButton) {
-    toggleButton.addEventListener("click", () => togglePolarPlotVisibility());
+    toggleButton.addEventListener("click", () => {
+      console.log("Polar plot toggle clicked");
+      togglePolarPlotVisibility();
+    });
   }
   
   // Subscribe to location changes
