@@ -1,3 +1,10 @@
+## [2.1.1] - 2025-04-01
+
+### Changed
+- Split filter functionality into separate location and satellite filter buttons
+- Enhanced UI with distinct icons for location and satellite filtering
+- Improved user experience with more focused filter options
+
 ## [2.1.0] - 2025-03-31
 
 ### Added
