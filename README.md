@@ -16,6 +16,16 @@ A Progressive Web App (PWA) for calculating and visualizing antenna pointing ang
 - Dark mode with optimized map layers
 - Interactive tutorial and help system
 
+## 🆕 What's New in v1.9.0
+
+- Enhanced keyboard navigation for all components
+- Improved WAI-ARIA support for screen readers
+- Smoother transitions between views
+- Expanded step-by-step tutorial
+- Optimized map rendering for better performance
+- Enhanced mobile experience with better panel layout
+- Improved dark mode contrast for better accessibility
+
 ## 📱 PWA Features
 
 - Installable to home screen (Android, iOS, desktop)
@@ -38,18 +48,3 @@ git clone https://github.com/YOUR_USERNAME/APA-App.git
 cd APA-App
 # Serve with any static server
 npx serve .
-```
-
-Or open `index.html` directly for local development.
-
-## ♿ Accessibility
-
-- Follows WCAG 2.1 AA standards
-- Semantic HTML and keyboard navigable components
-- High-contrast visual styles and ARIA roles
-- Screen reader compatibility
-- Responsive touch targets for mobile use
-
-## 📄 License
-
-MIT License — customize for your agency/org needs
