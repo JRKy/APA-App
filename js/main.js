@@ -8,7 +8,7 @@ import { initDrawers } from './modules/ui/drawers.js';
 import { initTable } from './modules/ui/table.js';
 import { initPolarPlot, togglePolarPlotVisibility } from './modules/ui/polarPlot.js';
 import { initTutorial, showTutorial } from './modules/ui/tutorial.js';
-import { initFilters, setupFilterHandlers } from './modules/ui/filters.js';
+import { initFilters, setupFilterHandlers, initAdvancedFilters } from './modules/ui/filters.js';
 import { initLegend } from './modules/ui/legend.js';
 import { loadCustomSatellites } from './modules/data/satellites.js';
 import { loadLastLocation, restoreLastLocation } from './modules/data/storage.js';
@@ -34,6 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize filters
   initFilters();
   setupFilterHandlers();
+  
+  // Add advanced filters
+  initAdvancedFilters();
   
   // Load saved data
   loadCustomSatellites();
