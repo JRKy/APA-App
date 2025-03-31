@@ -1,3 +1,18 @@
+## [2.1.0] - 2025-03-31
+
+### Added
+- ARIA live regions for accessibility announcements
+- CSV export functionality for APA data
+- Advanced satellite filtering options
+  - Filter by minimum elevation
+  - Filter by satellite type (predefined/custom)
+  - Filter by longitude range
+  - Filter by visibility
+  
+### Changed
+- Enhanced filter drawer with advanced satellite filtering section
+- Updated APA panel with export button
+
 ## [2.0.0] - 2025-03-30
 
 ### Added
