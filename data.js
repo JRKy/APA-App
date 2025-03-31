@@ -33,7 +33,7 @@ const LOCATIONS = [
   { name: "Peterson SFB, CO", latitude: 38.0, longitude: -104.0, country: "USA", aor: "NORTHCOM" },
   { name: "Omaha AFB, NE", latitude: 41.1183, longitude: -95.9052, country: "USA", aor: "NORTHCOM" },
   { name: "RRMC, PA", latitude: 36.233402, longitude: -91.251801, country: "USA", aor: "NORTHCOM" },
-  { name: "Schriever SFB, CO", latitude: 29.74215, longitude: -90.81037, country: "USA", aor: "NORTHCOM" }
+  { name: "Schriever SFB, CO", latitude: 38.801244686130765, longitude: -104.5260869617432, country: "USA", aor: "NORTHCOM" }
 ];
 
 console.log(`Data Loaded: ${SATELLITES.length} satellites, ${LOCATIONS.length} locations (v2.1.1)`);
