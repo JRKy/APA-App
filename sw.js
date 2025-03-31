@@ -11,6 +11,8 @@ self.addEventListener("install", (event) => {
         "script.js?v=1.9.0",
         "data.js?v=1.9.0",
         "manifest.json",
+        "icons/icon-192.png",  // Add this
+        "icons/icon-512.png",  // Add this
         OFFLINE_URL,
       ]);
     })
