@@ -122,13 +122,31 @@ export function useMyLocation() {
       }
     },
     (error) => {
-      showNotification("Failed to get location: " + error.message, "error");
+      // Handle geolocation errors
+      let errorMessage;
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          errorMessage = "Location access was denied. Please enable location permissions.";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          errorMessage = "Location information is unavailable.";
+          break;
+        case error.TIMEOUT:
+          errorMessage = "The request to get location timed out.";
+          break;
+        default:
+          errorMessage = "An unknown error occurred while getting location.";
+      }
+      
+      showNotification(errorMessage, "error");
       
       // Reset button
       if (locateBtn) {
         locateBtn.innerHTML = '<span class="material-icons-round">my_location</span>';
         locateBtn.disabled = false;
       }
+      
+      console.error("Geolocation error:", error);
     },
     {
       enableHighAccuracy: true,
