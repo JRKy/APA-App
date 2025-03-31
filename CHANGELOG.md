@@ -1,3 +1,20 @@
+## [2.0.0] - 2025-03-31
+
+### Added
+- Modular code architecture for better maintainability
+- Event bus system for component communication
+- Enhanced error handling throughout the application
+
+### Changed
+- Restructured entire codebase into logical modules
+- Improved geolocation error handling with specific messages
+- Organized code into core, data, UI, and calculations modules
+
+### Fixed
+- APA panel resize behavior on mobile devices
+- Location button functionality issues
+- Various minor bugs and performance optimizations
+
 ## [1.9.0] - 2025-03-30
 
 ### Added
