@@ -801,21 +801,34 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function drawCoverageCone(lat, lon, satLon, el) {
-    // Skip if elevation is too low
-    if (el < 5) return;
-    
-    // Calculate coverage radius (simplified)
-    const coverageRadius = Math.min(Math.max(el * 20, 200), 1000);
-    
-    // Create circle
-    const coverageCircle = L.circle([lat, lon], {
-      radius: coverageRadius * 1000, // Convert to meters
-      className: 'coverage-cone',
-      interactive: false
-    }).addTo(map);
-    
-    coverageCones.push(coverageCircle);
+  // Skip if elevation is too low
+  if (el < 0) return;
+  
+  // Calculate coverage radius (simplified)
+  const coverageRadius = Math.min(Math.max(el * 20, 200), 1000);
+  
+  // Determine color class based on elevation
+  let colorClass = 'coverage-cone';
+  if (el >= 30) {
+    colorClass = 'coverage-cone-excellent';
+  } else if (el >= 15) {
+    colorClass = 'coverage-cone-good';
+  } else if (el >= 5) {
+    colorClass = 'coverage-cone-marginal';
+  } else {
+    colorClass = 'coverage-cone-poor';
   }
+  
+  // Create circle with appropriate color
+  const coverageCircle = L.circle([lat, lon], {
+    radius: coverageRadius * 1000, // Convert to meters
+    className: colorClass,
+    interactive: false
+  }).addTo(map);
+  
+  coverageCones.push(coverageCircle);
+  }
+
 
   function addSatelliteMarker(satellite, isBelow) {
     // Remove existing marker for this satellite
