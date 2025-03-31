@@ -10,8 +10,23 @@
   <link rel="icon" href="icon.png" />
 
   <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+      onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';" />
+
+<script>
+  function loadLeaflet() {
+    var script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.onerror = function() {
+      console.log('Primary Leaflet CDN failed, trying backup...');
+      var backupScript = document.createElement('script');
+      backupScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
+      document.head.appendChild(backupScript);
+    };
+    document.head.appendChild(script);
+  }
+  loadLeaflet();
+</script>
 
   <!-- Google Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
