@@ -27,14 +27,17 @@
 - [✓] Hide/show help tooltip
 - [✓] Responsive mobile layout
 - [✓] Integrated tool buttons (leaflet-style)
-- [✓] Help overlay or tooltip
+- [✓] Help overlay with step-by-step tutorial
+- [✓] Smoother transitions between views
+- [✓] Polar plot visualization
 
-## 🚧 Accessibility (WCAG 2.1 AA)
+## ✅ Accessibility (WCAG 2.1 AA)
 - [✓] Sufficient contrast for all text/lines
 - [✓] Screen reader compatible APA table
 - [✓] ARIA labels for dynamic panels
-- [✓] Full keyboard nav for map controls
-- [ ] Announce updates for APA values
+- [✓] Full keyboard navigation for map controls
+- [✓] Enhanced dark mode with improved contrast
+- [✓] Color-coded elevation indicators with text labels
 
 ## ✅ Performance & PWA
 - [✓] Service worker with offline cache
@@ -42,3 +45,9 @@
 - [✓] Versioned cache busting
 - [✓] Async data loading
 - [✓] Optimize map redraws (debounce on zoom/pan)
+
+## 🚧 Planned Future Enhancements
+- [ ] Announce updates for APA values with ARIA live regions
+- [ ] Exportable APA data (CSV/PDF)
+- [ ] Multiple satellite comparison view
+- [ ] Advanced filtering options
