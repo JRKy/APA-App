@@ -28,6 +28,9 @@ export function initTable() {
   // Set up keyboard navigation for the table
   setupKeyboardNavigation(apaTableBody);
   
+  // Initialize export button
+  initExportButton();
+  
   // Listen for satellite updates
   eventBus.subscribe('satellitesUpdated', () => {
     const lastLocation = document.getElementById('current-location-indicator');
@@ -145,6 +148,18 @@ export function updateApaTable(lat, lon) {
   if (sortState.column !== null && sortState.direction !== 'none') {
     sortTable(sortState.column, sortState.direction);
   }
+  
+  // Calculate accessibility announcement data
+  const visibleSats = satellites.filter(sat => {
+    const el = calculateElevation(lat, lon, sat.longitude);
+    return el >= 0;
+  }).length;
+  
+  // Create meaningful announcement
+  const announcement = `APA data updated for ${count} satellites. ${visibleSats} satellites are visible from current location.`;
+  
+  // Use the existing makeAnnouncement utility
+  makeAnnouncement(announcement, 'polite', 2000);
 }
 
 /**
@@ -344,4 +359,93 @@ function setupKeyboardNavigation(tableBody) {
       e.preventDefault();
     }
   });
+}
+
+/**
+ * Export APA data to a file
+ * @param {string} format - Export format ('csv' or 'pdf')
+ */
+export function exportApaData(format = 'csv') {
+  const apaTableBody = document.querySelector("#apa-table tbody");
+  if (!apaTableBody || !apaTableBody.rows.length) {
+    showNotification("No data to export. Please select a location first.", "error");
+    return;
+  }
+  
+  const locationLabel = document.getElementById("current-location-indicator")?.textContent.trim() || "Custom Location";
+  const rows = Array.from(apaTableBody.rows);
+  
+  if (format === 'csv') {
+    // Headers for CSV (excluding checkbox and actions columns)
+    const headers = ["Satellite", "Longitude", "Elevation", "Azimuth", "Visible"];
+    
+    // Extract data from table rows
+    const data = rows.map(row => {
+      const visible = row.querySelector('input[type=checkbox]').checked ? "Yes" : "No";
+      const name = row.cells[1].textContent.trim();
+      const longitude = row.cells[2].textContent.trim();
+      const elevation = row.cells[3].textContent.trim().split(' ')[0]; // Remove quality badge text
+      const azimuth = row.cells[4].textContent.trim();
+      
+      return [
+        `"${name}"`, // Quote satellite names in case they contain commas
+        longitude,
+        elevation,
+        azimuth,
+        visible
+      ];
+    });
+    
+    // Create CSV content
+    const csvContent = [
+      headers.join(","),
+      ...data.map(row => row.join(","))
+    ].join("\n");
+    
+    // Format date for filename
+    const dateStr = new Date().toISOString().split('T')[0];
+    const filename = `APA_Data_${locationLabel.replace(/[^a-z0-9]/gi, '_')}_${dateStr}.csv`;
+    
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification("Data exported successfully as CSV", "success");
+  } else if (format === 'pdf') {
+    // PDF export would require a PDF generation library
+    showNotification("PDF export coming soon", "info");
+  }
+}
+
+/**
+ * Initialize the export button
+ */
+export function initExportButton() {
+  const panelControls = document.querySelector('.panel-controls');
+  if (!panelControls) return;
+  
+  // Check if button already exists
+  if (document.getElementById('export-apa-data')) return;
+  
+  const exportButton = document.createElement('button');
+  exportButton.id = 'export-apa-data';
+  exportButton.title = 'Export Data';
+  exportButton.setAttribute('aria-label', 'Export APA data as CSV');
+  exportButton.innerHTML = '<span class="material-icons-round">download</span>';
+  exportButton.classList.add('panel-control-btn');
+  
+  exportButton.addEventListener('click', () => {
+    // Export as CSV
+    exportApaData('csv');
+  });
+  
+  // Add button to panel controls
+  panelControls.insertBefore(exportButton, panelControls.firstChild);
 }
