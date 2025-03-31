@@ -32,6 +32,24 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
   <link rel="stylesheet" href="styles.css?v=2.0.0" />
+
+    <!-- Add the emergency fix right here, after your main stylesheet -->
+  <style>
+    /* Emergency fix for drawer visibility */
+    .drawer.visible {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      z-index: 1500 !important;
+    }
+    
+    .drawer-overlay.visible {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+  </style>
+  
 </head>
 <body>
   <header>
