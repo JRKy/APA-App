@@ -8,6 +8,8 @@ import { eventBus } from '../core/events.js';
  * Initialize drawer components
  */
 export function initDrawers() {
+  console.log("Initializing drawers...");
+  
   // Set up close buttons for all drawers
   document.querySelectorAll('.drawer-close').forEach(closeBtn => {
     closeBtn.addEventListener('click', function() {
@@ -34,34 +36,65 @@ export function initDrawers() {
     addSatelliteBtn.addEventListener("click", handleAddSatellite);
   }
   
-  // Set up drawer toggle buttons
-  const toggleLocationDrawerBtn = document.getElementById("toggle-location-drawer");
-  const toggleSatelliteDrawerBtn = document.getElementById("toggle-satellite-drawer");
-  const toggleLocationFilterDrawerBtn = document.getElementById("toggle-location-filter-drawer");
-  const toggleSatelliteFilterDrawerBtn = document.getElementById("toggle-satellite-filter-drawer");
+  // Set up direct drawer toggle event handlers
+  setupDrawerToggles();
+}
+
+/**
+ * Setup drawer toggle buttons with direct DOM event listeners
+ */
+function setupDrawerToggles() {
+  // Add direct event listeners to drawer toggle buttons
+  document.getElementById("toggle-location-drawer")?.addEventListener("click", function() {
+    console.log("Location drawer toggle clicked (from event listener)");
+    showDrawer("location-drawer");
+  });
   
-  if (toggleLocationDrawerBtn) {
-    toggleLocationDrawerBtn.addEventListener("click", () => {
-      toggleDrawer("location-drawer", ["satellite-drawer", "location-filter-drawer", "satellite-filter-drawer"]);
-    });
-  }
+  document.getElementById("toggle-satellite-drawer")?.addEventListener("click", function() {
+    console.log("Satellite drawer toggle clicked (from event listener)");
+    showDrawer("satellite-drawer");
+  });
+  
+  document.getElementById("toggle-location-filter-drawer")?.addEventListener("click", function() {
+    console.log("Location filter drawer toggle clicked (from event listener)");
+    showDrawer("location-filter-drawer");
+  });
+  
+  document.getElementById("toggle-satellite-filter-drawer")?.addEventListener("click", function() {
+    console.log("Satellite filter drawer toggle clicked (from event listener)");
+    showDrawer("satellite-filter-drawer");
+  });
+}
 
-  if (toggleSatelliteDrawerBtn) {
-    toggleSatelliteDrawerBtn.addEventListener("click", () => {
-      toggleDrawer("satellite-drawer", ["location-drawer", "location-filter-drawer", "satellite-filter-drawer"]);
-    });
-  }
-
-  if (toggleLocationFilterDrawerBtn) {
-    toggleLocationFilterDrawerBtn.addEventListener("click", () => {
-      toggleDrawer("location-filter-drawer", ["location-drawer", "satellite-drawer", "satellite-filter-drawer"]);
-    });
-  }
-
-  if (toggleSatelliteFilterDrawerBtn) {
-    toggleSatelliteFilterDrawerBtn.addEventListener("click", () => {
-      toggleDrawer("satellite-filter-drawer", ["location-drawer", "satellite-drawer", "location-filter-drawer"]);
-    });
+/**
+ * Show a drawer directly (simpler implementation)
+ * @param {string} drawerId - ID of the drawer to show
+ */
+function showDrawer(drawerId) {
+  console.log(`Attempting to show drawer: ${drawerId}`);
+  
+  // Close all drawers first
+  document.querySelectorAll('.drawer').forEach(drawer => {
+    drawer.classList.remove('visible');
+  });
+  
+  // Show the requested drawer
+  const drawer = document.getElementById(drawerId);
+  if (drawer) {
+    drawer.classList.add('visible');
+    document.getElementById('drawer-overlay').classList.add('visible');
+    console.log(`Drawer ${drawerId} should now be visible`);
+    
+    // If this is an input drawer, focus the first input
+    const firstInput = drawer.querySelector('input, select');
+    if (firstInput) {
+      setTimeout(() => firstInput.focus(), 100);
+    }
+    
+    // Publish event
+    eventBus.publish('drawerOpened', { drawerId });
+  } else {
+    console.error(`Drawer element not found: ${drawerId}`);
   }
 }
 
@@ -71,16 +104,23 @@ export function initDrawers() {
  * @param {Array} others - IDs of other drawers to close
  */
 export function toggleDrawer(drawerId, others = []) {
+  console.log(`Attempting to toggle drawer: ${drawerId}`);
+  
   const drawer = document.getElementById(drawerId);
-  if (!drawer) return;
+  if (!drawer) {
+    console.error(`Drawer not found: ${drawerId}`);
+    return;
+  }
   
   const isOpen = drawer.classList.contains("visible");
+  console.log(`Drawer ${drawerId} is currently ${isOpen ? 'open' : 'closed'}`);
   
   // Close all drawers first
   closeAllDrawers();
   
   // Then open the requested drawer if it wasn't already open
   if (!isOpen) {
+    console.log(`Opening drawer: ${drawerId}`);
     drawer.classList.add("visible");
     document.getElementById('drawer-overlay').classList.add("visible");
     
