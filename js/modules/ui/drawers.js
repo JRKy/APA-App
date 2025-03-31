@@ -15,9 +15,8 @@ export function initDrawers() {
       if (drawerId) {
         const drawer = document.getElementById(drawerId);
         if (drawer) {
-          // Use direct style manipulation to hide
-          drawer.style.cssText = 'display: none !important;';
-          document.getElementById('drawer-overlay').style.cssText = 'display: none !important;';
+          drawer.classList.remove('visible');
+          document.getElementById('drawer-overlay').classList.remove('visible');
         }
       }
     });
@@ -37,6 +36,12 @@ export function initDrawers() {
   
   // Set up direct drawer toggle event handlers
   setupDrawerToggles();
+  
+  // Add click handler to the drawer overlay for closing
+  const drawerOverlay = document.getElementById('drawer-overlay');
+  if (drawerOverlay) {
+    drawerOverlay.addEventListener('click', closeAllDrawers);
+  }
 }
 
 /**
@@ -45,41 +50,37 @@ export function initDrawers() {
 function setupDrawerToggles() {
   // Add direct event listeners to drawer toggle buttons
   document.getElementById("toggle-location-drawer")?.addEventListener("click", function() {
-    forceShowDrawer("location-drawer");
+    showDrawer("location-drawer");
   });
   
   document.getElementById("toggle-satellite-drawer")?.addEventListener("click", function() {
-    forceShowDrawer("satellite-drawer");
+    showDrawer("satellite-drawer");
   });
   
   document.getElementById("toggle-location-filter-drawer")?.addEventListener("click", function() {
-    forceShowDrawer("location-filter-drawer");
+    showDrawer("location-filter-drawer");
   });
   
   document.getElementById("toggle-satellite-filter-drawer")?.addEventListener("click", function() {
-    forceShowDrawer("satellite-filter-drawer");
+    showDrawer("satellite-filter-drawer");
   });
 }
 
 /**
- * Force show a drawer using direct style manipulation
+ * Show a drawer using CSS classes instead of direct style manipulation
  * @param {string} drawerId - ID of the drawer to show
  */
-function forceShowDrawer(drawerId) {
-  // Hide all drawers first using direct style manipulation
+function showDrawer(drawerId) {
+  // Hide all drawers first
   document.querySelectorAll('.drawer').forEach(drawer => {
-    drawer.style.cssText = 'display: none !important;';
+    drawer.classList.remove('visible');
   });
   
-  // Show this drawer with direct style manipulation
+  // Show this drawer
   const drawer = document.getElementById(drawerId);
   if (drawer) {
-    drawer.style.cssText = `
-      display: block !important;
-      position: absolute !important;
-      z-index: 1500 !important;
-    `;
-    document.getElementById('drawer-overlay').style.cssText = 'display: block !important;';
+    drawer.classList.add('visible');
+    document.getElementById('drawer-overlay').classList.add('visible');
     
     // If this is an input drawer, focus the first input
     const firstInput = drawer.querySelector('input, select');
@@ -98,7 +99,7 @@ function forceShowDrawer(drawerId) {
  * @param {Array} others - IDs of other drawers to close
  */
 export function toggleDrawer(drawerId, others = []) {
-  forceShowDrawer(drawerId);
+  showDrawer(drawerId);
 }
 
 /**
@@ -106,9 +107,9 @@ export function toggleDrawer(drawerId, others = []) {
  */
 export function closeAllDrawers() {
   document.querySelectorAll('.drawer').forEach(drawer => {
-    drawer.style.cssText = 'display: none !important;';
+    drawer.classList.remove('visible');
   });
-  document.getElementById('drawer-overlay').style.cssText = 'display: none !important;';
+  document.getElementById('drawer-overlay').classList.remove('visible');
   
   // Publish event
   eventBus.publish('drawersAllClosed');
