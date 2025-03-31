@@ -15,25 +15,30 @@ import { calculateElevation } from '../calculations/angles.js';
  * Initialize filter UI
  */
 export function initFilters() {
-  populateFilters();
+  // Initialize location filters
+  populateLocationFilters();
+  setupLocationFilterHandlers();
+  
+  // Initialize satellite filters
+  setupSatelliteFilterHandlers();
 }
 
 /**
- * Set up filter event handlers
+ * Set up location filter event handlers
  */
-export function setupFilterHandlers() {
+export function setupLocationFilterHandlers() {
   const aorFilter = document.getElementById("aor-filter");
   const countryFilter = document.getElementById("country-filter");
   const locationSelect = document.getElementById("location-select");
-  const resetFiltersBtn = document.getElementById("reset-filters");
-  const filterSummary = document.getElementById("filter-summary");
+  const resetFiltersBtn = document.getElementById("reset-location-filters");
+  const filterSummary = document.getElementById("location-filter-summary");
   
   if (!aorFilter || !countryFilter || !locationSelect || !resetFiltersBtn || !filterSummary) return;
   
   // AOR filter change event
   aorFilter.addEventListener("change", () => {
     filterLocations();
-    updateFilterSummary();
+    updateLocationFilterSummary();
     
     const selectedAOR = aorFilter.value;
     const countriesInAOR = getCountriesInAOR(selectedAOR);
@@ -54,7 +59,7 @@ export function setupFilterHandlers() {
   // Country filter change event
   countryFilter.addEventListener("change", () => {
     filterLocations();
-    updateFilterSummary();
+    updateLocationFilterSummary();
     
     const selectedCountry = countryFilter.value;
     const aorsInCountry = getAORsInCountry(selectedCountry);
@@ -89,7 +94,7 @@ export function setupFilterHandlers() {
     
     const [lat, lon] = selected.value.split(",").map(Number);
     goToLocation(lat, lon, selected.textContent);
-    updateFilterSummary();
+    updateLocationFilterSummary();
     
     // Close all drawers
     eventBus.publish('drawersAllClosed');
@@ -109,24 +114,47 @@ export function setupFilterHandlers() {
     aorFilter.value = "";
     countryFilter.value = "";
     locationSelect.value = "";
-    populateFilters();
+    populateLocationFilters();
     filterLocations();
-    updateFilterSummary();
+    updateLocationFilterSummary();
     
     // Close all drawers
     eventBus.publish('drawersAllClosed');
     
-    showNotification("Filters have been reset.", "info");
+    showNotification("Location filters have been reset.", "info");
     
     // Publish event
-    eventBus.publish('filtersReset');
+    eventBus.publish('locationFiltersReset');
   });
 }
 
 /**
- * Populate filter dropdowns with initial options
+ * Set up satellite filter event handlers
  */
-export function populateFilters() {
+export function setupSatelliteFilterHandlers() {
+  const minElevationSlider = document.getElementById('min-elevation');
+  const minElevationValue = document.getElementById('min-elevation-value');
+  const applySatelliteFiltersBtn = document.getElementById('apply-satellite-filters');
+  const clearSatelliteFiltersBtn = document.getElementById('clear-satellite-filters');
+  
+  if (!minElevationSlider || !minElevationValue || !applySatelliteFiltersBtn || !clearSatelliteFiltersBtn) return;
+  
+  // Elevation slider update
+  minElevationSlider.addEventListener('input', () => {
+    minElevationValue.textContent = `${minElevationSlider.value}°`;
+  });
+  
+  // Apply satellite filters
+  applySatelliteFiltersBtn.addEventListener('click', applySatelliteFilters);
+  
+  // Clear satellite filters
+  clearSatelliteFiltersBtn.addEventListener('click', clearSatelliteFilters);
+}
+
+/**
+ * Populate location filter dropdowns with initial options
+ */
+export function populateLocationFilters() {
   const aorFilter = document.getElementById("aor-filter");
   const countryFilter = document.getElementById("country-filter");
   const locationSelect = document.getElementById("location-select");
@@ -193,12 +221,12 @@ export function filterLocations() {
 }
 
 /**
- * Update the filter summary badge
+ * Update the location filter summary badge
  */
-export function updateFilterSummary() {
+export function updateLocationFilterSummary() {
   const aorFilter = document.getElementById("aor-filter");
   const countryFilter = document.getElementById("country-filter");
-  const filterSummary = document.getElementById("filter-summary");
+  const filterSummary = document.getElementById("location-filter-summary");
   
   if (!aorFilter || !countryFilter || !filterSummary) return;
   
@@ -218,85 +246,9 @@ export function updateFilterSummary() {
 }
 
 /**
- * Initialize advanced satellite filters
+ * Apply satellite filters
  */
-export function initAdvancedFilters() {
-  const filterDrawer = document.getElementById("filter-drawer");
-  if (!filterDrawer) return;
-  
-  // Check if advanced filters already exist
-  if (document.querySelector('.advanced-filters-section')) return;
-  
-  // Create advanced filters section
-  const advancedSection = document.createElement('div');
-  advancedSection.className = 'advanced-filters-section';
-  advancedSection.innerHTML = `
-    <div class="drawer-header">
-      <h3>Advanced Satellite Filters</h3>
-    </div>
-    
-    <label for="min-elevation">Minimum Elevation:</label>
-    <div class="range-filter">
-      <input type="range" id="min-elevation" min="-10" max="90" value="-10" class="range-slider">
-      <span id="min-elevation-value">-10°</span>
-    </div>
-    
-    <label for="satellite-type">Satellite Type:</label>
-    <select id="satellite-type">
-      <option value="all">All Satellites</option>
-      <option value="predefined">Predefined Only</option>
-      <option value="custom">Custom Only</option>
-    </select>
-    
-    <div class="longitude-range">
-      <label>Longitude Range:</label>
-      <div class="range-inputs">
-        <input type="number" id="min-longitude" placeholder="Min (-180)" min="-180" max="180" step="1">
-        <span>to</span>
-        <input type="number" id="max-longitude" placeholder="Max (180)" min="-180" max="180" step="1">
-      </div>
-    </div>
-    
-    <label for="visibility-filter">Visibility:</label>
-    <select id="visibility-filter">
-      <option value="all">All Satellites</option>
-      <option value="visible">Only Visible</option>
-      <option value="not-visible">Only Not Visible</option>
-    </select>
-    
-    <button id="apply-advanced-filters">
-      <span class="material-icons-round">filter_alt</span> Apply Filters
-    </button>
-    
-    <button id="clear-advanced-filters" class="secondary-btn">
-      <span class="material-icons-round">clear</span> Clear Filters
-    </button>
-  `;
-  
-  // Add to filter drawer
-  filterDrawer.appendChild(advancedSection);
-  
-  // Set up event listeners
-  const minElevationSlider = document.getElementById('min-elevation');
-  const minElevationValue = document.getElementById('min-elevation-value');
-  
-  if (minElevationSlider && minElevationValue) {
-    minElevationSlider.addEventListener('input', () => {
-      minElevationValue.textContent = `${minElevationSlider.value}°`;
-    });
-  }
-  
-  // Apply button
-  document.getElementById('apply-advanced-filters')?.addEventListener('click', applyAdvancedFilters);
-  
-  // Clear button
-  document.getElementById('clear-advanced-filters')?.addEventListener('click', clearAdvancedFilters);
-}
-
-/**
- * Apply advanced satellite filters
- */
-function applyAdvancedFilters() {
+export function applySatelliteFilters() {
   const minElevation = parseFloat(document.getElementById('min-elevation')?.value || "-10");
   const satelliteType = document.getElementById('satellite-type')?.value || "all";
   const minLongitude = document.getElementById('min-longitude')?.value ? 
@@ -374,27 +326,23 @@ function applyAdvancedFilters() {
   });
   
   // Close drawer
-  document.getElementById('filter-drawer')?.classList.remove('visible');
+  document.getElementById('satellite-filter-drawer')?.classList.remove('visible');
   document.getElementById('drawer-overlay')?.classList.remove('visible');
   
   // Update filter summary badge
-  const filterSummary = document.getElementById('filter-summary');
-  if (filterSummary) {
-    filterSummary.textContent = totalCount - filteredCount;
-    filterSummary.classList.toggle('hidden', totalCount - filteredCount === 0);
-  }
+  updateSatelliteFilterSummary(totalCount - filteredCount);
   
   // Show notification
   showNotification(`Showing ${filteredCount} of ${totalCount} satellites`, "info");
   
   // Make screen reader announcement
-  makeAnnouncement(`Advanced filters applied. Showing ${filteredCount} of ${totalCount} satellites.`, 'polite');
+  makeAnnouncement(`Satellite filters applied. Showing ${filteredCount} of ${totalCount} satellites.`, 'polite');
 }
 
 /**
- * Clear advanced satellite filters
+ * Clear satellite filters
  */
-function clearAdvancedFilters() {
+export function clearSatelliteFilters() {
   // Reset filter inputs
   if (document.getElementById('min-elevation')) {
     document.getElementById('min-elevation').value = -10;
@@ -423,11 +371,33 @@ function clearAdvancedFilters() {
   });
   
   // Clear filter summary badge
-  const filterSummary = document.getElementById('filter-summary');
-  if (filterSummary) {
-    filterSummary.classList.add('hidden');
-  }
+  updateSatelliteFilterSummary(0);
   
   // Show notification
-  showNotification("Advanced filters cleared", "info");
+  showNotification("Satellite filters cleared", "info");
+}
+
+/**
+ * Update the satellite filter summary badge
+ * @param {number} count - Number of filtered satellites
+ */
+export function updateSatelliteFilterSummary(count) {
+  const filterSummary = document.getElementById("satellite-filter-summary");
+  if (!filterSummary) return;
+  
+  if (count > 0) {
+    filterSummary.textContent = count;
+    filterSummary.classList.remove("hidden");
+  } else {
+    filterSummary.classList.add("hidden");
+  }
+}
+
+/**
+ * Initialize advanced satellite filters
+ * @deprecated Use setupSatelliteFilterHandlers instead
+ */
+export function initAdvancedFilters() {
+  console.warn('initAdvancedFilters is deprecated, use setupSatelliteFilterHandlers instead');
+  setupSatelliteFilterHandlers();
 }
