@@ -35,21 +35,34 @@ export function initDrawers() {
   }
   
   // Set up drawer toggle buttons
-  document.getElementById("toggle-location-drawer")?.addEventListener("click", () => {
-    toggleDrawer("location-drawer", ["satellite-drawer", "location-filter-drawer", "satellite-filter-drawer"]);
-  });
+  const toggleLocationDrawerBtn = document.getElementById("toggle-location-drawer");
+  const toggleSatelliteDrawerBtn = document.getElementById("toggle-satellite-drawer");
+  const toggleLocationFilterDrawerBtn = document.getElementById("toggle-location-filter-drawer");
+  const toggleSatelliteFilterDrawerBtn = document.getElementById("toggle-satellite-filter-drawer");
+  
+  if (toggleLocationDrawerBtn) {
+    toggleLocationDrawerBtn.addEventListener("click", () => {
+      toggleDrawer("location-drawer", ["satellite-drawer", "location-filter-drawer", "satellite-filter-drawer"]);
+    });
+  }
 
-  document.getElementById("toggle-satellite-drawer")?.addEventListener("click", () => {
-    toggleDrawer("satellite-drawer", ["location-drawer", "location-filter-drawer", "satellite-filter-drawer"]);
-  });
+  if (toggleSatelliteDrawerBtn) {
+    toggleSatelliteDrawerBtn.addEventListener("click", () => {
+      toggleDrawer("satellite-drawer", ["location-drawer", "location-filter-drawer", "satellite-filter-drawer"]);
+    });
+  }
 
-  document.getElementById("toggle-location-filter-drawer")?.addEventListener("click", () => {
-    toggleDrawer("location-filter-drawer", ["location-drawer", "satellite-drawer", "satellite-filter-drawer"]);
-  });
+  if (toggleLocationFilterDrawerBtn) {
+    toggleLocationFilterDrawerBtn.addEventListener("click", () => {
+      toggleDrawer("location-filter-drawer", ["location-drawer", "satellite-drawer", "satellite-filter-drawer"]);
+    });
+  }
 
-  document.getElementById("toggle-satellite-filter-drawer")?.addEventListener("click", () => {
-    toggleDrawer("satellite-filter-drawer", ["location-drawer", "satellite-drawer", "location-filter-drawer"]);
-  });
+  if (toggleSatelliteFilterDrawerBtn) {
+    toggleSatelliteFilterDrawerBtn.addEventListener("click", () => {
+      toggleDrawer("satellite-filter-drawer", ["location-drawer", "satellite-drawer", "location-filter-drawer"]);
+    });
+  }
 }
 
 /**
