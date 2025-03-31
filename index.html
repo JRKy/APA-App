@@ -32,9 +32,13 @@
     <button id="toggle-satellite-drawer" title="Add Custom Satellite" aria-label="Open satellite drawer">
       <span class="material-icons-round">satellite</span>
     </button>
-    <button id="toggle-filter-drawer" title="Filters" aria-label="Open filters">
-      <span class="material-icons-round">filter_list</span>
-      <span id="filter-summary" class="filter-badge hidden">0</span>
+    <button id="toggle-location-filter-drawer" title="Location Filters" aria-label="Open location filters">
+      <span class="material-icons-round">location_city</span>
+      <span id="location-filter-summary" class="filter-badge hidden">0</span>
+    </button>
+    <button id="toggle-satellite-filter-drawer" title="Satellite Filters" aria-label="Open satellite filters">
+      <span class="material-icons-round">satellite_alt</span>
+      <span id="satellite-filter-summary" class="filter-badge hidden">0</span>
     </button>
     <button id="btn-my-location" title="Use My Location" aria-label="Use my current location">
       <span class="material-icons-round">my_location</span>
@@ -86,11 +90,11 @@
     </button>
   </div>
 
-  <!-- Filter Drawer -->
-  <div id="filter-drawer" class="drawer" aria-labelledby="filter-drawer-title">
+  <!-- Location Filter Drawer -->
+  <div id="location-filter-drawer" class="drawer" aria-labelledby="location-filter-drawer-title">
     <div class="drawer-header">
-      <h3 id="filter-drawer-title">Filters</h3>
-      <button class="drawer-close" title="Close" data-drawer="filter-drawer" aria-label="Close filter drawer">
+      <h3 id="location-filter-drawer-title">Location Filters</h3>
+      <button class="drawer-close" title="Close" data-drawer="location-filter-drawer" aria-label="Close location filter drawer">
         <span class="material-icons-round">close</span>
       </button>
     </div>
@@ -106,8 +110,55 @@
     <select id="location-select" aria-describedby="location-hint"></select>
     <span id="location-hint" class="sr-only">Select a specific location</span>
     
-    <button id="reset-filters">
+    <button id="reset-location-filters">
       <span class="material-icons-round">clear_all</span> Reset Filters
+    </button>
+  </div>
+
+  <!-- Satellite Filter Drawer -->
+  <div id="satellite-filter-drawer" class="drawer" aria-labelledby="satellite-filter-drawer-title">
+    <div class="drawer-header">
+      <h3 id="satellite-filter-drawer-title">Satellite Filters</h3>
+      <button class="drawer-close" title="Close" data-drawer="satellite-filter-drawer" aria-label="Close satellite filter drawer">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+    
+    <label for="min-elevation">Minimum Elevation:</label>
+    <div class="range-filter">
+      <input type="range" id="min-elevation" min="-10" max="90" value="-10" class="range-slider">
+      <span id="min-elevation-value">-10°</span>
+    </div>
+    
+    <label for="satellite-type">Satellite Type:</label>
+    <select id="satellite-type">
+      <option value="all">All Satellites</option>
+      <option value="predefined">Predefined Only</option>
+      <option value="custom">Custom Only</option>
+    </select>
+    
+    <div class="longitude-range">
+      <label>Longitude Range:</label>
+      <div class="range-inputs">
+        <input type="number" id="min-longitude" placeholder="Min (-180)" min="-180" max="180" step="1">
+        <span>to</span>
+        <input type="number" id="max-longitude" placeholder="Max (180)" min="-180" max="180" step="1">
+      </div>
+    </div>
+    
+    <label for="visibility-filter">Visibility:</label>
+    <select id="visibility-filter">
+      <option value="all">All Satellites</option>
+      <option value="visible">Only Visible</option>
+      <option value="not-visible">Only Not Visible</option>
+    </select>
+    
+    <button id="apply-satellite-filters">
+      <span class="material-icons-round">filter_alt</span> Apply Filters
+    </button>
+    
+    <button id="clear-satellite-filters" class="secondary-btn">
+      <span class="material-icons-round">clear</span> Clear Filters
     </button>
   </div>
 
