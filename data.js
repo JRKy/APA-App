@@ -1,15 +1,15 @@
 // Version 2.1.1
 
 const SATELLITES = [
-  { name: "MUOS-1", longitude: -177 },
-  { name: "MUOS-2", longitude: -100 },
-  { name: "MUOS-3", longitude: -15 },
+  { name: "MUOS-2", longitude: -177 },
+  { name: "MUOS-5", longitude: -100 },
+  { name: "MUOS-3", longitude: -15.5 },
   { name: "MUOS-4", longitude: 75 },
-  { name: "MUOS-5", longitude: 105 },
   { name: "ALT-1", longitude: -127 },
   { name: "ALT-2", longitude: -24 },
   { name: "ALT-3", longitude: 110 },
-  { name: "ALT-4", longitude: 100 }
+  { name: "ALT-4", longitude: 100 },
+  { name: "ALT-5", longitude: 170 }
 ];
 
 const LOCATIONS = [
