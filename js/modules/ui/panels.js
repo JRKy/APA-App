@@ -248,10 +248,16 @@ function setupBottomSheet(panel, header) {
     // If panel is being minimized
     if (newHeight <= 60) {
       panel.classList.add('minimized');
-      document.getElementById('minimize-apa-panel')?.querySelector('.material-icons-round').textContent = 'expand_less';
+      const minimizeBtn = document.getElementById('minimize-apa-panel');
+      if (minimizeBtn) {
+        minimizeBtn.querySelector('.material-icons-round').textContent = 'expand_less';
+      }
     } else {
       panel.classList.remove('minimized');
-      document.getElementById('minimize-apa-panel')?.querySelector('.material-icons-round').textContent = 'remove';
+      const minimizeBtn = document.getElementById('minimize-apa-panel');
+      if (minimizeBtn) {
+        minimizeBtn.querySelector('.material-icons-round').textContent = 'remove';
+      }
     }
   });
   
