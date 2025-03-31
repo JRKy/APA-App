@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Drawer Test</title>
+  <style>
+    .drawer {
+      display: none;
+      background: white;
+      border: 1px solid black;
+      padding: 20px;
+      position: absolute;
+      top: 100px;
+      left: 50px;
+    }
+    .drawer.visible {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <button id="toggle-btn">Toggle Drawer</button>
+  <div id="test-drawer" class="drawer">
+    <h3>Test Drawer</h3>
+    <p>This is a test drawer with minimal styling and JavaScript.</p>
+  </div>
+  
+  <script>
+    document.getElementById('toggle-btn').addEventListener('click', function() {
+      const drawer = document.getElementById('test-drawer');
+      drawer.classList.toggle('visible');
+      console.log('Toggled drawer, classList:', drawer.className);
+    });
+  </script>
+</body>
+</html>
