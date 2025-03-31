@@ -7,8 +7,9 @@ import {
   filterLocationsByAorAndCountry,
   goToLocation 
 } from '../data/locations.js';
-import { showNotification } from '../core/utils.js';
+import { showNotification, makeAnnouncement } from '../core/utils.js';
 import { eventBus } from '../core/events.js';
+import { calculateElevation } from '../calculations/angles.js';
 
 /**
  * Initialize filter UI
@@ -214,4 +215,219 @@ export function updateFilterSummary() {
   } else {
     filterSummary.classList.add("hidden");
   }
+}
+
+/**
+ * Initialize advanced satellite filters
+ */
+export function initAdvancedFilters() {
+  const filterDrawer = document.getElementById("filter-drawer");
+  if (!filterDrawer) return;
+  
+  // Check if advanced filters already exist
+  if (document.querySelector('.advanced-filters-section')) return;
+  
+  // Create advanced filters section
+  const advancedSection = document.createElement('div');
+  advancedSection.className = 'advanced-filters-section';
+  advancedSection.innerHTML = `
+    <div class="drawer-header">
+      <h3>Advanced Satellite Filters</h3>
+    </div>
+    
+    <label for="min-elevation">Minimum Elevation:</label>
+    <div class="range-filter">
+      <input type="range" id="min-elevation" min="-10" max="90" value="-10" class="range-slider">
+      <span id="min-elevation-value">-10°</span>
+    </div>
+    
+    <label for="satellite-type">Satellite Type:</label>
+    <select id="satellite-type">
+      <option value="all">All Satellites</option>
+      <option value="predefined">Predefined Only</option>
+      <option value="custom">Custom Only</option>
+    </select>
+    
+    <div class="longitude-range">
+      <label>Longitude Range:</label>
+      <div class="range-inputs">
+        <input type="number" id="min-longitude" placeholder="Min (-180)" min="-180" max="180" step="1">
+        <span>to</span>
+        <input type="number" id="max-longitude" placeholder="Max (180)" min="-180" max="180" step="1">
+      </div>
+    </div>
+    
+    <label for="visibility-filter">Visibility:</label>
+    <select id="visibility-filter">
+      <option value="all">All Satellites</option>
+      <option value="visible">Only Visible</option>
+      <option value="not-visible">Only Not Visible</option>
+    </select>
+    
+    <button id="apply-advanced-filters">
+      <span class="material-icons-round">filter_alt</span> Apply Filters
+    </button>
+    
+    <button id="clear-advanced-filters" class="secondary-btn">
+      <span class="material-icons-round">clear</span> Clear Filters
+    </button>
+  `;
+  
+  // Add to filter drawer
+  filterDrawer.appendChild(advancedSection);
+  
+  // Set up event listeners
+  const minElevationSlider = document.getElementById('min-elevation');
+  const minElevationValue = document.getElementById('min-elevation-value');
+  
+  if (minElevationSlider && minElevationValue) {
+    minElevationSlider.addEventListener('input', () => {
+      minElevationValue.textContent = `${minElevationSlider.value}°`;
+    });
+  }
+  
+  // Apply button
+  document.getElementById('apply-advanced-filters')?.addEventListener('click', applyAdvancedFilters);
+  
+  // Clear button
+  document.getElementById('clear-advanced-filters')?.addEventListener('click', clearAdvancedFilters);
+}
+
+/**
+ * Apply advanced satellite filters
+ */
+function applyAdvancedFilters() {
+  const minElevation = parseFloat(document.getElementById('min-elevation')?.value || "-10");
+  const satelliteType = document.getElementById('satellite-type')?.value || "all";
+  const minLongitude = document.getElementById('min-longitude')?.value ? 
+    parseFloat(document.getElementById('min-longitude').value) : -180;
+  const maxLongitude = document.getElementById('max-longitude')?.value ? 
+    parseFloat(document.getElementById('max-longitude').value) : 180;
+  const visibility = document.getElementById('visibility-filter')?.value || "all";
+  
+  // Get all satellite checkboxes
+  const satelliteCheckboxes = document.querySelectorAll("input[type=checkbox][data-satlon]");
+  
+  // Get location coordinates
+  let lat = null, lon = null;
+  const firstCheckbox = document.querySelector("input[type=checkbox][data-lat]");
+  if (firstCheckbox) {
+    lat = parseFloat(firstCheckbox.dataset.lat);
+    lon = parseFloat(firstCheckbox.dataset.lon);
+  }
+  
+  // If no location is selected, show notification and return
+  if (lat === null || lon === null) {
+    showNotification("Please select a location before applying filters.", "error");
+    return;
+  }
+  
+  // Count how many are filtered
+  let filteredCount = 0;
+  let totalCount = 0;
+  
+  // Apply filters to each satellite row
+  satelliteCheckboxes.forEach(checkbox => {
+    const row = checkbox.closest('tr');
+    if (!row) return;
+    
+    totalCount++;
+    
+    // Get satellite data
+    const satLon = parseFloat(checkbox.dataset.satlon);
+    const name = checkbox.dataset.name;
+    const elevation = calculateElevation(lat, lon, satLon);
+    const isVisible = elevation >= 0;
+    const isCustom = name.startsWith('Custom') || row.querySelector('.delete-sat') !== null;
+    
+    // Apply filters
+    let show = true;
+    
+    // Elevation filter
+    if (elevation < minElevation) {
+      show = false;
+    }
+    
+    // Satellite type filter
+    if (satelliteType === 'predefined' && isCustom) {
+      show = false;
+    } else if (satelliteType === 'custom' && !isCustom) {
+      show = false;
+    }
+    
+    // Longitude range filter
+    if (satLon < minLongitude || satLon > maxLongitude) {
+      show = false;
+    }
+    
+    // Visibility filter
+    if (visibility === 'visible' && !isVisible) {
+      show = false;
+    } else if (visibility === 'not-visible' && isVisible) {
+      show = false;
+    }
+    
+    // Show/hide row
+    row.style.display = show ? '' : 'none';
+    
+    if (show) filteredCount++;
+  });
+  
+  // Close drawer
+  document.getElementById('filter-drawer')?.classList.remove('visible');
+  document.getElementById('drawer-overlay')?.classList.remove('visible');
+  
+  // Update filter summary badge
+  const filterSummary = document.getElementById('filter-summary');
+  if (filterSummary) {
+    filterSummary.textContent = totalCount - filteredCount;
+    filterSummary.classList.toggle('hidden', totalCount - filteredCount === 0);
+  }
+  
+  // Show notification
+  showNotification(`Showing ${filteredCount} of ${totalCount} satellites`, "info");
+  
+  // Make screen reader announcement
+  makeAnnouncement(`Advanced filters applied. Showing ${filteredCount} of ${totalCount} satellites.`, 'polite');
+}
+
+/**
+ * Clear advanced satellite filters
+ */
+function clearAdvancedFilters() {
+  // Reset filter inputs
+  if (document.getElementById('min-elevation')) {
+    document.getElementById('min-elevation').value = -10;
+    document.getElementById('min-elevation-value').textContent = '-10°';
+  }
+  
+  if (document.getElementById('satellite-type')) {
+    document.getElementById('satellite-type').value = 'all';
+  }
+  
+  if (document.getElementById('min-longitude')) {
+    document.getElementById('min-longitude').value = '';
+  }
+  
+  if (document.getElementById('max-longitude')) {
+    document.getElementById('max-longitude').value = '';
+  }
+  
+  if (document.getElementById('visibility-filter')) {
+    document.getElementById('visibility-filter').value = 'all';
+  }
+  
+  // Show all satellite rows
+  document.querySelectorAll("#apa-table tbody tr").forEach(row => {
+    row.style.display = '';
+  });
+  
+  // Clear filter summary badge
+  const filterSummary = document.getElementById('filter-summary');
+  if (filterSummary) {
+    filterSummary.classList.add('hidden');
+  }
+  
+  // Show notification
+  showNotification("Advanced filters cleared", "info");
 }
