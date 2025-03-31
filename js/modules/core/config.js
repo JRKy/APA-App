@@ -1,5 +1,5 @@
 // config.js - App configuration constants
-export const APP_VERSION = '2.1.0';
+export const APP_VERSION = '2.1.1';
 
 // Elevation thresholds for quality classification
 export const ELEVATION_THRESHOLDS = {
@@ -61,7 +61,7 @@ export const TUTORIAL_STEPS = [
   {
     title: "Select a Location",
     content: "Use the location buttons in the top left to select a predefined location or enter custom coordinates.",
-    highlight: "toggle-filter-drawer"
+    highlight: "toggle-location-filter-drawer"
   },
   {
     title: "View Satellite Data",
