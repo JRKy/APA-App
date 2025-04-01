@@ -14,14 +14,14 @@ let lastLocation = null;
  * @returns {Object} The initialized map instance
  */
 export function initMap() {
-  // Define base layers
+  // Define base layers with correct subdomains and URL structure for Google Satellite
   const baseLayers = {
     "Map": L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; OpenStreetMap contributors',
       className: 'map-layer-light'
     }),
-    "Satellite": L.tileLayer("https://{s}.google.com/vt/lyrs=s&x={y}&y={y}&z={z}", {
-      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+    "Satellite": L.tileLayer("https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
+      subdomains: ['0', '1', '2', '3'], // Corrected subdomains
       attribution: "&copy; Google Satellite",
       className: 'map-layer-dark'
     }),
@@ -170,12 +170,12 @@ export function setMapLocation(lat, lon, zoom = 5) {
   // Update marker
   if (siteMarker) map.removeLayer(siteMarker);
   
-  // Create custom marker
+  // Create custom marker with FIXED icon anchor point
   const markerIcon = L.divIcon({
     className: 'custom-marker',
     html: `<div class="marker-pin"><span class="material-icons-round">location_on</span></div>`,
     iconSize: [30, 42],
-    iconAnchor: [15, 42]
+    iconAnchor: [15, 21] // Changed from [15, 42] to center the pointing part of the icon
   });
   
   siteMarker = L.marker([lat, lon], { icon: markerIcon }).addTo(map);
