@@ -9,6 +9,8 @@ export function initLegend() {
   const apaLegend = document.getElementById("apa-legend");
   const helpTooltip = document.getElementById("help-tooltip");
   const hideHelpBtn = document.getElementById("hide-help-tooltip");
+  const showTutorialBtn = document.getElementById("show-tutorial");
+  const restartTutorialBtn = document.getElementById("restart-tutorial");
   
   // Check if help tooltip should be shown
   if (localStorage.getItem("helpDismissed") === "true" && helpTooltip) {
@@ -27,6 +29,35 @@ export function initLegend() {
         helpTooltip.classList.add("hidden");
         localStorage.setItem("helpDismissed", "true");
       }
+    });
+  }
+  
+  // Set up tutorial button in help tooltip
+  if (showTutorialBtn) {
+    showTutorialBtn.addEventListener("click", () => {
+      // Import and call showTutorial from tutorial.js
+      import('./tutorial.js').then(module => {
+        module.showTutorial();
+        // Hide the help tooltip
+        if (helpTooltip) {
+          helpTooltip.classList.add("hidden");
+          localStorage.setItem("helpDismissed", "true");
+        }
+      });
+    });
+  }
+  
+  // Set up restart tutorial button in legend
+  if (restartTutorialBtn) {
+    restartTutorialBtn.addEventListener("click", () => {
+      // Import and call showTutorial from tutorial.js
+      import('./tutorial.js').then(module => {
+        module.restartTutorial();
+        // Hide the legend
+        if (apaLegend) {
+          apaLegend.classList.add("hidden");
+        }
+      });
     });
   }
 }
