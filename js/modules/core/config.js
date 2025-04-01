@@ -55,28 +55,28 @@ export const COVERAGE_STYLES = {
 export const TUTORIAL_STEPS = [
   {
     title: "Welcome to APA App",
-    content: "This tutorial will guide you through the basic features of the Antenna Pointing Angles App.",
+    content: "This tutorial will guide you through the Antenna Pointing Angles App features. Follow along to learn how to calculate and visualize satellite pointing angles from any location.",
     highlight: null
   },
   {
-    title: "Select a Location",
-    content: "Use the location buttons in the top left to select a predefined location or enter custom coordinates.",
+    title: "Finding a Location",
+    content: "Use the location filter button in the top left to select from predefined locations, filtered by AOR or country. For custom locations, use the location pin button or the 'Use My Location' button to use your device's GPS.",
     highlight: "toggle-location-filter-drawer"
   },
   {
-    title: "View Satellite Data",
-    content: "The APA table shows all satellites and their pointing angles from your current location.",
-    highlight: "apa-panel"
-  },
-  {
-    title: "Toggle Satellite Lines",
-    content: "Switch satellites on/off using the toggles in the first column. Blue lines indicate satellites above the horizon.",
+    title: "Working with Satellites",
+    content: "The APA table shows all satellites and their pointing angles from your current location. Toggle satellites on/off using the checkboxes. Blue lines indicate satellites above the horizon, while red dashed lines show those below the horizon.",
     highlight: "apa-table"
   },
   {
-    title: "You're Ready!",
-    content: "You now know the basics of the APA App. Explore additional features like the polar plot, custom satellites, and dark mode.",
-    highlight: null
+    title: "Advanced Filtering",
+    content: "Use the satellite filter button to apply advanced filters including minimum elevation, satellite type, and visibility. You can also add custom satellites using the satellite button in the top menu.",
+    highlight: "toggle-satellite-filter-drawer"
+  },
+  {
+    title: "Additional Features",
+    content: "Toggle the satellite polar plot for a visual representation, export APA data as CSV, and use dark mode for night operations. All data persists between sessions, and the app works offline.",
+    highlight: "toggle-polar-plot"
   }
 ];
 
