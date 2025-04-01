@@ -280,25 +280,35 @@ export function sortTable(columnIndex, direction) {
     let aVal = a.cells[columnIndex].textContent.trim();
     let bVal = b.cells[columnIndex].textContent.trim();
     
-    // Extract numeric values if they exist
-    const aMatch = aVal.match(/(-?\d+\.?\d*)/);
-    const bMatch = bVal.match(/(-?\d+\.?\d*)/);
-    
-    if (aMatch && bMatch) {
-      // Numeric sorting
-      aVal = parseFloat(aMatch[0]);
-      bVal = parseFloat(bMatch[0]);
+    // If we're sorting the satellite name column (index 1)
+    if (columnIndex === 1) {
+      // Use string comparison for alphabetical sorting
+      if (direction === 'asc') {
+        return aVal.localeCompare(bVal);
+      } else {
+        return bVal.localeCompare(aVal);
+      }
     } else {
-      // Remove any quality badges for text comparison
-      aVal = aVal.replace(/\s*\([^)]*\)/g, '');
-      bVal = bVal.replace(/\s*\([^)]*\)/g, '');
-    }
-    
-    // Determine sort order
-    if (direction === 'asc') {
-      return aVal > bVal ? 1 : (aVal < bVal ? -1 : 0);
-    } else {
-      return aVal < bVal ? 1 : (aVal > bVal ? -1 : 0);
+      // For other columns, extract numeric values if they exist
+      const aMatch = aVal.match(/(-?\d+\.?\d*)/);
+      const bMatch = bVal.match(/(-?\d+\.?\d*)/);
+      
+      if (aMatch && bMatch) {
+        // Numeric sorting
+        aVal = parseFloat(aMatch[0]);
+        bVal = parseFloat(bMatch[0]);
+      } else {
+        // Remove any quality badges for text comparison
+        aVal = aVal.replace(/\s*\([^)]*\)/g, '');
+        bVal = bVal.replace(/\s*\([^)]*\)/g, '');
+      }
+      
+      // Determine sort order
+      if (direction === 'asc') {
+        return aVal > bVal ? 1 : (aVal < bVal ? -1 : 0);
+      } else {
+        return aVal < bVal ? 1 : (aVal > bVal ? -1 : 0);
+      }
     }
   });
   
@@ -383,9 +393,10 @@ export function exportApaData(format = 'csv') {
     const data = rows.map(row => {
       const visible = row.querySelector('input[type=checkbox]').checked ? "Yes" : "No";
       const name = row.cells[1].textContent.trim();
-      const longitude = row.cells[2].textContent.trim();
-      const elevation = row.cells[3].textContent.trim().split(' ')[0]; // Remove quality badge text
-      const azimuth = row.cells[4].textContent.trim();
+      // Remove degree symbol and any non-numeric characters except decimal point and minus sign
+      const longitude = row.cells[2].textContent.trim().replace(/[^-\d.]/g, '');
+      const elevation = row.cells[3].textContent.trim().split(' ')[0].replace(/[^-\d.]/g, ''); // Remove quality badge text and degree symbol
+      const azimuth = row.cells[4].textContent.trim().replace(/[^-\d.]/g, '');
       
       return [
         `"${name}"`, // Quote satellite names in case they contain commas
