@@ -26,6 +26,125 @@ export function initFilters() {
 /**
  * Set up location filter event handlers
  */
+export function setupLocationFilterHandlers() {
+  const aorFilter = document.getElementById("aor-filter");
+  const countryFilter = document.getElementById("country-filter");
+  const locationSelect = document.getElementById("location-select");
+  const applyFiltersBtn = document.getElementById("apply-location-filters");
+  const resetFiltersBtn = document.getElementById("reset-location-filters");
+  const filterSummary = document.getElementById("location-filter-summary");
+  
+  if (!aorFilter || !countryFilter || !locationSelect || !resetFiltersBtn || !filterSummary) return;
+  
+  // AOR filter change event
+  aorFilter.addEventListener("change", () => {
+    const selectedAOR = aorFilter.value;
+    const countriesInAOR = getCountriesInAOR(selectedAOR);
+    
+    // Update country dropdown
+    countryFilter.innerHTML = '<option value="">All Countries</option>';
+    countriesInAOR.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c;
+      opt.textContent = c;
+      countryFilter.appendChild(opt);
+    });
+    
+    // Publish event
+    eventBus.publish('aorFilterChanged', selectedAOR);
+  });
+
+  // Country filter change event
+  countryFilter.addEventListener("change", () => {
+    const selectedCountry = countryFilter.value;
+    const aorsInCountry = getAORsInCountry(selectedCountry);
+    
+    // If AOR filter is empty, update it with filtered options
+    if (!aorFilter.value) {
+      aorFilter.innerHTML = '<option value="">All AORs</option>';
+      aorsInCountry.forEach(a => {
+        const opt = document.createElement("option");
+        opt.value = a;
+        opt.textContent = a;
+        aorFilter.appendChild(opt);
+      });
+    }
+    
+    // Publish event
+    eventBus.publish('countryFilterChanged', selectedCountry);
+  });
+
+  // Apply location filters button
+  if (applyFiltersBtn) {
+    applyFiltersBtn.addEventListener("click", () => {
+      // Apply filters
+      filterLocations();
+      updateLocationFilterSummary();
+      
+      // Close drawer
+      document.getElementById('location-filter-drawer').classList.remove('visible');
+      document.getElementById('drawer-overlay').classList.remove('visible');
+      
+      // Show notification
+      const selectedAOR = aorFilter.value || 'all AORs';
+      const selectedCountry = countryFilter.value || 'all countries';
+      showNotification(`Location filters applied. Showing locations in ${selectedAOR}, ${selectedCountry}.`, "info");
+      
+      // Make screen reader announcement
+      makeAnnouncement(`Location filters applied. Showing locations in ${selectedAOR}, ${selectedCountry}.`, 'polite');
+    });
+  }
+
+  // Location selection change event
+  locationSelect.addEventListener("change", function () {
+    const selected = this.options[this.selectedIndex];
+    if (!selected || !selected.dataset.aor) return;
+    
+    const aor = selected.dataset.aor;
+    const country = selected.dataset.country;
+    aorFilter.value = aor;
+    countryFilter.value = country;
+    
+    filterLocations();
+    locationSelect.value = selected.value;
+    
+    const [lat, lon] = selected.value.split(",").map(Number);
+    goToLocation(lat, lon, selected.textContent);
+    updateLocationFilterSummary();
+    
+    // Close all drawers
+    eventBus.publish('drawersAllClosed');
+    
+    // Publish event
+    eventBus.publish('locationSelected', {
+      name: selected.textContent,
+      lat,
+      lon,
+      aor,
+      country
+    });
+  });
+  
+  // Reset filters button
+  resetFiltersBtn.addEventListener("click", () => {
+    aorFilter.value = "";
+    countryFilter.value = "";
+    locationSelect.value = "";
+    populateLocationFilters();
+    filterLocations();
+    updateLocationFilterSummary();
+    
+    // Show notification
+    showNotification("Location filters have been reset.", "info");
+    
+    // Publish event
+    eventBus.publish('locationFiltersReset');
+  });
+}
+
+/**
+ * Set up satellite filter event handlers
+ */
 export function setupSatelliteFilterHandlers() {
   const minElevationSlider = document.getElementById('min-elevation');
   const minElevationValue = document.getElementById('min-elevation-value');
@@ -295,121 +414,4 @@ export function updateSatelliteFilterSummary(count) {
 export function initAdvancedFilters() {
   console.warn('initAdvancedFilters is deprecated, use setupSatelliteFilterHandlers instead');
   setupSatelliteFilterHandlers();
-}LocationFilterHandlers() {
-  const aorFilter = document.getElementById("aor-filter");
-  const countryFilter = document.getElementById("country-filter");
-  const locationSelect = document.getElementById("location-select");
-  const applyFiltersBtn = document.getElementById("apply-location-filters");
-  const resetFiltersBtn = document.getElementById("reset-location-filters");
-  const filterSummary = document.getElementById("location-filter-summary");
-  
-  if (!aorFilter || !countryFilter || !locationSelect || !resetFiltersBtn || !filterSummary) return;
-  
-  // AOR filter change event
-  aorFilter.addEventListener("change", () => {
-    const selectedAOR = aorFilter.value;
-    const countriesInAOR = getCountriesInAOR(selectedAOR);
-    
-    // Update country dropdown
-    countryFilter.innerHTML = '<option value="">All Countries</option>';
-    countriesInAOR.forEach(c => {
-      const opt = document.createElement("option");
-      opt.value = c;
-      opt.textContent = c;
-      countryFilter.appendChild(opt);
-    });
-    
-    // Publish event
-    eventBus.publish('aorFilterChanged', selectedAOR);
-  });
-
-  // Country filter change event
-  countryFilter.addEventListener("change", () => {
-    const selectedCountry = countryFilter.value;
-    const aorsInCountry = getAORsInCountry(selectedCountry);
-    
-    // If AOR filter is empty, update it with filtered options
-    if (!aorFilter.value) {
-      aorFilter.innerHTML = '<option value="">All AORs</option>';
-      aorsInCountry.forEach(a => {
-        const opt = document.createElement("option");
-        opt.value = a;
-        opt.textContent = a;
-        aorFilter.appendChild(opt);
-      });
-    }
-    
-    // Publish event
-    eventBus.publish('countryFilterChanged', selectedCountry);
-  });
-
-  // Apply location filters button
-  applyFiltersBtn.addEventListener("click", () => {
-    // Apply filters
-    filterLocations();
-    updateLocationFilterSummary();
-    
-    // Close drawer
-    document.getElementById('location-filter-drawer').classList.remove('visible');
-    document.getElementById('drawer-overlay').classList.remove('visible');
-    
-    // Show notification
-    const selectedAOR = aorFilter.value || 'all AORs';
-    const selectedCountry = countryFilter.value || 'all countries';
-    showNotification(`Location filters applied. Showing locations in ${selectedAOR}, ${selectedCountry}.`, "info");
-    
-    // Make screen reader announcement
-    makeAnnouncement(`Location filters applied. Showing locations in ${selectedAOR}, ${selectedCountry}.`, 'polite');
-  });
-
-  // Location selection change event
-  locationSelect.addEventListener("change", function () {
-    const selected = this.options[this.selectedIndex];
-    if (!selected || !selected.dataset.aor) return;
-    
-    const aor = selected.dataset.aor;
-    const country = selected.dataset.country;
-    aorFilter.value = aor;
-    countryFilter.value = country;
-    
-    filterLocations();
-    locationSelect.value = selected.value;
-    
-    const [lat, lon] = selected.value.split(",").map(Number);
-    goToLocation(lat, lon, selected.textContent);
-    updateLocationFilterSummary();
-    
-    // Close all drawers
-    eventBus.publish('drawersAllClosed');
-    
-    // Publish event
-    eventBus.publish('locationSelected', {
-      name: selected.textContent,
-      lat,
-      lon,
-      aor,
-      country
-    });
-  });
-  
-  // Reset filters button
-  resetFiltersBtn.addEventListener("click", () => {
-    aorFilter.value = "";
-    countryFilter.value = "";
-    locationSelect.value = "";
-    populateLocationFilters();
-    filterLocations();
-    updateLocationFilterSummary();
-    
-    // Show notification
-    showNotification("Location filters have been reset.", "info");
-    
-    // Publish event
-    eventBus.publish('locationFiltersReset');
-  });
 }
-
-/**
- * Set up satellite filter event handlers
- */
-export function setup
