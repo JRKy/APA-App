@@ -1,0 +1,32 @@
+name: Update Version References
+
+on:
+  push:
+    paths:
+      - 'js/modules/core/version.js'
+  workflow_dispatch:
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Run Version Injector
+        run: node tools/version-injector.js
+      
+      - name: Commit Changes
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'github-actions@github.com'
+          git add .
+          VERSION=$(node -e "const fs=require('fs');const content=fs.readFileSync('js/modules/core/version.js','utf8');console.log(content.match(/VERSION = ['\"](.*)['\"];?/)[1])")
+          git commit -m "Update version references to ${VERSION}" || echo "No changes to commit"
+          git push
