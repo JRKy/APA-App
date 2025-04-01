@@ -243,10 +243,12 @@ export function drawSatelliteFootprint(satellite, id) {
 
   const footprint = L.polygon(points, {
     color: '#1a73e8',
-    fillColor: '#1a73e8',
-    fillOpacity: 0.1,
     weight: 2,
-    className: 'satellite-footprint'
+    fill: false,              // ✅ Outline only
+    opacity: 0.6,             // Slightly lighter
+    dashArray: '4,4',         // ✅ Dashed style
+    className: 'satellite-footprint',
+    interactive: false
   }).addTo(map);
 
   footprint.bindTooltip(`${satellite.name} Coverage Area`, {
@@ -271,7 +273,6 @@ export function toggleSatelliteFootprints() {
   footprintsVisible = !footprintsVisible;
 
   if (footprintsVisible) {
-    // Redraw footprints for selected satellites
     document.querySelectorAll("input[type=checkbox][data-satlon]:checked").forEach(cb => {
       const satLon = parseFloat(cb.dataset.satlon);
       const sat = getSatellites().find(s => s.longitude === satLon);
