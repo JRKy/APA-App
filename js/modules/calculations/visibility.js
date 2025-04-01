@@ -1,7 +1,9 @@
 // visibility.js - Satellite visibility and visualization calculations
 import { getMap } from '../ui/map.js';
 import { getCoverageStyleClass, LINE_STYLES } from '../core/config.js';
+import { getSatellites } from '../data/satellites.js';
 import { calculateElevation, calculateAzimuth, calculateCoverageRadius } from './angles.js';
+import { showNotification } from '../core/utils.js';
 
 // Track visualization elements
 let lineLayers = [];
@@ -217,7 +219,7 @@ export function updateSatelliteLines(lat, lon) {
     
     // Redraw footprints if enabled
     if (footprintsVisible) {
-      drawAllFootprints();
+      drawAllFootprints(lat, lon);
     }
   }
 }
@@ -244,78 +246,91 @@ export function removeLine(id) {
 }
 
 /**
- * Generate satellite detail popup content
+ * Calculate satellite footprint using more precise geometric calculations
  * @param {Object} satellite - Satellite object
- * @param {number} lat - Observer latitude
- * @param {number} lon - Observer longitude
- * @returns {string} HTML content for popup
+ * @param {number} observerLat - Observer latitude
+ * @param {number} observerLon - Observer longitude
+ * @returns {Array} Array of footprint polygon coordinates
  */
-export function getSatelliteDetailsHTML(satellite, lat, lon) {
-  // Calculate details
-  const az = calculateAzimuth(lat, lon, satellite.longitude).toFixed(1);
-  const el = calculateElevation(lat, lon, satellite.longitude).toFixed(1);
-  const elNum = parseFloat(el);
-  const qualityLabel = elNum >= 0 ? 
-    (elNum >= 30 ? 'Excellent' : elNum >= 15 ? 'Good' : elNum >= 5 ? 'Marginal' : 'Poor') : 
-    'Below Horizon';
+export function calculateSatelliteFootprint(satellite, observerLat, observerLon) {
+  // Constants
+  const EARTH_RADIUS = 6371; // km
+  const SATELLITE_ALTITUDE = 35786; // km for geostationary satellites
+  const TOTAL_ALTITUDE = EARTH_RADIUS + SATELLITE_ALTITUDE;
+
+  // Calculate elevation angle
+  const elevation = calculateElevation(observerLat, observerLon, satellite.longitude);
   
-  // Calculate approximate distance
-  const distance = calculateDistance(lat, lon, 0, satellite.longitude).toFixed(0);
-  
-  // Get CSS class for elevation
-  const elClass = elNum < 0 ? 'elevation-negative' : 
-    elNum >= 30 ? 'elevation-excellent' : 
-    elNum >= 15 ? 'elevation-good' : 
-    elNum >= 5 ? 'elevation-marginal' : 
-    'elevation-poor';
-  
-  // Create popup content
-  return `
-    <div class="satellite-popup">
-      <div class="satellite-popup-header">${satellite.name}</div>
-      <div class="satellite-popup-content">
-        <div class="satellite-popup-label">Longitude:</div>
-        <div class="satellite-popup-value">${satellite.longitude.toFixed(1)}°</div>
-        
-        <div class="satellite-popup-label">Elevation:</div>
-        <div class="satellite-popup-value ${elClass}">${el}°</div>
-        
-        <div class="satellite-popup-label">Azimuth:</div>
-        <div class="satellite-popup-value">${az}°</div>
-        
-        <div class="satellite-popup-label">Quality:</div>
-        <div class="satellite-popup-value">${qualityLabel}</div>
-        
-        <div class="satellite-popup-label">Distance:</div>
-        <div class="satellite-popup-value">${distance} km</div>
-      </div>
-    </div>
-  `;
+  // If satellite is below horizon, return empty footprint
+  if (elevation < 0) return [];
+
+  // Calculate maximum visible area
+  const maxCoverageAngle = Math.acos(EARTH_RADIUS / TOTAL_ALTITUDE) * 180 / Math.PI;
+
+  // Generate footprint points
+  const footprintPoints = [];
+  const stepSize = 10; // degrees
+
+  for (let azimuth = 0; azimuth < 360; azimuth += stepSize) {
+    // Convert azimuth to radians
+    const azRad = azimuth * Math.PI / 180;
+    
+    // Calculate point on the surface
+    const distanceKm = TOTAL_ALTITUDE * Math.tan(maxCoverageAngle * Math.PI / 180);
+    
+    // Use Haversine formula to calculate new point
+    const lat1 = observerLat * Math.PI / 180;
+    const lon1 = observerLon * Math.PI / 180;
+    
+    const latitude = Math.asin(
+      Math.sin(lat1) * Math.cos(distanceKm / EARTH_RADIUS) + 
+      Math.cos(lat1) * Math.sin(distanceKm / EARTH_RADIUS) * Math.cos(azRad)
+    ) * 180 / Math.PI;
+    
+    const longitude = (lon1 + Math.atan2(
+      Math.sin(azRad) * Math.sin(distanceKm / EARTH_RADIUS) * Math.cos(lat1),
+      Math.cos(distanceKm / EARTH_RADIUS) - Math.sin(lat1) * Math.sin(latitude * Math.PI / 180)
+    )) * 180 / Math.PI;
+    
+    footprintPoints.push([latitude, longitude]);
+  }
+
+  return footprintPoints;
 }
 
 /**
- * Calculate distance between two points on Earth
- * @param {number} lat1 - First point latitude
- * @param {number} lon1 - First point longitude
- * @param {number} lat2 - Second point latitude
- * @param {number} lon2 - Second point longitude
- * @returns {number} Distance in kilometers
+ * Draw more accurate satellite footprint
+ * @param {Object} satellite - Satellite object
+ * @param {number} observerLat - Observer latitude
+ * @param {number} observerLon - Observer longitude
  */
-function calculateDistance(lat1, lon1, lat2, lon2) {
-  // Earth radius in km
-  const R = 6371;
+export function drawSatelliteFootprint(satellite, observerLat, observerLon) {
+  const map = getMap();
+  if (!map) return;
+
+  const footprintPoints = calculateSatelliteFootprint(satellite, observerLat, observerLon);
   
-  // Convert to radians
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  const distance = R * c;
+  if (footprintPoints.length === 0) return;
+
+  // Create polygon for footprint
+  const footprint = L.polygon(footprintPoints, {
+    color: '#1a73e8',
+    fillColor: '#1a73e8',
+    fillOpacity: 0.1,
+    weight: 2,
+    className: 'satellite-footprint'
+  }).addTo(map);
   
-  return distance;
+  // Add tooltip
+  footprint.bindTooltip(`${satellite.name} Coverage Area`, {
+    permanent: false,
+    className: "footprint-label"
+  });
+  
+  // Store reference to the layer
+  footprintLayers.push(footprint);
+  
+  return footprint;
 }
 
 /**
@@ -323,10 +338,25 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
  * @returns {boolean} New visibility state
  */
 export function toggleSatelliteFootprints() {
+  const lastLocation = document.getElementById('current-location-indicator');
+  
+  if (!lastLocation || lastLocation.classList.contains('hidden')) {
+    // No location selected
+    showNotification("Please select a location first", "error");
+    return false;
+  }
+
+  // Get the current location coordinates from a checkbox
+  const checkbox = document.querySelector("input[type=checkbox][data-lat]");
+  if (!checkbox) return false;
+
+  const lat = parseFloat(checkbox.dataset.lat);
+  const lon = parseFloat(checkbox.dataset.lon);
+
   footprintsVisible = !footprintsVisible;
   
   if (footprintsVisible) {
-    drawAllFootprints();
+    drawAllFootprints(lat, lon);
   } else {
     clearFootprints();
   }
@@ -347,53 +377,24 @@ export function clearFootprints() {
 
 /**
  * Draw all satellite footprints on the map
+ * @param {number} lat - Observer latitude
+ * @param {number} lon - Observer longitude
  */
-export function drawAllFootprints() {
+export function drawAllFootprints(lat, lon) {
   // Clear any existing footprints
   clearFootprints();
   
   const map = getMap();
   if (!map) return;
   
-  // Get all visible satellites
-  const visibleSatellites = satelliteMarkers.filter(marker => !marker.isBelow);
+  // Get all satellites
+  const satellites = getSatellites();
   
-  visibleSatellites.forEach(satMarker => {
-    drawSatelliteFootprint(satMarker.satellite);
+  satellites.forEach(sat => {
+    // Only draw footprint if satellite is above horizon
+    const elevation = calculateElevation(lat, lon, sat.longitude);
+    if (elevation >= 0) {
+      drawSatelliteFootprint(sat, lat, lon);
+    }
   });
-}
-
-/**
- * Draw a single satellite footprint
- * @param {Object} satellite - Satellite object
- */
-export function drawSatelliteFootprint(satellite) {
-  const map = getMap();
-  if (!map) return;
-  
-  // Calculate footprint radius (simplified - in reality it depends on orbital height)
-  // Geostationary satellites can see about 42% of Earth's surface
-  const earthRadius = 6371; // km
-  const footprintRadius = 5000; // approximate visible radius in km
-  
-  // Create circle at satellite's position on equator
-  const footprint = L.circle([0, satellite.longitude], {
-    radius: footprintRadius * 1000, // convert to meters for Leaflet
-    color: '#1a73e8',
-    fillColor: '#1a73e8',
-    fillOpacity: 0.1,
-    weight: 1,
-    className: 'satellite-footprint'
-  }).addTo(map);
-  
-  // Add tooltip
-  footprint.bindTooltip(`${satellite.name} Coverage Area`, {
-    permanent: false,
-    className: "footprint-label"
-  });
-  
-  // Store reference to the layer
-  footprintLayers.push(footprint);
-  
-  return footprint;
 }
