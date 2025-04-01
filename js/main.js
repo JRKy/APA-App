@@ -115,28 +115,8 @@ document.addEventListener("DOMContentLoaded", () => {
         map.setView([20, 0], 2); // Centered view of the world
       }
       
-      // Optional: Add a global marker or notification
-      if (SATELLITES && SATELLITES.length > 0) {
-        const globalMarker = L.marker([20, 0], {
-          icon: L.divIcon({
-            className: 'global-marker',
-            html: `<div class="marker-pin global-view">
-                     <span class="material-icons-round">public</span>
-                   </div>`,
-            iconSize: [30, 42],
-            iconAnchor: [15, 21]
-          })
-        }).addTo(map);
-        
-        // Add a tooltip to the global marker
-        globalMarker.bindTooltip("Global View", {
-          permanent: false,
-          direction: "top"
-        });
-        
-        // Show a notification about global view
-        showNotification("Explore global satellite positions", "info");
-      }
+      // Show a notification about global view
+      showNotification("Explore global satellite positions", "info");
     } else {
       restoreLastLocation();
     }
