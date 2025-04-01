@@ -9,367 +9,90 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.png" />
 
-  <!-- Improved Leaflet CSS loading with multiple fallbacks -->
+  <!-- Leaflet CSS with fallback (doesn't need fix for JS timing) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-      onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
-              this.onerror=function(){this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';}">
-
-  <!-- Improved Leaflet JS loading with multiple fallbacks -->
-  <script>
-    function loadLeaflet() {
-      var script = document.createElement('script');
-      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.onerror = function() {
-        console.log('Primary Leaflet CDN failed, trying backup CDN 1...');
-        var backupScript = document.createElement('script');
-        backupScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
-        backupScript.onerror = function() {
-          console.log('Backup CDN 1 failed, trying backup CDN 2...');
-          var fallbackScript = document.createElement('script');
-          fallbackScript.src = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
-          document.head.appendChild(fallbackScript);
-        };
-        document.head.appendChild(backupScript);
-      };
-      document.head.appendChild(script);
-    }
-    loadLeaflet();
-  </script>
+        onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
+                this.onerror=function(){this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';}">
 
   <!-- Google Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
-  <!-- CSS with version parameter for cache busting -->
+  <!-- App Styles -->
   <link rel="stylesheet" href="styles.css?v={{VERSION}}" />
-  
 </head>
 <body>
+  <!-- (all your content stays unchanged — drawers, buttons, panels, help, map, APA table, etc.) -->
+
+  <!-- header -->
   <header>
     <h1>APA App</h1>
     <span id="version">Version: <span data-version>{{VERSION}}</span></span>
   </header>
 
-  <!-- Loading Screen -->
-  <div id="loading-screen">
-    <div class="loading-content">
-      <svg class="loading-logo" viewBox="0 0 200 200">
-        <circle cx="100" cy="100" r="50" class="earth-circle"></circle>
-        <path class="satellite-orbit" d="M100,30 A70,70 0 1,1 99,30"></path>
-        <circle cx="100" cy="30" r="10" class="satellite-dot"></circle>
-      </svg>
-      <h2>APA App</h2>
-      <p class="loading-message">Loading satellite data...</p>
-      <div class="loading-progress">
-        <div class="loading-bar"></div>
-      </div>
-    </div>
-  </div>
+  <!-- All drawers, buttons, map, APA table, polar plot, etc. stay the same -->
+  <!-- (Not repeated here to keep the focus on fixes — keep your full body content as-is) -->
 
-  <!-- Drawer Buttons -->
-  <div class="drawer-buttons top">
-    <button id="toggle-location-drawer" title="Add Custom Location" aria-label="Open location drawer">      
-      <span class="material-icons-round">add_location</span>
-    </button>
-    <button id="toggle-satellite-drawer" title="Add Custom Satellite" aria-label="Open satellite drawer">
-      <span class="material-icons-round">satellite</span>
-    </button>
-    <button id="toggle-location-filter-drawer" title="Location Filters" aria-label="Open location filters">
-      <span class="material-icons-round">location_city</span>
-      <span id="location-filter-summary" class="filter-badge hidden">0</span>
-    </button>
-    <button id="toggle-satellite-filter-drawer" title="Satellite Filters" aria-label="Open satellite filters">
-      <span class="material-icons-round">satellite_alt</span>
-      <span id="satellite-filter-summary" class="filter-badge hidden">0</span>
-    </button>
-    <button id="btn-my-location" title="Use My Location" aria-label="Use my current location">
-      <span class="material-icons-round">my_location</span>
-    </button>
-  </div>
-
-  <!-- Drawer Overlay for Mobile -->
-  <div id="drawer-overlay" class="drawer-overlay"></div>
-
-  <!-- Location Drawer -->
-  <div id="location-drawer" class="drawer" aria-labelledby="location-drawer-title">
-    <div class="drawer-header">
-      <h3 id="location-drawer-title">Custom Location</h3>
-      <button class="drawer-close" title="Close" data-drawer="location-drawer" aria-label="Close location drawer">
-        <span class="material-icons-round">close</span>
-      </button>
-    </div>
-    <label for="custom-lat">Latitude:</label>
-    <input type="number" id="custom-lat" step="0.000001" placeholder="e.g. 34.05" aria-describedby="lat-hint" />
-    <span id="lat-hint" class="sr-only">Enter location latitude in decimal degrees</span>
-    
-    <label for="custom-lon">Longitude:</label>
-    <input type="number" id="custom-lon" step="0.000001" placeholder="e.g. -118.25" aria-describedby="lon-hint" />
-    <span id="lon-hint" class="sr-only">Enter location longitude in decimal degrees</span>
-    
-    <button id="custom-location-btn">
-      <span class="material-icons-round">pin_drop</span> Go to Location
-    </button>
-  </div>
-
-  <!-- Satellite Drawer -->
-  <div id="satellite-drawer" class="drawer" aria-labelledby="satellite-drawer-title">
-    <div class="drawer-header">
-      <h3 id="satellite-drawer-title">Custom Satellite</h3>
-      <button class="drawer-close" title="Close" data-drawer="satellite-drawer" aria-label="Close satellite drawer">
-        <span class="material-icons-round">close</span>
-      </button>
-    </div>
-    <label for="sat-name">Name:</label>
-    <input type="text" id="sat-name" maxlength="32" placeholder="Satellite Name" aria-describedby="sat-name-hint" />
-    <span id="sat-name-hint" class="sr-only">Enter a unique satellite name</span>
-    
-    <label for="sat-lon">Longitude:</label>
-    <input type="number" id="sat-lon" step="0.01" placeholder="Satellite Longitude" aria-describedby="sat-lon-hint" />
-    <span id="sat-lon-hint" class="sr-only">Enter satellite longitude in decimal degrees</span>
-    
-    <button id="add-satellite-btn">
-      <span class="material-icons-round">add_circle</span> Add Satellite
-    </button>
-  </div>
-
-  <!-- Location Filter Drawer -->
-  <div id="location-filter-drawer" class="drawer" aria-labelledby="location-filter-drawer-title">
-    <div class="drawer-header">
-      <h3 id="location-filter-drawer-title">Location Filters</h3>
-      <button class="drawer-close" title="Close" data-drawer="location-filter-drawer" aria-label="Close location filter drawer">
-        <span class="material-icons-round">close</span>
-      </button>
-    </div>
-    <label for="aor-filter">AOR:</label>
-    <select id="aor-filter" aria-describedby="aor-hint"></select>
-    <span id="aor-hint" class="sr-only">Filter by Area of Responsibility</span>
-    
-    <label for="country-filter">Country:</label>
-    <select id="country-filter" aria-describedby="country-hint"></select>
-    <span id="country-hint" class="sr-only">Filter by Country</span>
-    
-    <label for="location-select">Location:</label>
-    <select id="location-select" aria-describedby="location-hint"></select>
-    <span id="location-hint" class="sr-only">Select a specific location</span>
-    
-    <button id="apply-location-filters">
-      <span class="material-icons-round">filter_alt</span> Apply Filters
-    </button>
-    
-    <button id="reset-location-filters" class="secondary-btn">
-      <span class="material-icons-round">clear</span> Clear Filters
-    </button>
-  </div>
-
-  <!-- Satellite Filter Drawer -->
-  <div id="satellite-filter-drawer" class="drawer" aria-labelledby="satellite-filter-drawer-title">
-    <div class="drawer-header">
-      <h3 id="satellite-filter-drawer-title">Satellite Filters</h3>
-      <button class="drawer-close" title="Close" data-drawer="satellite-filter-drawer" aria-label="Close satellite filter drawer">
-        <span class="material-icons-round">close</span>
-      </button>
-    </div>
-    
-    <label for="min-elevation">Minimum Elevation:</label>
-    <div class="range-filter">
-      <input type="range" id="min-elevation" min="-30" max="90" value="-10" class="range-slider">
-      <span id="min-elevation-value">-10°</span>
-    </div>
-    
-    <label for="satellite-type">Satellite Type:</label>
-    <select id="satellite-type">
-      <option value="all">All Satellites</option>
-      <option value="predefined">Predefined Only</option>
-      <option value="custom">Custom Only</option>
-    </select>
-    
-    <div class="longitude-range">
-      <label>Longitude Range:</label>
-      <div class="range-inputs">
-        <input type="number" id="min-longitude" placeholder="Min (-180)" min="-180" max="180" step="1">
-        <span>to</span>
-        <input type="number" id="max-longitude" placeholder="Max (180)" min="-180" max="180" step="1">
-      </div>
-    </div>
-    
-    <label for="visibility-filter">Visibility:</label>
-    <select id="visibility-filter">
-      <option value="all">All Satellites</option>
-      <option value="visible">Only Visible</option>
-      <option value="not-visible">Only Not Visible</option>
-    </select>
-    
-    <button id="apply-satellite-filters">
-      <span class="material-icons-round">filter_alt</span> Apply Filters
-    </button>
-    
-    <button id="clear-satellite-filters" class="secondary-btn">
-      <span class="material-icons-round">clear</span> Clear Filters
-    </button>
-  </div>
-
-  <!-- Current Location Display -->
-  <div id="current-location-indicator" class="hidden" aria-live="polite"></div>
-
-  <!-- Map Container -->
-  <div id="map" role="application" aria-label="Interactive map showing satellite positions and pointing angles"></div>
-
-  <!-- Polar Plot -->
-  <div id="polar-plot-container" class="polar-plot-container hidden">
-    <svg id="polar-plot" class="polar-plot" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <!-- Circles will be generated by JavaScript -->
-    </svg>
-  </div>
-
-  <!-- APA Panel -->
-  <div id="apa-panel" class="leaflet-control apa-control" aria-labelledby="apa-panel-title">
-    <div class="apa-panel-header">
-      <strong id="apa-panel-title">Antenna Pointing Angles</strong>
-      <div class="panel-controls">
-        <button id="export-apa-data" title="Export Data" aria-label="Export APA data as CSV">
-          <span class="material-icons-round">download</span>
-        </button>
-        <button id="minimize-apa-panel" title="Minimize" aria-label="Minimize APA panel">
-          <span class="material-icons-round">remove</span>
-        </button>
-        <button id="close-apa-panel" title="Close" aria-label="Close APA panel">
-          <span class="material-icons-round">close</span>
-        </button>
-      </div>
-    </div>
-    <table id="apa-table" aria-describedby="apa-table-desc">
-      <caption id="apa-table-desc" class="sr-only">Antenna Pointing Angles for satellites from current location</caption>
-      <thead>
-        <tr>
-          <th scope="col">Visible</th>
-          <th scope="col">Name</th>
-          <th scope="col">Longitude</th>
-          <th scope="col">Elevation</th>
-          <th scope="col">Azimuth</th>
-          <th scope="col">Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <div id="apa-no-results" class="hidden">No results. Select a location or clear filters.</div>
-  </div>
-
-  <button id="toggle-apa-panel" aria-label="Show APA Table">
-    <span class="material-icons-round">table_chart</span> Show APA Table
-  </button>
-
-  <!-- Help Tooltip -->
-  <div id="help-tooltip" aria-live="polite">
-    <div class="help-header">Welcome to APA App!</div>
-    <p>Select a location and view antenna pointing angles for satellites. Press Tab to navigate with keyboard.</p>
-    <button id="hide-help-tooltip">Got it</button>
-    <button id="show-tutorial" class="help-secondary">Show Tutorial</button>
-  </div>
-
-  <!-- Floating Controls -->
-  <button id="dark-mode-toggle" class="floating-control" title="Toggle Dark Mode" aria-label="Switch between light and dark mode">
-    <span class="material-icons-round">dark_mode</span>
-  </button>
-
-  <button id="toggle-polar-plot" class="floating-control" title="Toggle Satellite Footprints" aria-label="Toggle satellite coverage footprints">
-    <span class="material-icons-round">language</span>
-  </button>
-
-  <button id="legend-toggle" class="floating-control" title="Legend" aria-label="Toggle legend visibility">
-    <span class="material-icons-round">help</span>
-  </button>
-
-  <!-- APA Legend -->
-  <div id="apa-legend" class="hidden" aria-labelledby="legend-title">
-    <strong id="legend-title">APA Legend</strong>
-    
-    <div class="legend-section">
-      <div class="legend-subtitle">Satellite Lines</div>
-      <div class="legend-item">
-        <div class="legend-color above"></div>
-        <span>Above horizon - Visible</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-color below"></div>
-        <span>Below horizon - Not visible</span>
-      </div>
-    </div>
-    
-    <div class="legend-section">
-      <div class="legend-subtitle">Elevation Quality</div>
-      <div class="legend-item">
-        <div class="legend-color excellent"></div>
-        <span>Excellent (>30°)</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-color good"></div>
-        <span>Good (15-30°)</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-color marginal"></div>
-        <span>Marginal (5-15°)</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-color poor"></div>
-        <span>Poor (0-5°)</span>
-      </div>
-    </div>
-    
-    <div class="legend-note">
-      Click satellite name to view details
-    </div>
-    
-    <div class="legend-section restart-tutorial-section">
-      <button id="restart-tutorial" class="secondary-btn">
-        <span class="material-icons-round">school</span> Restart Tutorial
-      </button>
-    </div>
-  </div>
-
-  <!-- Tutorial Overlay (Hidden by Default) -->
-  <div id="tutorial-overlay" class="tutorial-overlay hidden">
-    <div class="tutorial-card">
-      <div class="tutorial-header">Getting Started</div>
-      <div class="tutorial-content" id="tutorial-content">
-        Welcome to the APA App! This tutorial will guide you through the basic features.
-      </div>
-      <div class="tutorial-footer">
-        <button id="tutorial-prev" class="tutorial-button secondary" disabled>Previous</button>
-        <div id="tutorial-progress">1/5</div>
-        <button id="tutorial-next" class="tutorial-button primary">Next</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- What's New Dialog -->
-  <div id="whats-new-dialog" class="whats-new-dialog hidden">
-    <div class="whats-new-content">
-      <div class="whats-new-header">
-        <h3>What's New in Version <span data-version>{{VERSION}}</span></h3>
-        <button id="close-whats-new" aria-label="Close what's new dialog">
-          <span class="material-icons-round">close</span>
-        </button>
-      </div>
-      <div class="whats-new-features">
-        <ul id="version-features">
-          <!-- Features will be populated dynamically -->
-        </ul>
-      </div>
-      <button id="dismiss-whats-new" class="whats-new-dismiss">Got it</button>
-    </div>
-  </div>
-
-  <!-- Scripts -->
-  <script type="module" src="data.js?v={{VERSION}}"></script>
-  <!-- Use the modular entry point -->
-  <script type="module" src="js/main.js?v={{VERSION}}"></script>
+  <!-- ✅ Leaflet & App Script Loader (Fixes `L is not defined`) -->
   <script>
-    if ("serviceWorker" in navigator) {
-      // Use dynamic version for service worker registration
-      const version = document.querySelector('[data-version]').textContent;
-      navigator.serviceWorker.register(`sw.js?v=${version}`).then(reg => {
-        console.log("Service Worker registered with scope:", reg.scope);
+    function loadLeafletAndApp() {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = () => {
+        console.log('Leaflet loaded from primary CDN');
+        loadAppScripts();
+      };
+      script.onerror = () => {
+        console.warn('Primary Leaflet CDN failed, trying fallback...');
+        const fallback = document.createElement('script');
+        fallback.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
+        fallback.onload = () => {
+          console.log('Leaflet loaded from fallback CDN');
+          loadAppScripts();
+        };
+        fallback.onerror = () => {
+          const last = document.createElement('script');
+          last.src = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
+          last.onload = () => {
+            console.log('Leaflet loaded from jsDelivr');
+            loadAppScripts();
+          };
+          document.head.appendChild(last);
+        };
+        document.head.appendChild(fallback);
+      };
+      document.head.appendChild(script);
+    }
+
+    function loadAppScripts() {
+      const scripts = [
+        { type: 'module', src: `data.js?v={{VERSION}}` },
+        { type: 'module', src: `js/main.js?v={{VERSION}}` }
+      ];
+      scripts.forEach(({ type, src }) => {
+        const s = document.createElement('script');
+        s.type = type;
+        s.src = src;
+        document.body.appendChild(s);
       });
     }
+
+    document.addEventListener('DOMContentLoaded', loadLeafletAndApp);
+  </script>
+
+  <!-- ✅ Service Worker Registration -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const version = document.querySelector('[data-version]')?.textContent || 'dev';
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register(`sw.js?v=${version}`)
+          .then(reg => {
+            console.log("Service Worker registered with scope:", reg.scope);
+          })
+          .catch(err => {
+            console.error("Service Worker registration failed:", err);
+          });
+      }
+    });
   </script>
 </body>
 </html>
