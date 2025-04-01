@@ -65,8 +65,7 @@
 
     function loadAppScripts() {
       const scripts = [
-        { type: 'module', src: `data.js?v={{VERSION}}` },
-        { type: 'module', src: `js/main.js?v={{VERSION}}` }
+       { type: 'module', src: `js/main.js?v={{VERSION}}` }
       ];
       scripts.forEach(({ type, src }) => {
         const s = document.createElement('script');
