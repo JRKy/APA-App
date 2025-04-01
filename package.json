@@ -1,0 +1,9 @@
+// Create this file at: package.json (or add to existing file)
+
+{
+  "name": "apa-app",
+  "version": "2.2.0",
+  "scripts": {
+    "update-version": "node tools/version-injector.js"
+  }
+}
