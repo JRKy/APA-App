@@ -1,0 +1,79 @@
+name: Update Version References
+
+on:
+  push:
+    paths:
+      - 'js/modules/core/version.js'
+  workflow_dispatch:
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract Version
+        run: |
+          if [ -f "js/modules/core/version.js" ]; then
+            VERSION=$(grep -o "VERSION = '[^']*'" js/modules/core/version.js | cut -d "'" -f 2 || grep -o 'VERSION = "[^"]*"' js/modules/core/version.js | cut -d '"' -f 2)
+            if [ -z "$VERSION" ]; then
+              VERSION="2.2.0"
+              echo "Could not extract version, using default: $VERSION"
+            else
+              echo "Found version: $VERSION"
+            fi
+          else
+            VERSION="2.2.0"
+            echo "Version file not found, using default: $VERSION"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      
+      - name: Update Version References
+        run: |
+          # Update index.html
+          if [ -f "index.html" ]; then
+            sed -i "s/Version: <span data-version>[^<]*<\/span>/Version: <span data-version>$VERSION<\/span>/g" index.html
+            sed -i "s/styles\.css?v=[^\"']*/styles.css?v=$VERSION/g" index.html
+            sed -i "s/main\.js?v=[^\"']*/main.js?v=$VERSION/g" index.html
+            sed -i "s/data\.js?v=[^\"']*/data.js?v=$VERSION/g" index.html
+            echo "Updated index.html"
+          fi
+          
+          # Update manifest.json
+          if [ -f "manifest.json" ]; then
+            sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/g" manifest.json
+            echo "Updated manifest.json"
+          fi
+          
+          # Update sw.js
+          if [ -f "sw.js" ]; then
+            sed -i "s/CACHE_NAME = \"apa-app-cache-v[^\"]*\"/CACHE_NAME = \"apa-app-cache-v$VERSION\"/g" sw.js
+            sed -i "s/console\.log(\"Installed SW Version: v[^\"]*\")/console.log(\"Installed SW Version: v$VERSION\")/g" sw.js
+            echo "Updated sw.js"
+          fi
+          
+          # Update styles.css
+          if [ -f "styles.css" ]; then
+            sed -i "s/\/\* APA App Styles - v[^ ]* \*\//\/* APA App Styles - v$VERSION *\//g" styles.css
+            echo "Updated styles.css"
+          fi
+          
+          # Update offline.html
+          if [ -f "offline.html" ]; then
+            sed -i "s/App Version: [^<]*<\/div>/App Version: $VERSION<\/div>/g" offline.html
+            echo "Updated offline.html"
+          fi
+          
+          # Replace any {{VERSION}} placeholders
+          find . -type f -name "*.html" -o -name "*.js" -o -name "*.json" | xargs grep -l "{{VERSION}}" | xargs sed -i "s/{{VERSION}}/$VERSION/g" || true
+          echo "Replaced {{VERSION}} placeholders (if any)"
+      
+      - name: Commit Changes
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'github-actions@github.com'
+          git add .
+          git diff --staged --quiet || git commit -m "Update version references to $VERSION"
+          git push
