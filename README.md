@@ -18,6 +18,18 @@ A Progressive Web App (PWA) for calculating and visualizing antenna pointing ang
 - Dark mode with optimized map layers  
 - Interactive tutorial and help system  
 
+## 🆕 What's New in v2.2.0
+
+- Enhanced offline support with more comprehensive caching strategy
+- Improved error handling for geolocation and satellite data
+- Support for custom satellite orbit types
+- New color-coded tooltips for satellite details
+- Expanded export preparation (groundwork for PDF export)
+- Optimized map rendering and satellite line calculations
+- Refined tutorial step-by-step guidance
+- Performance improvements for large satellite datasets
+- Mobile responsiveness enhancements
+
 ## 🆕 What's New in v2.1.0
 
 - ARIA live regions for better accessibility
