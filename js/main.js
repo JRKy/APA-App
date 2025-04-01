@@ -2,7 +2,7 @@
 import { APP_VERSION } from './modules/core/config.js';
 import { showNotification } from './modules/core/utils.js';
 import { initEventListeners } from './modules/core/events.js';
-import { initMap, updateMapAppearance } from './modules/ui/map.js';
+import { initMap, updateMapAppearance, getMap } from './modules/ui/map.js';
 import { initPanels } from './modules/ui/panels.js';
 import { initDrawers } from './modules/ui/drawers.js';
 import { initTable } from './modules/ui/table.js';
@@ -11,7 +11,7 @@ import { initTutorial, showTutorial } from './modules/ui/tutorial.js';
 import { initFilters } from './modules/ui/filters.js';
 import { initLegend } from './modules/ui/legend.js';
 import { loadCustomSatellites } from './modules/data/satellites.js';
-import { loadLastLocation, restoreLastLocation } from './modules/data/storage.js';
+import { restoreLastLocation, loadLastLocation } from './modules/data/storage.js';
 import { goToLocation } from './modules/data/locations.js';
 import { toggleSatelliteFootprints } from './modules/calculations/visibility.js';
 
@@ -104,15 +104,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   
-  // Restore last location if available
+  // Restore last location or set a world view
   setTimeout(() => {
     const lastLocation = loadLastLocation();
     
     if (!lastLocation) {
-      // Show a default location (first in the list)
+      // Set a world view centered on (0, 0) with a lower zoom level
+      const map = getMap();
+      if (map) {
+        map.setView([20, 0], 2); // Centered view of the world
+      }
+      
+      // Optional: Add a global marker or notification
       if (SATELLITES && SATELLITES.length > 0) {
-        const defaultLocation = LOCATIONS[0];
-        goToLocation(defaultLocation.latitude, defaultLocation.longitude, defaultLocation.name);
+        const globalMarker = L.marker([20, 0], {
+          icon: L.divIcon({
+            className: 'global-marker',
+            html: `<div class="marker-pin global-view">
+                     <span class="material-icons-round">public</span>
+                   </div>`,
+            iconSize: [30, 42],
+            iconAnchor: [15, 21]
+          })
+        }).addTo(map);
+        
+        // Add a tooltip to the global marker
+        globalMarker.bindTooltip("Global View", {
+          permanent: false,
+          direction: "top"
+        });
+        
+        // Show a notification about global view
+        showNotification("Explore global satellite positions", "info");
       }
     } else {
       restoreLastLocation();
