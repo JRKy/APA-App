@@ -19,24 +19,19 @@ let footprintLayers = [];
 export function clearVisualization() {
   const map = getMap();
   if (!map) return;
-  
-  // Remove all lines
+
   lineLayers.forEach(l => map.removeLayer(l.layer));
   lineLayers = [];
-  
-  // Remove all satellite markers
+
   satelliteMarkers.forEach(m => map.removeLayer(m.marker));
   satelliteMarkers = [];
-  
-  // Remove orbit paths
+
   orbitPaths.forEach(p => map.removeLayer(p));
   orbitPaths = [];
-  
-  // Remove coverage cones
+
   coverageCones.forEach(c => map.removeLayer(c.circle));
   coverageCones = [];
-  
-  // Remove footprints
+
   clearFootprints();
 }
 
@@ -46,7 +41,7 @@ export function clearVisualization() {
 export function drawEquator() {
   const map = getMap();
   if (!map) return;
-  
+
   const points = [];
   for (let lon = -180; lon <= 180; lon += 5) {
     points.push([0, lon]);
@@ -69,7 +64,7 @@ export function drawEquator() {
 export function drawLine(lat, lon, satLon, label, el, id) {
   const map = getMap();
   if (!map) return null;
-  
+
   const isVisible = el >= 0;
   const style = isVisible ? LINE_STYLES.ABOVE_HORIZON : LINE_STYLES.BELOW_HORIZON;
 
@@ -92,6 +87,14 @@ export function drawLine(lat, lon, satLon, label, el, id) {
 
   if (isVisible) {
     drawCoverageCone(lat, lon, satLon, el, id);
+
+    if (footprintsVisible) {
+      const satellites = getSatellites();
+      const sat = satellites.find(s => s.longitude === satLon);
+      if (sat) {
+        drawSatelliteFootprint(sat);
+      }
+    }
   }
 
   return lineLayer;
@@ -139,7 +142,7 @@ export function addSatelliteMarker(satellite, isBelow) {
     iconAnchor: [12, 12]
   });
 
-  const marker = L.marker([0, satellite.longitude], { 
+  const marker = L.marker([0, satellite.longitude], {
     icon: satIcon,
     zIndexOffset: isBelow ? 100 : 200
   }).addTo(map);
