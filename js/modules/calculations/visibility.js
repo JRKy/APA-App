@@ -5,13 +5,12 @@ import { getSatellites } from '../data/satellites.js';
 import { calculateElevation, calculateAzimuth, calculateCoverageRadius } from './angles.js';
 import { showNotification } from '../core/utils.js';
 
-// Track visualization elements
 let lineLayers = [];
 let satelliteMarkers = [];
 let orbitPaths = [];
 let coverageCones = [];
 let footprintsVisible = false;
-let footprintLayers = [];
+let footprintLayers = []; // array of { id, layer }
 
 /**
  * Clear all satellite visualization elements from the map
@@ -59,7 +58,7 @@ export function drawEquator() {
 }
 
 /**
- * Draw a satellite line on the map
+ * Draw a satellite line and optionally its footprint
  */
 export function drawLine(lat, lon, satLon, label, el, id) {
   const map = getMap();
@@ -82,22 +81,16 @@ export function drawLine(lat, lon, satLon, label, el, id) {
     className: "apa-line-label"
   });
 
-  const lineLayer = { id, layer: polyline };
-  lineLayers.push(lineLayer);
+  lineLayers.push({ id, layer: polyline });
 
-  if (isVisible) {
-    drawCoverageCone(lat, lon, satLon, el, id);
+  drawCoverageCone(lat, lon, satLon, el, id);
 
-    if (footprintsVisible) {
-      const satellites = getSatellites();
-      const sat = satellites.find(s => s.longitude === satLon);
-      if (sat) {
-        drawSatelliteFootprint(sat);
-      }
-    }
+  if (footprintsVisible) {
+    const sat = getSatellites().find(s => s.longitude === satLon);
+    if (sat) drawSatelliteFootprint(sat, id);
   }
 
-  return lineLayer;
+  return polyline;
 }
 
 /**
@@ -105,7 +98,7 @@ export function drawLine(lat, lon, satLon, label, el, id) {
  */
 export function drawCoverageCone(lat, lon, satLon, el, id) {
   const map = getMap();
-  if (!map || el < 0) return null;
+  if (!map) return;
 
   const coverageRadius = calculateCoverageRadius(el);
   const colorClass = getCoverageStyleClass(el);
@@ -116,10 +109,7 @@ export function drawCoverageCone(lat, lon, satLon, el, id) {
     interactive: false
   }).addTo(map);
 
-  const cone = { id, circle: coverageCircle };
-  coverageCones.push(cone);
-
-  return cone;
+  coverageCones.push({ id, circle: coverageCircle });
 }
 
 /**
@@ -147,10 +137,9 @@ export function addSatelliteMarker(satellite, isBelow) {
     zIndexOffset: isBelow ? 100 : 200
   }).addTo(map);
 
-  const satelliteMarker = { satellite, marker, isBelow };
-  satelliteMarkers.push(satelliteMarker);
+  satelliteMarkers.push({ satellite, marker, isBelow });
 
-  return satelliteMarker;
+  return marker;
 }
 
 /**
@@ -177,15 +166,11 @@ export function updateSatelliteLines(lat, lon) {
         addSatelliteMarker(sat, el < 0);
       });
     }
-
-    if (footprintsVisible) {
-      drawAllFootprints(lat, lon);
-    }
   }
 }
 
 /**
- * Remove a line by ID
+ * Remove a satellite line and its footprint
  */
 export function removeLine(id) {
   const map = getMap();
@@ -196,14 +181,20 @@ export function removeLine(id) {
     map.removeLayer(existing.layer);
     lineLayers = lineLayers.filter(l => l.id !== id);
 
-    const associatedCones = coverageCones.filter(c => c.id === id);
-    associatedCones.forEach(cone => map.removeLayer(cone.circle));
+    coverageCones
+      .filter(c => c.id === id)
+      .forEach(c => map.removeLayer(c.circle));
     coverageCones = coverageCones.filter(c => c.id !== id);
+
+    footprintLayers
+      .filter(f => f.id === id)
+      .forEach(f => map.removeLayer(f.layer));
+    footprintLayers = footprintLayers.filter(f => f.id !== id);
   }
 }
 
 /**
- * Calculate satellite footprint (centered on satellite nadir)
+ * Calculate satellite footprint (centered on nadir)
  */
 export function calculateSatelliteFootprint(satellite) {
   const EARTH_RADIUS = 6371;
@@ -234,26 +225,23 @@ export function calculateSatelliteFootprint(satellite) {
       Math.cos(angularDistance) - Math.sin(lat0Rad) * Math.sin(latRad)
     );
 
-    const latDeg = latRad * 180 / Math.PI;
-    const lonDeg = lonRad * 180 / Math.PI;
-
-    footprintPoints.push([latDeg, lonDeg]);
+    footprintPoints.push([latRad * 180 / Math.PI, lonRad * 180 / Math.PI]);
   }
 
   return footprintPoints;
 }
 
 /**
- * Draw a satellite footprint (centered on satellite)
+ * Draw satellite footprint and track it by ID
  */
-export function drawSatelliteFootprint(satellite) {
+export function drawSatelliteFootprint(satellite, id) {
   const map = getMap();
   if (!map) return;
 
-  const footprintPoints = calculateSatelliteFootprint(satellite);
-  if (footprintPoints.length === 0) return;
+  const points = calculateSatelliteFootprint(satellite);
+  if (points.length === 0) return;
 
-  const footprint = L.polygon(footprintPoints, {
+  const footprint = L.polygon(points, {
     color: '#1a73e8',
     fillColor: '#1a73e8',
     fillOpacity: 0.1,
@@ -266,31 +254,29 @@ export function drawSatelliteFootprint(satellite) {
     className: "footprint-label"
   });
 
-  footprintLayers.push(footprint);
+  footprintLayers.push({ id, layer: footprint });
   return footprint;
 }
 
 /**
- * Toggle all footprints
+ * Toggle footprint display
  */
 export function toggleSatelliteFootprints() {
   const lastLocation = document.getElementById('current-location-indicator');
-
   if (!lastLocation || lastLocation.classList.contains('hidden')) {
     showNotification("Please select a location first", "error");
     return false;
   }
 
-  const checkbox = document.querySelector("input[type=checkbox][data-lat]");
-  if (!checkbox) return false;
-
-  const lat = parseFloat(checkbox.dataset.lat);
-  const lon = parseFloat(checkbox.dataset.lon);
-
   footprintsVisible = !footprintsVisible;
 
   if (footprintsVisible) {
-    drawAllFootprints(lat, lon);
+    // Redraw footprints for selected satellites
+    document.querySelectorAll("input[type=checkbox][data-satlon]:checked").forEach(cb => {
+      const satLon = parseFloat(cb.dataset.satlon);
+      const sat = getSatellites().find(s => s.longitude === satLon);
+      if (sat) drawSatelliteFootprint(sat, cb.id);
+    });
   } else {
     clearFootprints();
   }
@@ -299,31 +285,12 @@ export function toggleSatelliteFootprints() {
 }
 
 /**
- * Clear all footprints
+ * Clear all satellite footprints
  */
 export function clearFootprints() {
   const map = getMap();
   if (!map) return;
 
-  footprintLayers.forEach(layer => map.removeLayer(layer));
+  footprintLayers.forEach(f => map.removeLayer(f.layer));
   footprintLayers = [];
-}
-
-/**
- * Draw all visible satellite footprints
- */
-export function drawAllFootprints(lat, lon) {
-  clearFootprints();
-
-  const map = getMap();
-  if (!map) return;
-
-  const satellites = getSatellites();
-
-  satellites.forEach(sat => {
-    const elevation = calculateElevation(lat, lon, sat.longitude);
-    if (elevation >= 0) {
-      drawSatelliteFootprint(sat);
-    }
-  });
 }
