@@ -40,13 +40,13 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
   <!-- CSS with version parameter for cache busting -->
-  <link rel="stylesheet" href="styles.css?v={{VERSION}}" />
+  <link rel="stylesheet" href="styles.css?v=2.2.0" />
   
 </head>
 <body>
   <header>
     <h1>APA App</h1>
-    <span id="version">Version: <span data-version>{{VERSION}}</span></span>
+    <span id="version">Version: <span data-version>2.2.0</span></span>
   </header>
 
   <!-- Loading Screen -->
@@ -344,7 +344,7 @@
   <div id="whats-new-dialog" class="whats-new-dialog hidden">
     <div class="whats-new-content">
       <div class="whats-new-header">
-        <h3>What's New in Version <span data-version>{{VERSION}}</span></h3>
+        <h3>What's New in Version <span data-version>2.2.0</span></h3>
         <button id="close-whats-new" aria-label="Close what's new dialog">
           <span class="material-icons-round">close</span>
         </button>
@@ -359,9 +359,9 @@
   </div>
 
   <!-- Scripts -->
-  <script src="data.js?v={{VERSION}}"></script>
+  <script src="data.js?v=2.2.0"></script>
   <!-- Use the modular entry point -->
-  <script type="module" src="js/main.js?v={{VERSION}}"></script>
+  <script type="module" src="js/main.js?v=2.2.0"></script>
   <script>
     if ("serviceWorker" in navigator) {
       // Use dynamic version for service worker registration
