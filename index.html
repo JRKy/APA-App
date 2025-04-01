@@ -9,24 +9,32 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.png" />
 
-  <!-- Leaflet -->
+  <!-- Improved Leaflet CSS loading with multiple fallbacks -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-      onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';" />
+      onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
+              this.onerror=function(){this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';}">
 
-<script>
-  function loadLeaflet() {
-    var script = document.createElement('script');
-    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    script.onerror = function() {
-      console.log('Primary Leaflet CDN failed, trying backup...');
-      var backupScript = document.createElement('script');
-      backupScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
-      document.head.appendChild(backupScript);
-    };
-    document.head.appendChild(script);
-  }
-  loadLeaflet();
-</script>
+  <!-- Improved Leaflet JS loading with multiple fallbacks -->
+  <script>
+    function loadLeaflet() {
+      var script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onerror = function() {
+        console.log('Primary Leaflet CDN failed, trying backup CDN 1...');
+        var backupScript = document.createElement('script');
+        backupScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
+        backupScript.onerror = function() {
+          console.log('Backup CDN 1 failed, trying backup CDN 2...');
+          var fallbackScript = document.createElement('script');
+          fallbackScript.src = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
+          document.head.appendChild(fallbackScript);
+        };
+        document.head.appendChild(backupScript);
+      };
+      document.head.appendChild(script);
+    }
+    loadLeaflet();
+  </script>
 
   <!-- Google Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
