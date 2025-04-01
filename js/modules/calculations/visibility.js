@@ -8,6 +8,8 @@ let lineLayers = [];
 let satelliteMarkers = [];
 let orbitPaths = [];
 let coverageCones = [];
+let footprintsVisible = false;
+let footprintLayers = [];
 
 /**
  * Clear all satellite visualization elements from the map
@@ -31,6 +33,9 @@ export function clearVisualization() {
   // Remove coverage cones
   coverageCones.forEach(c => map.removeLayer(c.circle));
   coverageCones = [];
+  
+  // Remove footprints
+  clearFootprints();
 }
 
 /**
@@ -209,6 +214,11 @@ export function updateSatelliteLines(lat, lon) {
         addSatelliteMarker(sat, el < 0);
       });
     }
+    
+    // Redraw footprints if enabled
+    if (footprintsVisible) {
+      drawAllFootprints();
+    }
   }
 }
 
@@ -306,4 +316,84 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const distance = R * c;
   
   return distance;
+}
+
+/**
+ * Toggle satellite footprints visibility
+ * @returns {boolean} New visibility state
+ */
+export function toggleSatelliteFootprints() {
+  footprintsVisible = !footprintsVisible;
+  
+  if (footprintsVisible) {
+    drawAllFootprints();
+  } else {
+    clearFootprints();
+  }
+  
+  return footprintsVisible;
+}
+
+/**
+ * Clear all satellite footprints from the map
+ */
+export function clearFootprints() {
+  const map = getMap();
+  if (!map) return;
+  
+  footprintLayers.forEach(layer => map.removeLayer(layer));
+  footprintLayers = [];
+}
+
+/**
+ * Draw all satellite footprints on the map
+ */
+export function drawAllFootprints() {
+  // Clear any existing footprints
+  clearFootprints();
+  
+  const map = getMap();
+  if (!map) return;
+  
+  // Get all visible satellites
+  const visibleSatellites = satelliteMarkers.filter(marker => !marker.isBelow);
+  
+  visibleSatellites.forEach(satMarker => {
+    drawSatelliteFootprint(satMarker.satellite);
+  });
+}
+
+/**
+ * Draw a single satellite footprint
+ * @param {Object} satellite - Satellite object
+ */
+export function drawSatelliteFootprint(satellite) {
+  const map = getMap();
+  if (!map) return;
+  
+  // Calculate footprint radius (simplified - in reality it depends on orbital height)
+  // Geostationary satellites can see about 42% of Earth's surface
+  const earthRadius = 6371; // km
+  const footprintRadius = 5000; // approximate visible radius in km
+  
+  // Create circle at satellite's position on equator
+  const footprint = L.circle([0, satellite.longitude], {
+    radius: footprintRadius * 1000, // convert to meters for Leaflet
+    color: '#1a73e8',
+    fillColor: '#1a73e8',
+    fillOpacity: 0.1,
+    weight: 1,
+    className: 'satellite-footprint'
+  }).addTo(map);
+  
+  // Add tooltip
+  footprint.bindTooltip(`${satellite.name} Coverage Area`, {
+    permanent: false,
+    className: "footprint-label"
+  });
+  
+  // Store reference to the layer
+  footprintLayers.push(footprint);
+  
+  return footprint;
 }
