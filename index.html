@@ -39,14 +39,31 @@
   <!-- Google Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=2.2.0" />
+  <!-- CSS with version parameter for cache busting -->
+  <link rel="stylesheet" href="styles.css?v={{VERSION}}" />
   
 </head>
 <body>
   <header>
     <h1>APA App</h1>
-    <span id="version">Version: <span data-version>2.2.0</span></span>
+    <span id="version">Version: <span data-version>{{VERSION}}</span></span>
   </header>
+
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="loading-content">
+      <svg class="loading-logo" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="50" class="earth-circle"></circle>
+        <path class="satellite-orbit" d="M100,30 A70,70 0 1,1 99,30"></path>
+        <circle cx="100" cy="30" r="10" class="satellite-dot"></circle>
+      </svg>
+      <h2>APA App</h2>
+      <p class="loading-message">Loading satellite data...</p>
+      <div class="loading-progress">
+        <div class="loading-bar"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Drawer Buttons -->
   <div class="drawer-buttons top">
@@ -208,6 +225,9 @@
     <div class="apa-panel-header">
       <strong id="apa-panel-title">Antenna Pointing Angles</strong>
       <div class="panel-controls">
+        <button id="export-apa-data" title="Export Data" aria-label="Export APA data as CSV">
+          <span class="material-icons-round">download</span>
+        </button>
         <button id="minimize-apa-panel" title="Minimize" aria-label="Minimize APA panel">
           <span class="material-icons-round">remove</span>
         </button>
@@ -320,13 +340,33 @@
     </div>
   </div>
 
+  <!-- What's New Dialog -->
+  <div id="whats-new-dialog" class="whats-new-dialog hidden">
+    <div class="whats-new-content">
+      <div class="whats-new-header">
+        <h3>What's New in Version <span data-version>{{VERSION}}</span></h3>
+        <button id="close-whats-new" aria-label="Close what's new dialog">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <div class="whats-new-features">
+        <ul id="version-features">
+          <!-- Features will be populated dynamically -->
+        </ul>
+      </div>
+      <button id="dismiss-whats-new" class="whats-new-dismiss">Got it</button>
+    </div>
+  </div>
+
   <!-- Scripts -->
-  <script src="data.js?v=2.2.0"></script>
-  <!-- Replace the original script reference with the modular entry point -->
-  <script type="module" src="js/main.js?v=2.2.0"></script>
+  <script src="data.js?v={{VERSION}}"></script>
+  <!-- Use the modular entry point -->
+  <script type="module" src="js/main.js?v={{VERSION}}"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js?v=2.2.0").then(reg => {
+      // Use dynamic version for service worker registration
+      const version = document.querySelector('[data-version]').textContent;
+      navigator.serviceWorker.register(`sw.js?v=${version}`).then(reg => {
         console.log("Service Worker registered with scope:", reg.scope);
       });
     }
