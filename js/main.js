@@ -6,13 +6,14 @@ import { initMap, updateMapAppearance } from './modules/ui/map.js';
 import { initPanels } from './modules/ui/panels.js';
 import { initDrawers } from './modules/ui/drawers.js';
 import { initTable } from './modules/ui/table.js';
-import { initPolarPlot, togglePolarPlotVisibility } from './modules/ui/polarPlot.js';
+import { initPolarPlot } from './modules/ui/polarPlot.js';
 import { initTutorial, showTutorial } from './modules/ui/tutorial.js';
 import { initFilters } from './modules/ui/filters.js';
 import { initLegend } from './modules/ui/legend.js';
 import { loadCustomSatellites } from './modules/data/satellites.js';
 import { loadLastLocation, restoreLastLocation } from './modules/data/storage.js';
 import { goToLocation } from './modules/data/locations.js';
+import { toggleSatelliteFootprints } from './modules/calculations/visibility.js';
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log(`APA App ${APP_VERSION} initialized`);
@@ -51,9 +52,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   
-  // Show polar plot if it was visible before
-  if (localStorage.getItem("polarPlotVisible") === "true") {
-    togglePolarPlotVisibility(true);
+  // Repurpose polar plot button to show satellite footprints
+  const footprintButton = document.getElementById("toggle-polar-plot");
+  if (footprintButton) {
+    // Update tooltip and icon
+    footprintButton.title = "Toggle Satellite Footprints";
+    footprintButton.setAttribute("aria-label", "Toggle satellite coverage footprints");
+    footprintButton.querySelector(".material-icons-round").textContent = "language";
+    
+    // Update event listener
+    footprintButton.addEventListener("click", () => {
+      const isVisible = toggleSatelliteFootprints();
+      
+      // Show notification
+      if (isVisible) {
+        showNotification("Satellite footprints enabled", "info");
+      } else {
+        showNotification("Satellite footprints disabled", "info");
+      }
+    });
   }
   
   // Restore last location if available
@@ -62,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     if (!lastLocation) {
       // Show a default location (first in the list)
-      if (LOCATIONS && LOCATIONS.length > 0) {
+      if (SATELLITES && SATELLITES.length > 0) {
         const defaultLocation = LOCATIONS[0];
         goToLocation(defaultLocation.latitude, defaultLocation.longitude, defaultLocation.name);
       }
