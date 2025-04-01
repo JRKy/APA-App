@@ -20,6 +20,8 @@
 - [✓] Dynamic addition to APA table
 - [✓] Custom names and longitudes
 - [✓] Support for all MUOS satellites
+- [✓] Custom satellite orbit type support
+- [✓] Enhanced satellite filtering capabilities
 
 ## ✅ UI/UX Enhancements
 - [✓] Docked APA table panel (snap corner)
@@ -30,6 +32,7 @@
 - [✓] Help overlay with step-by-step tutorial
 - [✓] Smoother transitions between views
 - [✓] Polar plot visualization
+- [✓] Color-coded tooltips for satellite details
 
 ## ✅ Accessibility (WCAG 2.1 AA)
 - [✓] Sufficient contrast for all text/lines
@@ -46,11 +49,13 @@
 - [✓] Versioned cache busting
 - [✓] Async data loading
 - [✓] Optimize map redraws (debounce on zoom/pan)
+- [✓] Enhanced caching strategy
+- [✓] Improved performance for large satellite datasets
 
 ## ✅ Data Management
 - [✓] Exportable APA data (CSV)
 - [✓] Advanced satellite filtering options
+- [✓] Support for custom satellite orbit types
 
 ## 🚧 Planned Future Enhancements
 - [ ] Exportable APA data (PDF)
-- [ ] Multiple satellite comparison view
