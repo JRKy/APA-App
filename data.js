@@ -1,5 +1,4 @@
-// data.js
-import { VERSION } from './js/modules/core/version.js';
+// Version 2.2.0
 
 const SATELLITES = [
   { name: "MUOS-2", longitude: -177 },
@@ -37,4 +36,4 @@ const LOCATIONS = [
   { name: "Schriever SFB, CO", latitude: 38.801244686130765, longitude: -104.5260869617432, country: "USA", aor: "NORTHCOM" }
 ];
 
-console.log(`Data Loaded: ${SATELLITES.length} satellites, ${LOCATIONS.length} locations (${VERSION})`);
+console.log(`Data Loaded: ${SATELLITES.length} satellites, ${LOCATIONS.length} locations (v2.2.0)`);

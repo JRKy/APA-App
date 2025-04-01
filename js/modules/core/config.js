@@ -1,7 +1,5 @@
 // config.js - App configuration constants
-import { VERSION } from './version.js';
-
-export const APP_VERSION = VERSION;
+export const APP_VERSION = '2.2.0';
 
 // Elevation thresholds for quality classification
 export const ELEVATION_THRESHOLDS = {
