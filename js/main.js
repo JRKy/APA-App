@@ -73,6 +73,37 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
+  // Show tutorial if first time or if coming from "restart tutorial"
+  setTimeout(() => {
+    // Check URL parameters for tutorial restart
+    const urlParams = new URLSearchParams(window.location.search);
+    const showTutorial = urlParams.get('tutorial') === 'true';
+    
+    if (showTutorial || (!localStorage.getItem('tutorialCompleted') && localStorage.getItem('helpDismissed'))) {
+      // Clean up URL if needed
+      if (showTutorial) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      
+      // Show tutorial with slight delay to ensure UI is ready
+      setTimeout(() => {
+        import('./modules/ui/tutorial.js').then(module => {
+          module.showTutorial();
+        });
+      }, 1000);
+    }
+  }, 500);
+  
+  // Register shortcut key for tutorial (Shift+?)
+  document.addEventListener('keydown', (e) => {
+    // Shift + ?
+    if (e.shiftKey && e.key === '?') {
+      import('./modules/ui/tutorial.js').then(module => {
+        module.restartTutorial();
+      });
+    }
+  });
+  
   // Restore last location if available
   setTimeout(() => {
     const lastLocation = loadLastLocation();
