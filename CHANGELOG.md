@@ -1,3 +1,27 @@
+## [2.2.0] - 2025-04-02
+
+### Added
+- Enhanced offline support with more comprehensive caching strategy
+- Improved error handling for geolocation and satellite data
+- Support for custom satellite orbit types
+- New color-coded tooltips for satellite details
+- Export functionality expanded (preparation for PDF export)
+
+### Changed
+- Optimized map rendering and satellite line calculations
+- Improved accessibility across all components
+- Enhanced mobile responsiveness for bottom sheet behavior
+- Refined tutorial step-by-step guidance
+
+### Fixed
+- Performance improvements for large satellite datasets
+- Resolved minor UI inconsistencies in dark mode
+- Improved keyboard navigation across drawers and panels
+- Geolocation error handling refinements
+
+### Removed
+- Deprecated legacy code in filtering and calculation modules
+
 ## [2.1.1] - 2025-04-01
 
 ### Changed
