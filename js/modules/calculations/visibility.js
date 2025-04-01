@@ -1,5 +1,6 @@
 // visibility.js - Satellite visibility and visualization calculations
 import { getMap } from '../ui/map.js';
+import { getSatelliteFootprintPolygon } from '../core/utils.js';
 import { getCoverageStyleClass, LINE_STYLES } from '../core/config.js';
 import { getSatellites } from '../data/satellites.js';
 import { calculateElevation, calculateAzimuth, calculateCoverageRadius } from './angles.js';
@@ -253,6 +254,9 @@ export function removeLine(id) {
  * @returns {Array} Array of footprint polygon coordinates
  */
 export function calculateSatelliteFootprint(satellite, observerLat, observerLon) {
+  // Accurate geodesic circle centered at satellite sub-point
+  return getSatelliteFootprintPolygon(0, satellite.longitude, 8146); // km footprint radius for GEO
+
   // Constants
   const EARTH_RADIUS = 6371; // km
   const SATELLITE_ALTITUDE = 35786; // km for geostationary satellites
