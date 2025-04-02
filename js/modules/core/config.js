@@ -60,8 +60,13 @@ export const TUTORIAL_STEPS = [
   },
   {
     title: "Finding a Location",
-    content: "Use the location filter button in the top left to select from predefined locations, filtered by AOR or country. For custom locations, use the location pin button or the 'Use My Location' button to use your device's GPS.",
+    content: "Use the location filter button in the top left to select from predefined locations, filtered by AOR or country. For custom locations, you can search by address or landmark using the search box, use the location pin button, or use the 'My Location' button for your device's GPS.",
     highlight: "toggle-location-filter-drawer"
+  },
+  {
+    title: "Searching for Locations",
+    content: "You can search for any address, city, landmark, or coordinates using the search field in the top left of the map. Simply type your location and press Enter or click the search button to geocode and navigate to that location.",
+    highlight: "location-search"
   },
   {
     title: "Working with Satellites",
