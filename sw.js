@@ -21,6 +21,7 @@ self.addEventListener("install", (event) => {
         "js/modules/ui/tutorial.js",
         "js/modules/ui/filters.js",
         "js/modules/ui/legend.js",
+        "js/modules/ui/geocoder.js",
         "js/modules/data/storage.js",
         "js/modules/data/satellites.js",
         "js/modules/data/locations.js",
@@ -29,6 +30,8 @@ self.addEventListener("install", (event) => {
         "manifest.json",
         "icons/icon-192.png",
         "icons/icon-512.png",
+        "https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css",
+        "https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js",
         OFFLINE_URL,
       ]);
     })
