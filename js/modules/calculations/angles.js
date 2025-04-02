@@ -8,8 +8,16 @@
  * @returns {number} Elevation angle in degrees
  */
 export function calculateElevation(lat, lon, satLon) {
+  // Handle the 180/-180 boundary
+  let lonDiff = Math.abs(satLon - lon);
+  
+  // If the longitude difference is greater than 180, take the shorter path around the globe
+  if (lonDiff > 180) {
+    lonDiff = 360 - lonDiff;
+  }
+  
   // Simple elevation calculation (simplified approximation)
-  return (90 - Math.abs(lat) - Math.abs(satLon - lon));
+  return (90 - Math.abs(lat) - lonDiff);
 }
 
 /**
@@ -20,8 +28,18 @@ export function calculateElevation(lat, lon, satLon) {
  * @returns {number} Azimuth angle in degrees
  */
 export function calculateAzimuth(lat, lon, satLon) {
+  // Handle the 180/-180 boundary
+  let lonDiff = satLon - lon;
+  
+  // Check if we need to wrap around the globe
+  if (lonDiff > 180) {
+    lonDiff -= 360;
+  } else if (lonDiff < -180) {
+    lonDiff += 360;
+  }
+  
   // Normalize the angle to -180 to 180 range
-  return ((satLon - lon + 540) % 360 - 180);
+  return ((lonDiff + 540) % 360 - 180);
 }
 
 /**
@@ -91,8 +109,16 @@ export function calculateCoverageRadius(elevation) {
 export function calculatePreciseElevation(lat, lon, satLon) {
   // Convert to radians
   const latRad = lat * Math.PI / 180;
-  const lonRad = lon * Math.PI / 180;
-  const satLonRad = satLon * Math.PI / 180;
+  
+  // Handle the 180/-180 boundary
+  let lonDiff = satLon - lon;
+  if (lonDiff > 180) {
+    lonDiff -= 360;
+  } else if (lonDiff < -180) {
+    lonDiff += 360;
+  }
+  
+  const lonDiffRad = lonDiff * Math.PI / 180;
   
   // Earth radius in km
   const R = 6378.137;
@@ -101,11 +127,10 @@ export function calculatePreciseElevation(lat, lon, satLon) {
   const h = 35786;
   
   // Calculate parameters
-  const longDiff = lonRad - satLonRad;
-  const rho = Math.sqrt(1 - 2 * Math.cos(latRad) * Math.cos(longDiff) + Math.pow(Math.cos(latRad), 2));
+  const rho = Math.sqrt(1 - 2 * Math.cos(latRad) * Math.cos(lonDiffRad) + Math.pow(Math.cos(latRad), 2));
   
   // Calculate elevation
-  const elevRad = Math.atan((Math.cos(latRad) * Math.cos(longDiff) - 1) / rho);
+  const elevRad = Math.atan((Math.cos(latRad) * Math.cos(lonDiffRad) - 1) / rho);
   
   // Convert back to degrees
   return elevRad * 180 / Math.PI;
@@ -121,14 +146,19 @@ export function calculatePreciseElevation(lat, lon, satLon) {
 export function calculatePreciseAzimuth(lat, lon, satLon) {
   // Convert to radians
   const latRad = lat * Math.PI / 180;
-  const lonRad = lon * Math.PI / 180;
-  const satLonRad = satLon * Math.PI / 180;
   
-  // Calculate longitude difference
-  const longDiff = lonRad - satLonRad;
+  // Handle the 180/-180 boundary
+  let lonDiff = satLon - lon;
+  if (lonDiff > 180) {
+    lonDiff -= 360;
+  } else if (lonDiff < -180) {
+    lonDiff += 360;
+  }
+  
+  const lonDiffRad = lonDiff * Math.PI / 180;
   
   // Calculate azimuth
-  let azRad = Math.atan(Math.tan(longDiff) / Math.sin(latRad));
+  let azRad = Math.atan(Math.tan(lonDiffRad) / Math.sin(latRad));
   
   // Handle southern hemisphere
   if (lat < 0) {
