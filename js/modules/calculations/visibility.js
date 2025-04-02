@@ -225,7 +225,15 @@ export function calculateSatelliteFootprint(satellite) {
       Math.cos(angularDistance) - Math.sin(lat0Rad) * Math.sin(latRad)
     );
 
-    footprintPoints.push([latRad * 180 / Math.PI, lonRad * 180 / Math.PI]);
+    // Convert back to degrees
+    const latDeg = latRad * 180 / Math.PI;
+    let lonDeg = lonRad * 180 / Math.PI;
+    
+    // Normalize longitude to -180 to 180 range
+    if (lonDeg > 180) lonDeg -= 360;
+    if (lonDeg < -180) lonDeg += 360;
+
+    footprintPoints.push([latDeg, lonDeg]);
   }
 
   return footprintPoints;
