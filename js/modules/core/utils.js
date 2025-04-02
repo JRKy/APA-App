@@ -144,32 +144,3 @@ export function storeValue(key, value) {
     return false;
   }
 }
-
-// Generate geodesic circle polygon around a lat/lon
-export function getSatelliteFootprintPolygon(lat, lon, radiusKm, points = 64) {
-  const R = 6371;
-  const coords = [];
-
-  for (let i = 0; i < points; i++) {
-    const bearing = i * (360 / points);
-    const brad = bearing * Math.PI / 180;
-
-    const φ1 = lat * Math.PI / 180;
-    const λ1 = lon * Math.PI / 180;
-    const δ = radiusKm / R;
-
-    const φ2 = Math.asin(
-      Math.sin(φ1) * Math.cos(δ) +
-      Math.cos(φ1) * Math.sin(δ) * Math.cos(brad)
-    );
-
-    const λ2 = λ1 + Math.atan2(
-      Math.sin(brad) * Math.sin(δ) * Math.cos(φ1),
-      Math.cos(δ) - Math.sin(φ1) * Math.sin(φ2)
-    );
-
-    coords.push([φ2 * 180 / Math.PI, ((λ2 * 180 / Math.PI + 540) % 360) - 180]);
-  }
-
-  return coords;
-}
