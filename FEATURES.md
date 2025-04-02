@@ -14,6 +14,7 @@
 - [✓] Auto-select and reset logic
 - [✓] Use My Location (geolocation support)
 - [✓] Custom location input
+- [✓] Location search by address or landmark (geocoder)
 
 ## ✅ Satellite Features
 - [✓] Manual satellite entry
@@ -33,6 +34,7 @@
 - [✓] Smoother transitions between views
 - [✓] Polar plot visualization
 - [✓] Color-coded tooltips for satellite details
+- [✓] Search location functionality
 
 ## ✅ Accessibility (WCAG 2.1 AA)
 - [✓] Sufficient contrast for all text/lines
@@ -42,6 +44,7 @@
 - [✓] Enhanced dark mode with improved contrast
 - [✓] Color-coded elevation indicators with text labels
 - [✓] Announce updates for APA values with ARIA live regions
+- [✓] Keyboard accessible search functionality
 
 ## ✅ Performance & PWA
 - [✓] Service worker with offline cache
@@ -56,6 +59,8 @@
 - [✓] Exportable APA data (CSV)
 - [✓] Advanced satellite filtering options
 - [✓] Support for custom satellite orbit types
+- [✓] Location search with geocoding
 
 ## 🚧 Planned Future Enhancements
 - [ ] Exportable APA data (PDF)
+- [ ] Advanced geocoding with result list
