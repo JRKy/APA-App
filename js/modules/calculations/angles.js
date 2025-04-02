@@ -1,45 +1,97 @@
 // angles.js - Antenna angle calculation functions
 
 /**
- * Calculate elevation angle to a geostationary satellite
+ * Calculate elevation angle to a geostationary satellite using proper spherical geometry
  * @param {number} lat - Observer latitude in degrees
  * @param {number} lon - Observer longitude in degrees
  * @param {number} satLon - Satellite longitude in degrees
  * @returns {number} Elevation angle in degrees
  */
 export function calculateElevation(lat, lon, satLon) {
-  // Handle the 180/-180 boundary
-  let lonDiff = Math.abs(satLon - lon);
+  // Convert to radians
+  const latRad = lat * Math.PI / 180;
   
-  // If the longitude difference is greater than 180, take the shorter path around the globe
-  if (lonDiff > 180) {
-    lonDiff = 360 - lonDiff;
-  }
-  
-  // Simple elevation calculation (simplified approximation)
-  return (90 - Math.abs(lat) - lonDiff);
-}
-
-/**
- * Calculate azimuth angle to a geostationary satellite
- * @param {number} lat - Observer latitude in degrees
- * @param {number} lon - Observer longitude in degrees
- * @param {number} satLon - Satellite longitude in degrees
- * @returns {number} Azimuth angle in degrees
- */
-export function calculateAzimuth(lat, lon, satLon) {
   // Handle the 180/-180 boundary
   let lonDiff = satLon - lon;
-  
-  // Check if we need to wrap around the globe
   if (lonDiff > 180) {
     lonDiff -= 360;
   } else if (lonDiff < -180) {
     lonDiff += 360;
   }
   
-  // Normalize the angle to -180 to 180 range
-  return ((lonDiff + 540) % 360 - 180);
+  const lonDiffRad = lonDiff * Math.PI / 180;
+  
+  // Earth radius in km
+  const R = 6378.137;
+  
+  // Geostationary orbit altitude (km)
+  const h = 35786;
+  
+  // Calculate the geocentric angle between observer and satellite nadir point
+  const geocentricAngle = Math.acos(
+    Math.cos(latRad) * Math.cos(lonDiffRad)
+  );
+  
+  // Calculate the distance from observer to satellite
+  const d = Math.sqrt(
+    Math.pow(R, 2) + Math.pow(R + h, 2) - 
+    2 * R * (R + h) * Math.cos(geocentricAngle)
+  );
+  
+  // Calculate elevation angle
+  const elevRad = Math.asin(
+    ((R + h) * Math.cos(geocentricAngle) - R) / d
+  );
+  
+  // Convert to degrees
+  return elevRad * 180 / Math.PI;
+}
+
+/**
+ * Calculate azimuth angle to a geostationary satellite using proper spherical geometry
+ * @param {number} lat - Observer latitude in degrees
+ * @param {number} lon - Observer longitude in degrees
+ * @param {number} satLon - Satellite longitude in degrees
+ * @returns {number} Azimuth angle in degrees (0-360, where 0 is North)
+ */
+export function calculateAzimuth(lat, lon, satLon) {
+  // Convert to radians
+  const latRad = lat * Math.PI / 180;
+  
+  // Handle the 180/-180 boundary
+  let lonDiff = satLon - lon;
+  if (lonDiff > 180) {
+    lonDiff -= 360;
+  } else if (lonDiff < -180) {
+    lonDiff += 360;
+  }
+  
+  const lonDiffRad = lonDiff * Math.PI / 180;
+  
+  // Calculate azimuth angle
+  let azRad;
+  
+  // Special case for observers at poles
+  if (Math.abs(lat) > 89.99) {
+    // At poles, all directions are either North or South
+    azRad = (lat > 0) ? Math.PI : 0; // North pole: South, South pole: North
+  } else {
+    // Standard case
+    azRad = Math.atan2(
+      Math.sin(lonDiffRad),
+      Math.tan(0) * Math.cos(latRad) - Math.sin(latRad) * Math.cos(lonDiffRad)
+    );
+  }
+  
+  // Convert to degrees and normalize to 0-360 range
+  let azDeg = azRad * 180 / Math.PI;
+  
+  // Normalize to 0-360 range (0 = North, 90 = East, 180 = South, 270 = West)
+  if (azDeg < 0) {
+    azDeg += 360;
+  }
+  
+  return azDeg;
 }
 
 /**
@@ -61,7 +113,8 @@ export function isSatelliteVisible(elevation) {
 export function calculatePolarCoordinates(lat, lon, satellites) {
   return satellites.map(sat => {
     // Calculate azimuth and elevation
-    const az = calculateAzimuth(lat, lon, sat.longitude) * Math.PI / 180;
+    const azDeg = calculateAzimuth(lat, lon, sat.longitude);
+    const az = azDeg * Math.PI / 180;
     const el = calculateElevation(lat, lon, sat.longitude);
     
     // Convert to polar coordinates (0 elevation at edge, 90 at center)
@@ -76,7 +129,7 @@ export function calculatePolarCoordinates(lat, lon, satellites) {
     return {
       ...sat,
       elevation: el,
-      azimuth: az * 180 / Math.PI,
+      azimuth: azDeg,
       isVisible: el >= 0,
       polarX: x,
       polarY: y,
@@ -100,40 +153,14 @@ export function calculateCoverageRadius(elevation) {
 
 /**
  * More precise elevation calculation for geostationary satellites
- * This uses a more accurate model accounting for Earth's curvature
  * @param {number} lat - Observer latitude in degrees
  * @param {number} lon - Observer longitude in degrees
  * @param {number} satLon - Satellite longitude in degrees
  * @returns {number} Elevation angle in degrees
  */
 export function calculatePreciseElevation(lat, lon, satLon) {
-  // Convert to radians
-  const latRad = lat * Math.PI / 180;
-  
-  // Handle the 180/-180 boundary
-  let lonDiff = satLon - lon;
-  if (lonDiff > 180) {
-    lonDiff -= 360;
-  } else if (lonDiff < -180) {
-    lonDiff += 360;
-  }
-  
-  const lonDiffRad = lonDiff * Math.PI / 180;
-  
-  // Earth radius in km
-  const R = 6378.137;
-  
-  // Geostationary orbit altitude (km)
-  const h = 35786;
-  
-  // Calculate parameters
-  const rho = Math.sqrt(1 - 2 * Math.cos(latRad) * Math.cos(lonDiffRad) + Math.pow(Math.cos(latRad), 2));
-  
-  // Calculate elevation
-  const elevRad = Math.atan((Math.cos(latRad) * Math.cos(lonDiffRad) - 1) / rho);
-  
-  // Convert back to degrees
-  return elevRad * 180 / Math.PI;
+  // This function now uses the same improved calculation as calculateElevation
+  return calculateElevation(lat, lon, satLon);
 }
 
 /**
@@ -144,34 +171,6 @@ export function calculatePreciseElevation(lat, lon, satLon) {
  * @returns {number} Azimuth angle in degrees
  */
 export function calculatePreciseAzimuth(lat, lon, satLon) {
-  // Convert to radians
-  const latRad = lat * Math.PI / 180;
-  
-  // Handle the 180/-180 boundary
-  let lonDiff = satLon - lon;
-  if (lonDiff > 180) {
-    lonDiff -= 360;
-  } else if (lonDiff < -180) {
-    lonDiff += 360;
-  }
-  
-  const lonDiffRad = lonDiff * Math.PI / 180;
-  
-  // Calculate azimuth
-  let azRad = Math.atan(Math.tan(lonDiffRad) / Math.sin(latRad));
-  
-  // Handle southern hemisphere
-  if (lat < 0) {
-    if (lon > satLon) {
-      azRad = azRad + Math.PI;
-    } else {
-      azRad = azRad - Math.PI;
-    }
-  }
-  
-  // Normalize to 0-360
-  let azDeg = azRad * 180 / Math.PI;
-  if (azDeg < 0) azDeg += 360;
-  
-  return azDeg;
+  // This function now uses the same improved calculation as calculateAzimuth
+  return calculateAzimuth(lat, lon, satLon);
 }
