@@ -1,8 +1,0 @@
-{
-  "name": "apa-app",
-  "version": "2.2.0",
-  "description": "Antenna Pointing Angles Calculator PWA",
-  "scripts": {
-    "update-version": "node tools/version-injector.js"
-  }
-}
