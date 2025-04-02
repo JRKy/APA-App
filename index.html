@@ -14,6 +14,9 @@
       onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
               this.onerror=function(){this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';}">
 
+  <!-- Geocoder CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
   <!-- Improved Leaflet JS loading with multiple fallbacks -->
   <script>
     function loadLeaflet() {
@@ -35,6 +38,9 @@
     }
     loadLeaflet();
   </script>
+
+  <!-- Geocoder JS -->
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
   <!-- Google Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -80,6 +86,18 @@
         <span class="material-icons-round">close</span>
       </button>
     </div>
+    
+    <div class="search-container">
+      <label for="location-search">Search Location:</label>
+      <div class="search-input-group">
+        <input type="text" id="location-search" placeholder="Enter city, address, or landmark" aria-describedby="search-hint" />
+        <button id="location-search-btn">
+          <span class="material-icons-round">search</span> Search
+        </button>
+      </div>
+      <span id="search-hint" class="sr-only">Enter a location name to search for coordinates</span>
+    </div>
+    
     <label for="custom-lat">Latitude:</label>
     <input type="number" id="custom-lat" step="0.000001" placeholder="e.g. 34.05" aria-describedby="lat-hint" />
     <span id="lat-hint" class="sr-only">Enter location latitude in decimal degrees</span>

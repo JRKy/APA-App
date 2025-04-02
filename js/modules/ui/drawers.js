@@ -2,6 +2,7 @@
 import { showNotification } from '../core/utils.js';
 import { goToLocation } from '../data/locations.js';
 import { addSatellite } from '../data/satellites.js';
+import { searchLocation } from './geocoder.js';
 import { eventBus } from '../core/events.js';
 
 /**
@@ -26,6 +27,22 @@ export function initDrawers() {
   const customLocationBtn = document.getElementById("custom-location-btn");
   if (customLocationBtn) {
     customLocationBtn.addEventListener("click", handleCustomLocation);
+  }
+  
+  // Set up location search functionality
+  const locationSearchBtn = document.getElementById("location-search-btn");
+  if (locationSearchBtn) {
+    locationSearchBtn.addEventListener("click", handleLocationSearch);
+    
+    // Also enable search on Enter key
+    const locationSearchInput = document.getElementById("location-search");
+    if (locationSearchInput) {
+      locationSearchInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          handleLocationSearch();
+        }
+      });
+    }
   }
   
   // Set up custom satellite form submission
@@ -113,6 +130,43 @@ export function closeAllDrawers() {
   
   // Publish event
   eventBus.publish('drawersAllClosed');
+}
+
+/**
+ * Handle location search form submission
+ */
+function handleLocationSearch() {
+  const searchInput = document.getElementById("location-search");
+  if (!searchInput || !searchInput.value.trim()) {
+    showNotification("Please enter a location to search", "error");
+    return;
+  }
+  
+  // Show loading state
+  const searchBtn = document.getElementById("location-search-btn");
+  if (searchBtn) {
+    searchBtn.innerHTML = '<span class="material-icons-round loading">sync</span>';
+    searchBtn.disabled = true;
+  }
+  
+  searchLocation(searchInput.value.trim())
+    .then(results => {
+      if (results.length > 0) {
+        const result = results[0];
+        goToLocation(result.center.lat, result.center.lng, result.name);
+        closeAllDrawers();
+      }
+    })
+    .catch(error => {
+      showNotification(error.message, "error");
+    })
+    .finally(() => {
+      // Reset button
+      if (searchBtn) {
+        searchBtn.innerHTML = '<span class="material-icons-round">search</span> Search';
+        searchBtn.disabled = false;
+      }
+    });
 }
 
 /**
