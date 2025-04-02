@@ -4,16 +4,19 @@
 - Location search feature with geocoder functionality
 - Search by address, city, landmark, or coordinates
 - Improved mobile UI for panels and buttons
+- Fixed global satellite coverage across the 180/-180 longitude boundary
 
 ### Changed
 - Repositioned APA panel toggle button to prevent overlap with help button
 - Enhanced mobile responsive layout for APA table button
 - Optimized search input field for better usability
+- Improved satellite visibility calculation for global coverage
 
 ### Fixed
 - Resolved UI overlap issues on smaller screens
 - Fixed full-width button issue on mobile devices
 - Improved keyboard navigation for search fields
+- Fixed satellite visibility calculations at the International Date Line
 
 ## [2.2.0] - 2025-04-02
 
