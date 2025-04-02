@@ -5,6 +5,7 @@ A Progressive Web App (PWA) for calculating and visualizing antenna pointing ang
 ## 🌍 Features
 
 - Interactive Leaflet map with OpenStreetMap base layers  
+- Location search with geocoding capability (address, city, landmark)
 - Satellite position visualization with azimuth and elevation calculation  
 - Color-coded APA lines and visibility indicators  
 - Toggleable satellite visibility and interactive polar plot  
@@ -17,6 +18,15 @@ A Progressive Web App (PWA) for calculating and visualizing antenna pointing ang
 - Draggable APA table panel with persistent layout and sorting  
 - Dark mode with optimized map layers  
 - Interactive tutorial and help system  
+
+## 🆕 What's New in v2.3.0
+
+- Location search functionality with geocoder
+- Search for locations by address, city, landmark, or coordinates
+- Improved mobile UI with optimized layouts
+- Enhanced positioning for APA panel toggle button
+- Fixed UI element overlapping issues on mobile
+- Improved keyboard navigation for search fields
 
 ## 🆕 What's New in v2.2.0
 
@@ -37,16 +47,6 @@ A Progressive Web App (PWA) for calculating and visualizing antenna pointing ang
 - Advanced satellite filtering options
 - Enhanced user experience with improved notifications
 
-## 🆕 What's New in v2.0.0
-
-- Enhanced keyboard navigation for all components  
-- Improved WAI-ARIA support for screen readers  
-- Smoother transitions between views  
-- Expanded step-by-step tutorial  
-- Optimized map rendering for better performance  
-- Enhanced mobile experience with better panel layout  
-- Improved dark mode contrast for better accessibility  
-
 ## 📱 PWA Features
 
 - Installable to home screen (Android, iOS, desktop)  
@@ -59,6 +59,7 @@ A Progressive Web App (PWA) for calculating and visualizing antenna pointing ang
 - HTML5, CSS3, JavaScript (Vanilla)  
 - Leaflet.js for maps and overlays  
 - OpenStreetMap and additional map tile providers  
+- Nominatim geocoding for location search
 - PWA standards: Service Worker, manifest.json  
 - Responsive design with mobile-first approach  
 
