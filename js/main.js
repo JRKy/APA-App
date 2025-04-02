@@ -10,6 +10,7 @@ import { initPolarPlot } from './modules/ui/polarPlot.js';
 import { initTutorial, showTutorial } from './modules/ui/tutorial.js';
 import { initFilters } from './modules/ui/filters.js';
 import { initLegend } from './modules/ui/legend.js';
+import { initGeocoder } from './modules/ui/geocoder.js';
 import { loadCustomSatellites } from './modules/data/satellites.js';
 import { restoreLastLocation, loadLastLocation } from './modules/data/storage.js';
 import { goToLocation } from './modules/data/locations.js';
@@ -28,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initPolarPlot();
   initLegend();
   initTutorial();
+  initGeocoder();
   
   // Set up event listeners
   initEventListeners();
