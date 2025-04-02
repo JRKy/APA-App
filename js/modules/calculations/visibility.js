@@ -67,7 +67,19 @@ export function drawLine(lat, lon, satLon, label, el, id) {
   const isVisible = el >= 0;
   const style = isVisible ? LINE_STYLES.ABOVE_HORIZON : LINE_STYLES.BELOW_HORIZON;
 
-  const polyline = L.polyline([[lat, lon], [0, satLon]], {
+  // Handle the 180/-180 boundary for the satellite longitude
+  let displaySatLon = satLon;
+  
+  // Check if we need to wrap around the map
+  if (Math.abs(lon - satLon) > 180) {
+    if (satLon < 0) {
+      displaySatLon += 360; // Shift to a positive longitude beyond 180
+    } else {
+      displaySatLon -= 360; // Shift to a negative longitude below -180
+    }
+  }
+
+  const polyline = L.polyline([[lat, lon], [0, displaySatLon]], {
     color: style.color,
     weight: style.weight,
     opacity: style.opacity,
@@ -132,7 +144,21 @@ export function addSatelliteMarker(satellite, isBelow) {
     iconAnchor: [12, 12]
   });
 
-  const marker = L.marker([0, satellite.longitude], {
+  // Get current map center longitude
+  const centerLon = map.getCenter().lng;
+  let satLon = satellite.longitude;
+  
+  // Check if we need to wrap around the map to make the satellite visible
+  // This ensures the satellite will appear on the side of the map closest to current view
+  if (Math.abs(centerLon - satLon) > 180) {
+    if (satLon < 0) {
+      satLon += 360; // Shift to a positive longitude beyond 180
+    } else {
+      satLon -= 360; // Shift to a negative longitude below -180
+    }
+  }
+
+  const marker = L.marker([0, satLon], {
     icon: satIcon,
     zIndexOffset: isBelow ? 100 : 200
   }).addTo(map);
