@@ -443,7 +443,7 @@ body.dark-mode .leaflet-control-geocoder-input {
   border-color: var(--color-dark-border);
 }
 
-/* Improve search container in location drawer */
+/* Enhanced CSS for the search input in location drawer */
 .search-container {
   margin-top: var(--space-md);
   margin-bottom: var(--space-md);
@@ -458,8 +458,12 @@ body.dark-mode .leaflet-control-geocoder-input {
 
 .search-input-group input {
   flex: 1;
-  min-width: 0; /* This ensures the input can shrink below its default min-width */
-  width: 100%;
+  min-width: 0; /* Prevents the input from maintaining its default min-width */
+  padding: var(--space-sm);
+  height: 38px; /* Fixed height to match the button */
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
 }
 
 .search-input-group button {
@@ -468,24 +472,17 @@ body.dark-mode .leaflet-control-geocoder-input {
   align-items: center;
   justify-content: center;
   padding: var(--space-sm);
+  min-width: 80px;
+  height: 38px; /* Match input height */
 }
 
-/* Make search button more compact on mobile */
-@media (max-width: 768px) {
-  .search-input-group button span {
-    display: none;
-  }
-  
-  .search-input-group button {
-    padding: var(--space-sm);
-    min-width: 40px;
-  }
-}
-
-/* Ensure location drawer has proper spacing */
-#location-drawer {
-  padding: var(--space-md);
-  width: 300px;
+/* Improve label visibility */
+#location-drawer label {
+  display: block;
+  margin-top: var(--space-md);
+  margin-bottom: var(--space-xs);
+  font-weight: 500;
+  color: var(--color-text-primary);
 }
 
 /* ===== Current Location Indicator ===== */
