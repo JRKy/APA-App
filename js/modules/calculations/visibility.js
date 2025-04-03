@@ -220,7 +220,7 @@ export function removeLine(id) {
 }
 
 /**
- * Calculate satellite footprint (centered on nadir)
+ * Calculate satellite footprint points
  */
 export function calculateSatelliteFootprint(satellite) {
   const EARTH_RADIUS = 6371;
@@ -230,16 +230,26 @@ export function calculateSatelliteFootprint(satellite) {
 
   const lat0 = 0;
   const lon0 = satellite.longitude;
+  const centerLon = lon0;
   
+  // For satellites near the international date line, use smaller coverage
+  const isNearDateLine = Math.abs(Math.abs(lon0) - 180) < 30;
+  
+  // Instead of creating a full circle, create multiple circle points
+  // at each of the cardinal and intermediate directions
   const footprintPoints = [];
   
-  // Create points in clockwise direction
-  for (let azimuth = 0; azimuth <= 360; azimuth += 3) { // Smaller step size for better resolution
+  // Use 8 directions for normal satellites, 4 for those near the date line
+  const numPoints = isNearDateLine ? 4 : 8;
+  const step = 360 / numPoints;
+  
+  for (let i = 0; i < numPoints; i++) {
+    const azimuth = i * step;
     const azRad = azimuth * Math.PI / 180;
     const angularDistance = maxCoverageAngleRad;
     
     const lat0Rad = lat0 * Math.PI / 180;
-    const lon0Rad = lon0 * Math.PI / 180;
+    const lon0Rad = centerLon * Math.PI / 180;
     
     const latRad = Math.asin(
       Math.sin(lat0Rad) * Math.cos(angularDistance) +
@@ -262,38 +272,50 @@ export function calculateSatelliteFootprint(satellite) {
     footprintPoints.push([latDeg, lonDeg]);
   }
   
-  return footprintPoints;
+  return { 
+    centerLat: lat0, 
+    centerLon: centerLon, 
+    points: footprintPoints,
+    isNearDateLine: isNearDateLine
+  };
 }
 
 /**
- * Draw satellite footprint and track it by ID
+ * Draw satellite footprint using circle markers
  */
 export function drawSatelliteFootprint(satellite, id) {
   const map = getMap();
   if (!map) return;
   
-  // Get points for footprint
-  const points = calculateSatelliteFootprint(satellite);
-  if (points.length === 0) return;
+  // Get footprint data
+  const footprintData = calculateSatelliteFootprint(satellite);
+  if (!footprintData || footprintData.points.length === 0) return;
   
-  // Instead of trying to create a polygon that wraps around the date line,
-  // simply use a polyline that connects all points in order
-  const footprint = L.polyline(points, {
-    color: '#1a73e8',
-    weight: 2,
-    opacity: 0.6,
-    dashArray: '4,4',
-    className: 'satellite-footprint',
-    interactive: false
-  }).addTo(map);
+  // Create a layer group to hold all the circle markers
+  const footprintGroup = L.layerGroup().addTo(map);
   
-  footprint.bindTooltip(`${satellite.name} Coverage Area`, {
-    permanent: false,
-    className: "footprint-label"
+  // Add circle markers at each point
+  footprintData.points.forEach(point => {
+    L.circleMarker(point, {
+      radius: 5,
+      color: '#1a73e8',
+      weight: 2,
+      fill: false,
+      opacity: 0.7,
+      className: 'satellite-footprint-marker'
+    }).addTo(footprintGroup);
   });
   
-  footprintLayers.push({ id, layer: footprint });
-  return footprint;
+  // Add tooltip to the layer group
+  if (footprintGroup.bindTooltip) {
+    footprintGroup.bindTooltip(`${satellite.name} Coverage Area`, {
+      permanent: false,
+      className: "footprint-label"
+    });
+  }
+  
+  footprintLayers.push({ id, layer: footprintGroup });
+  return footprintGroup;
 }
 
 /**
