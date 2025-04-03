@@ -1,4 +1,3 @@
-// visibility.js - Satellite visibility and visualization calculations
 import { getMap } from '../ui/map.js';
 import { getCoverageStyleClass, LINE_STYLES } from '../core/config.js';
 import { getSatellites } from '../data/satellites.js';
@@ -11,31 +10,52 @@ let orbitPaths = [];
 let coverageCones = [];
 let footprintsVisible = false;
 let footprintLayers = []; // array of { id, layer }
+
+/**
+ * Normalize longitude to the range [-180, 180]
+ */
 function normalizeLon(lon) {
   return ((lon + 180) % 360 + 360) % 360 - 180;
 }
+
+/**
+ * Given an array of [lat, lon] points, split the footprint into segments by detecting
+ * dateline crossings. When a crossing is detected, an intermediate point at the dateline
+ * is computed and inserted.
+ */
 function splitFootprintAtDateLine(points) {
   const segments = [];
   let currentSegment = [points[0]];
 
   for (let i = 1; i < points.length; i++) {
-    const prev = points[i - 1];
+    const prev = currentSegment[currentSegment.length - 1];
     const curr = points[i];
 
-    const lonDiff = Math.abs(curr[1] - prev[1]);
-
-    if (lonDiff > 180) {
+    // Check for a sign change with both points near the dateline.
+    if (prev[1] * curr[1] < 0 && Math.abs(prev[1]) > 150 && Math.abs(curr[1]) > 150) {
+      // Determine which edge we're crossing.
+      let crossingEdge = prev[1] > 0 ? 180 : -180;
+      // Adjust curr lon if needed for interpolation.
+      let adjustedCurrLon = curr[1];
+      if (prev[1] > 0 && curr[1] < 0) {
+        adjustedCurrLon = curr[1] + 360;
+      } else if (prev[1] < 0 && curr[1] > 0) {
+        adjustedCurrLon = curr[1] - 360;
+      }
+      // Fraction along the segment where crossing occurs.
+      const f = (crossingEdge - prev[1]) / (adjustedCurrLon - prev[1]);
+      const latCross = prev[0] + f * (curr[0] - prev[0]);
+      // Append the crossing point.
+      currentSegment.push([latCross, crossingEdge]);
       segments.push(currentSegment);
-      currentSegment = [curr];
+      // Start new segment with the crossing point on the opposite edge.
+      const newCrossingLon = crossingEdge === 180 ? -180 : 180;
+      currentSegment = [[latCross, newCrossingLon], curr];
     } else {
       currentSegment.push(curr);
     }
   }
-
-  if (currentSegment.length > 0) {
-    segments.push(currentSegment);
-  }
-
+  if (currentSegment.length > 0) segments.push(currentSegment);
   return segments;
 }
 
@@ -223,31 +243,8 @@ export function updateSatelliteLines(lat, lon) {
 }
 
 /**
- * Remove a satellite line and its footprint
- */
-export function removeLine(id) {
-  const map = getMap();
-  if (!map) return;
-
-  const existing = lineLayers.find(l => l.id === id);
-  if (existing) {
-    map.removeLayer(existing.layer);
-    lineLayers = lineLayers.filter(l => l.id !== id);
-
-    coverageCones
-      .filter(c => c.id === id)
-      .forEach(c => map.removeLayer(c.circle));
-    coverageCones = coverageCones.filter(c => c.id !== id);
-
-    footprintLayers
-      .filter(f => f.id === id)
-      .forEach(f => map.removeLayer(f.layer));
-    footprintLayers = footprintLayers.filter(f => f.id !== id);
-  }
-}
-
-/**
- * Calculate satellite footprint points without crossing the date line
+ * Calculate satellite footprint points and split at dateline if necessary.
+ * Returns an array of segments, each segment is an array of [lat, lon] pairs.
  */
 export function calculateSatelliteFootprint(satellite) {
   const EARTH_RADIUS = 6371;
@@ -258,61 +255,29 @@ export function calculateSatelliteFootprint(satellite) {
   const lat0 = 0;
   const lon0 = satellite.longitude;
   
-  // Calculate a set of points for a partial coverage area
-  // that stays on the same side of the date line
   const footprintPoints = [];
-  const numPoints = 36; // More points for smoother appearance
+  const numPoints = 36;
+  const startAzimuth = 0;
+  const endAzimuth = 360;
   
-  // Determine which side of the map this satellite is on
-  const isWestOfDateLine = lon0 < 0;
-  
-  // For satellites near the date line, limit the azimuth range
-  const isNearDateLine = Math.abs(Math.abs(lon0) - 180) < 40;
-  
-  // Set azimuth limits to prevent crossing the date line
-  let startAzimuth, endAzimuth;
-  
-  if (isNearDateLine) {
-    if (isWestOfDateLine) {
-      // For western hemisphere satellites near date line
-      startAzimuth = 90;
-      endAzimuth = 270;
-    } else {
-      // For eastern hemisphere satellites near date line
-      startAzimuth = 270;
-      endAzimuth = 450; // 90 degrees past 0
-    }
-  } else {
-    // For satellites not near the date line, use full circle
-    startAzimuth = 0;
-    endAzimuth = 360;
-  }
-  
-  // Generate points within the safe azimuth range
-  for (let azimuth = startAzimuth; azimuth <= endAzimuth; azimuth += (endAzimuth - startAzimuth) / numPoints) {
-    const azRad = (azimuth % 360) * Math.PI / 180;
-    const angularDistance = maxCoverageAngleRad;
-    
+  for (let i = 0; i <= numPoints; i++) {
+    let azimuth = startAzimuth + i * (endAzimuth - startAzimuth) / numPoints;
+    const azRad = (azimuth * Math.PI) / 180;
     const lat0Rad = lat0 * Math.PI / 180;
     const lon0Rad = lon0 * Math.PI / 180;
     
     const latRad = Math.asin(
-      Math.sin(lat0Rad) * Math.cos(angularDistance) +
-      Math.cos(lat0Rad) * Math.sin(angularDistance) * Math.cos(azRad)
+      Math.sin(lat0Rad) * Math.cos(maxCoverageAngleRad) +
+      Math.cos(lat0Rad) * Math.sin(maxCoverageAngleRad) * Math.cos(azRad)
     );
     
     const lonRad = lon0Rad + Math.atan2(
-      Math.sin(azRad) * Math.sin(angularDistance) * Math.cos(lat0Rad),
-      Math.cos(angularDistance) - Math.sin(lat0Rad) * Math.sin(latRad)
+      Math.sin(azRad) * Math.sin(maxCoverageAngleRad) * Math.cos(lat0Rad),
+      Math.cos(maxCoverageAngleRad) - Math.sin(lat0Rad) * Math.sin(latRad)
     );
     
-    // Convert to degrees
     const latDeg = latRad * 180 / Math.PI;
     let lonDeg = normalizeLon(lonRad * 180 / Math.PI);
-    
-    // Skip points that cross the date line
-    if (isWestOfDateLine && lonDeg > 0) continue;
-    if (!isWestOfDateLine && lonDeg < 0) continue;
     
     footprintPoints.push([latDeg, lonDeg]);
   }
@@ -321,7 +286,7 @@ export function calculateSatelliteFootprint(satellite) {
 }
 
 /**
- * Draw satellite footprint using a simple polyline
+ * Draw satellite footprint using a polyline for each segment
  */
 export function drawSatelliteFootprint(satellite, id) {
   const map = getMap();
