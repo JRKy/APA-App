@@ -153,8 +153,20 @@ function handleLocationSearch() {
     .then(results => {
       if (results.length > 0) {
         const result = results[0];
-        goToLocation(result.center.lat, result.center.lng, result.name);
-        closeAllDrawers();
+        
+        // Populate the lat/long input fields with the search results
+        const latInput = document.getElementById("custom-lat");
+        const lonInput = document.getElementById("custom-lon");
+        
+        if (latInput && lonInput) {
+          latInput.value = result.lat.toFixed(6);
+          lonInput.value = result.lon.toFixed(6);
+          
+          // Show success notification
+          showNotification(`Found location: ${result.name}`, "success");
+        }
+      } else {
+        showNotification("No results found for your search", "error");
       }
     })
     .catch(error => {
