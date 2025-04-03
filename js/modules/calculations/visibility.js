@@ -220,7 +220,7 @@ export function removeLine(id) {
 }
 
 /**
- * Calculate satellite footprint points
+ * Calculate satellite footprint points without crossing the date line
  */
 export function calculateSatelliteFootprint(satellite) {
   const EARTH_RADIUS = 6371;
@@ -231,204 +231,97 @@ export function calculateSatelliteFootprint(satellite) {
   const lat0 = 0;
   const lon0 = satellite.longitude;
   
-  // Generate more points for a smoother circle
+  // Calculate a set of points for a partial coverage area
+  // that stays on the same side of the date line
   const footprintPoints = [];
-  const numPoints = 24; // Use more points for a smoother circle
+  const numPoints = 36; // More points for smoother appearance
   
-  // For satellites near the international date line
-  const isNearDateLine = Math.abs(Math.abs(lon0) - 180) < 30;
+  // Determine which side of the map this satellite is on
+  const isWestOfDateLine = lon0 < 0;
   
-  // If near date line, split into east and west hemispheres
+  // For satellites near the date line, limit the azimuth range
+  const isNearDateLine = Math.abs(Math.abs(lon0) - 180) < 40;
+  
+  // Set azimuth limits to prevent crossing the date line
+  let startAzimuth, endAzimuth;
+  
   if (isNearDateLine) {
-    const eastPoints = [];
-    const westPoints = [];
-    
-    // Calculate points with higher density near the date line
-    for (let azimuth = 0; azimuth < 360; azimuth += 360/numPoints) {
-      const azRad = azimuth * Math.PI / 180;
-      const angularDistance = maxCoverageAngleRad;
-      
-      const lat0Rad = lat0 * Math.PI / 180;
-      const lon0Rad = lon0 * Math.PI / 180;
-      
-      const latRad = Math.asin(
-        Math.sin(lat0Rad) * Math.cos(angularDistance) +
-        Math.cos(lat0Rad) * Math.sin(angularDistance) * Math.cos(azRad)
-      );
-      
-      const lonRad = lon0Rad + Math.atan2(
-        Math.sin(azRad) * Math.sin(angularDistance) * Math.cos(lat0Rad),
-        Math.cos(angularDistance) - Math.sin(lat0Rad) * Math.sin(latRad)
-      );
-      
-      // Convert to degrees
-      const latDeg = latRad * 180 / Math.PI;
-      let lonDeg = lonRad * 180 / Math.PI;
-      
-      // Normalize longitude to -180 to 180 range
-      while (lonDeg > 180) lonDeg -= 360;
-      while (lonDeg < -180) lonDeg += 360;
-      
-      // Sort into east and west hemispheres
-      if (lonDeg >= 0) {
-        eastPoints.push([latDeg, lonDeg]);
-      } else {
-        westPoints.push([latDeg, lonDeg]);
-      }
+    if (isWestOfDateLine) {
+      // For western hemisphere satellites near date line
+      startAzimuth = 90;
+      endAzimuth = 270;
+    } else {
+      // For eastern hemisphere satellites near date line
+      startAzimuth = 270;
+      endAzimuth = 450; // 90 degrees past 0
     }
-    
-    // Return points for both hemispheres
-    return {
-      eastHemisphere: eastPoints,
-      westHemisphere: westPoints,
-      isNearDateLine: true
-    };
   } else {
-    // For satellites not near the date line, create a single set of points
-    for (let azimuth = 0; azimuth < 360; azimuth += 360/numPoints) {
-      const azRad = azimuth * Math.PI / 180;
-      const angularDistance = maxCoverageAngleRad;
-      
-      const lat0Rad = lat0 * Math.PI / 180;
-      const lon0Rad = lon0 * Math.PI / 180;
-      
-      const latRad = Math.asin(
-        Math.sin(lat0Rad) * Math.cos(angularDistance) +
-        Math.cos(lat0Rad) * Math.sin(angularDistance) * Math.cos(azRad)
-      );
-      
-      const lonRad = lon0Rad + Math.atan2(
-        Math.sin(azRad) * Math.sin(angularDistance) * Math.cos(lat0Rad),
-        Math.cos(angularDistance) - Math.sin(lat0Rad) * Math.sin(latRad)
-      );
-      
-      // Convert to degrees
-      const latDeg = latRad * 180 / Math.PI;
-      let lonDeg = lonRad * 180 / Math.PI;
-      
-      // Normalize longitude to -180 to 180 range
-      while (lonDeg > 180) lonDeg -= 360;
-      while (lonDeg < -180) lonDeg += 360;
-      
-      footprintPoints.push([latDeg, lonDeg]);
-    }
-    
-    return {
-      points: footprintPoints,
-      isNearDateLine: false
-    };
+    // For satellites not near the date line, use full circle
+    startAzimuth = 0;
+    endAzimuth = 360;
   }
+  
+  // Generate points within the safe azimuth range
+  for (let azimuth = startAzimuth; azimuth <= endAzimuth; azimuth += (endAzimuth - startAzimuth) / numPoints) {
+    const azRad = (azimuth % 360) * Math.PI / 180;
+    const angularDistance = maxCoverageAngleRad;
+    
+    const lat0Rad = lat0 * Math.PI / 180;
+    const lon0Rad = lon0 * Math.PI / 180;
+    
+    const latRad = Math.asin(
+      Math.sin(lat0Rad) * Math.cos(angularDistance) +
+      Math.cos(lat0Rad) * Math.sin(angularDistance) * Math.cos(azRad)
+    );
+    
+    const lonRad = lon0Rad + Math.atan2(
+      Math.sin(azRad) * Math.sin(angularDistance) * Math.cos(lat0Rad),
+      Math.cos(angularDistance) - Math.sin(lat0Rad) * Math.sin(latRad)
+    );
+    
+    // Convert to degrees
+    const latDeg = latRad * 180 / Math.PI;
+    let lonDeg = lonRad * 180 / Math.PI;
+    
+    // Skip points that cross the date line
+    if (isWestOfDateLine && lonDeg > 0) continue;
+    if (!isWestOfDateLine && lonDeg < 0) continue;
+    
+    footprintPoints.push([latDeg, lonDeg]);
+  }
+  
+  return footprintPoints;
 }
 
 /**
- * Draw satellite footprint with both markers and connected lines
+ * Draw satellite footprint using a simple polyline
  */
 export function drawSatelliteFootprint(satellite, id) {
   const map = getMap();
   if (!map) return;
   
-  // Get footprint data
-  const footprintData = calculateSatelliteFootprint(satellite);
-  if (!footprintData) return;
+  // Get points for footprint
+  const points = calculateSatelliteFootprint(satellite);
+  if (points.length === 0) return;
   
-  // Create a layer group to hold all the visualization elements
-  const footprintGroup = L.layerGroup().addTo(map);
+  // Create a footprint with just a polyline - no polygon
+  const footprint = L.polyline(points, {
+    color: '#1a73e8',
+    weight: 2,
+    opacity: 0.6,
+    dashArray: '4,4',
+    className: 'satellite-footprint',
+    interactive: false
+  }).addTo(map);
   
-  if (footprintData.isNearDateLine) {
-    // For satellites near the date line, draw two separate polylines
-    if (footprintData.eastHemisphere && footprintData.eastHemisphere.length > 0) {
-      // Draw east hemisphere polyline
-      L.polyline(footprintData.eastHemisphere, {
-        color: '#1a73e8',
-        weight: 2,
-        opacity: 0.6,
-        dashArray: '4,4',
-        className: 'satellite-footprint',
-        interactive: false
-      }).addTo(footprintGroup);
-      
-      // Add markers at each point
-      footprintData.eastHemisphere.forEach(point => {
-        L.circleMarker(point, {
-          radius: 3,
-          color: '#1a73e8',
-          weight: 1,
-          fill: true,
-          fillOpacity: 0.4,
-          opacity: 0.7,
-          className: 'satellite-footprint-marker'
-        }).addTo(footprintGroup);
-      });
-    }
-    
-    if (footprintData.westHemisphere && footprintData.westHemisphere.length > 0) {
-      // Draw west hemisphere polyline
-      L.polyline(footprintData.westHemisphere, {
-        color: '#1a73e8',
-        weight: 2,
-        opacity: 0.6,
-        dashArray: '4,4',
-        className: 'satellite-footprint',
-        interactive: false
-      }).addTo(footprintGroup);
-      
-      // Add markers at each point
-      footprintData.westHemisphere.forEach(point => {
-        L.circleMarker(point, {
-          radius: 3,
-          color: '#1a73e8',
-          weight: 1,
-          fill: true,
-          fillOpacity: 0.4,
-          opacity: 0.7,
-          className: 'satellite-footprint-marker'
-        }).addTo(footprintGroup);
-      });
-    }
-  } else {
-    // For satellites not near the date line, draw a single polyline
-    if (footprintData.points && footprintData.points.length > 0) {
-      // Create a closed loop by adding the first point at the end
-      const points = [...footprintData.points];
-      if (points.length > 0) {
-        points.push(points[0]);
-      }
-      
-      // Draw the polyline
-      L.polyline(points, {
-        color: '#1a73e8',
-        weight: 2,
-        opacity: 0.6,
-        dashArray: '4,4',
-        className: 'satellite-footprint',
-        interactive: false
-      }).addTo(footprintGroup);
-      
-      // Add markers at each point
-      footprintData.points.forEach(point => {
-        L.circleMarker(point, {
-          radius: 3,
-          color: '#1a73e8',
-          weight: 1,
-          fill: true,
-          fillOpacity: 0.4,
-          opacity: 0.7,
-          className: 'satellite-footprint-marker'
-        }).addTo(footprintGroup);
-      });
-    }
-  }
+  // Add tooltip
+  footprint.bindTooltip(`${satellite.name} Coverage Area`, {
+    permanent: false,
+    className: "footprint-label"
+  });
   
-  // Add tooltip to the layer group
-  if (footprintGroup.bindTooltip) {
-    footprintGroup.bindTooltip(`${satellite.name} Coverage Area`, {
-      permanent: false,
-      className: "footprint-label"
-    });
-  }
-  
-  footprintLayers.push({ id, layer: footprintGroup });
-  return footprintGroup;
+  footprintLayers.push({ id, layer: footprint });
+  return footprint;
 }
 
 /**
