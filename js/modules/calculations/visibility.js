@@ -236,32 +236,14 @@ export function calculateSatelliteFootprint(satellite) {
   const footprintPoints = [];
   const numPoints = 36; // More points for smoother appearance
   
-  // Determine which side of the map this satellite is on
-  const isWestOfDateLine = lon0 < 0;
-  
-  // For satellites near the date line, limit the azimuth range
+  // For satellites near the date line, limit the longitude range
   const isNearDateLine = Math.abs(Math.abs(lon0) - 180) < 40;
   
-  // Set azimuth limits to prevent crossing the date line
-  let startAzimuth, endAzimuth;
+  // Full 360 degree coverage
+  const startAzimuth = 0;
+  const endAzimuth = 360;
   
-  if (isNearDateLine) {
-    if (isWestOfDateLine) {
-      // For western hemisphere satellites near date line
-      startAzimuth = 90;
-      endAzimuth = 270;
-    } else {
-      // For eastern hemisphere satellites near date line
-      startAzimuth = 270;
-      endAzimuth = 450; // 90 degrees past 0
-    }
-  } else {
-    // For satellites not near the date line, use full circle
-    startAzimuth = 0;
-    endAzimuth = 360;
-  }
-  
-  // Generate points within the safe azimuth range
+  // Generate points for the footprint
   for (let azimuth = startAzimuth; azimuth <= endAzimuth; azimuth += (endAzimuth - startAzimuth) / numPoints) {
     const azRad = (azimuth % 360) * Math.PI / 180;
     const angularDistance = maxCoverageAngleRad;
@@ -283,9 +265,25 @@ export function calculateSatelliteFootprint(satellite) {
     const latDeg = latRad * 180 / Math.PI;
     let lonDeg = lonRad * 180 / Math.PI;
     
-    // Skip points that cross the date line
-    if (isWestOfDateLine && lonDeg > 0) continue;
-    if (!isWestOfDateLine && lonDeg < 0) continue;
+    // For points near the date line, handle the wrapping
+    if (isNearDateLine) {
+      // Normalize longitude to be in the same hemisphere as the satellite
+      if (lon0 < 0) { // Western hemisphere
+        // If point is in eastern hemisphere but satellite is in western
+        if (lonDeg > 0 && lonDeg < 90) {
+          lonDeg -= 360; // Shift to western hemisphere
+        }
+      } else { // Eastern hemisphere
+        // If point is in western hemisphere but satellite is in eastern
+        if (lonDeg < 0 && lonDeg > -90) {
+          lonDeg += 360; // Shift to eastern hemisphere
+        }
+      }
+    }
+    
+    // Normalize longitude to -180 to 180 range for display
+    while (lonDeg > 180) lonDeg -= 360;
+    while (lonDeg < -180) lonDeg += 360;
     
     footprintPoints.push([latDeg, lonDeg]);
   }
