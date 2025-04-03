@@ -233,7 +233,8 @@ export function calculateSatelliteFootprint(satellite) {
 
   const footprintPoints = [];
   const stepSize = 5;
-
+  
+  // First, create a continuous set of points
   for (let azimuth = 0; azimuth < 360; azimuth += stepSize) {
     const azRad = azimuth * Math.PI / 180;
     const angularDistance = maxCoverageAngleRad;
@@ -261,7 +262,39 @@ export function calculateSatelliteFootprint(satellite) {
 
     footprintPoints.push([latDeg, lonDeg]);
   }
-
+  
+  // Check if the footprint crosses the -180/180 boundary
+  let crossesDateLine = false;
+  let previousLon = footprintPoints[0][1];
+  
+  for (let i = 1; i < footprintPoints.length; i++) {
+    const currentLon = footprintPoints[i][1];
+    // If difference between consecutive longitudes is more than 180 degrees, we've crossed the date line
+    if (Math.abs(currentLon - previousLon) > 180) {
+      crossesDateLine = true;
+      break;
+    }
+    previousLon = currentLon;
+  }
+  
+  // If footprint crosses the date line, we need to split it into two parts
+  if (crossesDateLine) {
+    // Sort points by longitude to find the natural break
+    const westPoints = [];
+    const eastPoints = [];
+    
+    for (const point of footprintPoints) {
+      if (point[1] < 0) {
+        westPoints.push(point);
+      } else {
+        eastPoints.push(point);
+      }
+    }
+    
+    // Return separate polygons for east and west sides of date line
+    return [...westPoints, ...eastPoints];
+  }
+  
   return footprintPoints;
 }
 
@@ -274,16 +307,33 @@ export function drawSatelliteFootprint(satellite, id) {
 
   const points = calculateSatelliteFootprint(satellite);
   if (points.length === 0) return;
-
-  const footprint = L.polygon(points, {
-    color: '#1a73e8',
-    weight: 2,
-    fill: false,              // ✅ Outline only
-    opacity: 0.6,             // Slightly lighter
-    dashArray: '4,4',         // ✅ Dashed style
-    className: 'satellite-footprint',
-    interactive: false
-  }).addTo(map);
+  
+  // Check if we received an array of arrays (multiple polygons)
+  let footprint;
+  
+  if (Array.isArray(points[0]) && !Array.isArray(points[0][0])) {
+    // Single polygon
+    footprint = L.polygon(points, {
+      color: '#1a73e8',
+      weight: 2,
+      fill: false,
+      opacity: 0.6,
+      dashArray: '4,4',
+      className: 'satellite-footprint',
+      interactive: false
+    }).addTo(map);
+  } else {
+    // Multiple polygons - use a polyline instead
+    footprint = L.polyline(points, {
+      color: '#1a73e8',
+      weight: 2,
+      fill: false,
+      opacity: 0.6,
+      dashArray: '4,4',
+      className: 'satellite-footprint',
+      interactive: false
+    }).addTo(map);
+  }
 
   footprint.bindTooltip(`${satellite.name} Coverage Area`, {
     permanent: false,
