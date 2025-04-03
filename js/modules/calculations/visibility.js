@@ -243,6 +243,30 @@ export function updateSatelliteLines(lat, lon) {
 }
 
 /**
+ * Remove a satellite line and its footprint
+ */
+export function removeLine(id) {
+  const map = getMap();
+  if (!map) return;
+
+  const existing = lineLayers.find(l => l.id === id);
+  if (existing) {
+    map.removeLayer(existing.layer);
+    lineLayers = lineLayers.filter(l => l.id !== id);
+
+    coverageCones
+      .filter(c => c.id === id)
+      .forEach(c => map.removeLayer(c.circle));
+    coverageCones = coverageCones.filter(c => c.id !== id);
+
+    footprintLayers
+      .filter(f => f.id === id)
+      .forEach(f => map.removeLayer(f.layer));
+    footprintLayers = footprintLayers.filter(f => f.id !== id);
+  }
+}
+
+/**
  * Calculate satellite footprint points and split at dateline if necessary.
  * Returns an array of segments, each segment is an array of [lat, lon] pairs.
  */
