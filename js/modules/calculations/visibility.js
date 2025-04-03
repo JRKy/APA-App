@@ -228,13 +228,17 @@ export function calculateSatelliteFootprint(satellite) {
   const TOTAL_ALTITUDE = EARTH_RADIUS + SATELLITE_ALTITUDE;
   const maxCoverageAngleRad = Math.acos(EARTH_RADIUS / TOTAL_ALTITUDE);
 
-  const lat0 = 0;
+  const lat0 = 0; // Satellite latitude (geostationary on equator)
   const lon0 = satellite.longitude;
-
-  const footprintPoints = [];
-  const stepSize = 5;
   
-  // First, create a continuous set of points
+  // Check if satellite is near the international date line
+  const isNearDateLine = Math.abs(Math.abs(lon0) - 180) < 30;
+  
+  // Use smaller steps near the date line for better accuracy
+  const stepSize = isNearDateLine ? 2 : 5;
+  const footprintPoints = [];
+  
+  // Generate points for the footprint
   for (let azimuth = 0; azimuth < 360; azimuth += stepSize) {
     const azRad = azimuth * Math.PI / 180;
     const angularDistance = maxCoverageAngleRad;
@@ -256,46 +260,56 @@ export function calculateSatelliteFootprint(satellite) {
     const latDeg = latRad * 180 / Math.PI;
     let lonDeg = lonRad * 180 / Math.PI;
     
-    // Normalize longitude to -180 to 180 range
-    if (lonDeg > 180) lonDeg -= 360;
-    if (lonDeg < -180) lonDeg += 360;
-
     footprintPoints.push([latDeg, lonDeg]);
   }
   
-  // Check if the footprint crosses the -180/180 boundary
-  let crossesDateLine = false;
-  let previousLon = footprintPoints[0][1];
-  
-  for (let i = 1; i < footprintPoints.length; i++) {
-    const currentLon = footprintPoints[i][1];
-    // If difference between consecutive longitudes is more than 180 degrees, we've crossed the date line
-    if (Math.abs(currentLon - previousLon) > 180) {
-      crossesDateLine = true;
-      break;
-    }
-    previousLon = currentLon;
-  }
-  
-  // If footprint crosses the date line, we need to split it into two parts
-  if (crossesDateLine) {
-    // Sort points by longitude to find the natural break
-    const westPoints = [];
+  // For satellites near the date line, handle the wraparound
+  if (isNearDateLine) {
     const eastPoints = [];
+    const westPoints = [];
     
-    for (const point of footprintPoints) {
-      if (point[1] < 0) {
-        westPoints.push(point);
+    // Split points into east and west hemisphere
+    footprintPoints.forEach(point => {
+      // Normalize longitude to -180 to 180 range first
+      let lon = point[1];
+      while (lon > 180) lon -= 360;
+      while (lon < -180) lon += 360;
+      
+      // Create a new point with normalized longitude
+      const newPoint = [point[0], lon];
+      
+      // Sort into east and west collections
+      if (lon > 0) {
+        eastPoints.push(newPoint);
       } else {
-        eastPoints.push(point);
+        westPoints.push(newPoint);
       }
-    }
+    });
     
-    // Return separate polygons for east and west sides of date line
-    return [...westPoints, ...eastPoints];
+    // We need to handle the case where the footprint crosses the date line
+    if (eastPoints.length > 0 && westPoints.length > 0) {
+      // Make sure both point sets start and end at the edge
+      // Find points closest to the date line on both sides
+      let eastEdge = eastPoints.filter(p => p[1] > 170).sort((a, b) => b[1] - a[1]);
+      let westEdge = westPoints.filter(p => p[1] < -170).sort((a, b) => a[1] - b[1]);
+      
+      // Create ordered sets of points for two polylines
+      let eastLine = [...eastPoints.filter(p => p[1] <= 170)].sort((a, b) => a[1] - b[1]);
+      let westLine = [...westPoints.filter(p => p[1] >= -170)].sort((a, b) => b[1] - a[1]);
+      
+      // Return the two separate polylines
+      return [eastLine, westLine];
+    }
   }
   
-  return footprintPoints;
+  // For normal case, just return the points with normalized longitudes
+  return footprintPoints.map(point => {
+    let lon = point[1];
+    // Normalize to -180 to 180
+    while (lon > 180) lon -= 360;
+    while (lon < -180) lon += 360;
+    return [point[0], lon];
+  });
 }
 
 /**
@@ -306,25 +320,31 @@ export function drawSatelliteFootprint(satellite, id) {
   if (!map) return;
 
   const points = calculateSatelliteFootprint(satellite);
-  if (points.length === 0) return;
+  if (!points || points.length === 0) return;
   
-  // Check if we received an array of arrays (multiple polygons)
   let footprint;
   
-  if (Array.isArray(points[0]) && !Array.isArray(points[0][0])) {
-    // Single polygon
-    footprint = L.polygon(points, {
-      color: '#1a73e8',
-      weight: 2,
-      fill: false,
-      opacity: 0.6,
-      dashArray: '4,4',
-      className: 'satellite-footprint',
-      interactive: false
-    }).addTo(map);
+  // Check if we have multiple separate polylines (for date line crossing)
+  if (Array.isArray(points[0][0])) {
+    // We have multiple polylines - create a layer group instead
+    footprint = L.layerGroup();
+    
+    // Add each polyline to the group
+    points.forEach(polyline => {
+      L.polyline(polyline, {
+        color: '#1a73e8',
+        weight: 2,
+        opacity: 0.6,
+        dashArray: '4,4',
+        className: 'satellite-footprint',
+        interactive: false
+      }).addTo(footprint);
+    });
+    
+    footprint.addTo(map);
   } else {
-    // Multiple polygons - use a polyline instead
-    footprint = L.polyline(points, {
+    // Single continuous footprint
+    footprint = L.polygon(points, {
       color: '#1a73e8',
       weight: 2,
       fill: false,
@@ -335,10 +355,13 @@ export function drawSatelliteFootprint(satellite, id) {
     }).addTo(map);
   }
 
-  footprint.bindTooltip(`${satellite.name} Coverage Area`, {
-    permanent: false,
-    className: "footprint-label"
-  });
+  // Add tooltip
+  if (footprint.bindTooltip) {
+    footprint.bindTooltip(`${satellite.name} Coverage Area`, {
+      permanent: false,
+      className: "footprint-label"
+    });
+  }
 
   footprintLayers.push({ id, layer: footprint });
   return footprint;
