@@ -445,34 +445,28 @@ body.dark-mode .leaflet-control-geocoder-input {
 
 /* ===== FIXED Search container in location drawer ===== */
 .search-container {
-  margin-top: var(--space-md);
-  margin-bottom: var(--space-md);
+  margin-top: var(--space-md) !important;
+  margin-bottom: var(--space-md) !important;
+  width: 100% !important;
 }
 
-/* Direct fix for the search input */
+/* Very specific fix for the search input in location drawer */
 #location-search {
-  width: 100%;
-  min-height: 36px;
-  padding: 8px;
-  display: block;
-  box-sizing: border-box;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  margin-bottom: 8px;
+  width: 100% !important;
+  min-height: 36px !important;
+  padding: 8px !important;
+  display: block !important;
+  box-sizing: border-box !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-sm) !important;
+  margin-bottom: 8px !important;
 }
 
-.search-input-group {
-  display: flex;
-  width: 100%;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
+/* Fix the search button with more specific selector */
 #location-search-btn {
-  min-width: 80px;
-  height: 36px;
-  flex-shrink: 0;
-  white-space: nowrap;
+  min-width: 80px !important;
+  height: 36px !important;
+  padding: 8px !important;
 }
 
 /* Media query for mobile geocoder */
