@@ -11,6 +11,33 @@ let orbitPaths = [];
 let coverageCones = [];
 let footprintsVisible = false;
 let footprintLayers = []; // array of { id, layer }
+function normalizeLon(lon) {
+  return ((lon + 180) % 360 + 360) % 360 - 180;
+}
+function splitFootprintAtDateLine(points) {
+  const segments = [];
+  let currentSegment = [points[0]];
+
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+
+    const lonDiff = Math.abs(curr[1] - prev[1]);
+
+    if (lonDiff > 180) {
+      segments.push(currentSegment);
+      currentSegment = [curr];
+    } else {
+      currentSegment.push(curr);
+    }
+  }
+
+  if (currentSegment.length > 0) {
+    segments.push(currentSegment);
+  }
+
+  return segments;
+}
 
 /**
  * Clear all satellite visualization elements from the map
@@ -281,7 +308,7 @@ export function calculateSatelliteFootprint(satellite) {
     
     // Convert to degrees
     const latDeg = latRad * 180 / Math.PI;
-    let lonDeg = lonRad * 180 / Math.PI;
+    let lonDeg = normalizeLon(lonRad * 180 / Math.PI);
     
     // Skip points that cross the date line
     if (isWestOfDateLine && lonDeg > 0) continue;
@@ -290,7 +317,7 @@ export function calculateSatelliteFootprint(satellite) {
     footprintPoints.push([latDeg, lonDeg]);
   }
   
-  return footprintPoints;
+  return splitFootprintAtDateLine(footprintPoints);
 }
 
 /**
@@ -300,28 +327,26 @@ export function drawSatelliteFootprint(satellite, id) {
   const map = getMap();
   if (!map) return;
   
-  // Get points for footprint
-  const points = calculateSatelliteFootprint(satellite);
-  if (points.length === 0) return;
-  
-  // Create a footprint with just a polyline - no polygon
-  const footprint = L.polyline(points, {
-    color: '#1a73e8',
-    weight: 2,
-    opacity: 0.6,
-    dashArray: '4,4',
-    className: 'satellite-footprint',
-    interactive: false
-  }).addTo(map);
-  
-  // Add tooltip
-  footprint.bindTooltip(`${satellite.name} Coverage Area`, {
-    permanent: false,
-    className: "footprint-label"
-  });
-  
-  footprintLayers.push({ id, layer: footprint });
-  return footprint;
+  const segments = calculateSatelliteFootprint(satellite);
+  if (!segments || segments.length === 0) return;
+
+  for (const segment of segments) {
+    const footprint = L.polyline(segment, {
+      color: '#1a73e8',
+      weight: 2,
+      opacity: 0.6,
+      dashArray: '4,4',
+      className: 'satellite-footprint',
+      interactive: false
+    }).addTo(map);
+
+    footprint.bindTooltip(`${satellite.name} Coverage Area`, {
+      permanent: false,
+      className: "footprint-label"
+    });
+
+    footprintLayers.push({ id, layer: footprint });
+  }
 }
 
 /**
