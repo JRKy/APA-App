@@ -19,36 +19,85 @@ function normalizeLon(lon) {
 }
 
 /**
- * Given an array of [lat, lon] points, split the footprint into segments by detecting
- * large jumps in longitude (i.e. > 180°) between consecutive points. When a jump is detected,
- * an interpolated crossing point is computed at the ±180° edge and inserted.
+ * Calculate satellite footprint points using a continuous delta relative to the satellite's center.
+ * This returns a closed polygon that should remain continuous even when spanning the dateline.
  */
-function splitFootprintAtDateLine(points) {
-  const segments = [];
-  let currentSegment = [points[0]];
+export function calculateSatelliteFootprint(satellite) {
+  const EARTH_RADIUS = 6371;
+  const SATELLITE_ALTITUDE = 35786;
+  const TOTAL_ALTITUDE = EARTH_RADIUS + SATELLITE_ALTITUDE;
+  const maxCoverageAngleRad = Math.acos(EARTH_RADIUS / TOTAL_ALTITUDE);
 
-  for (let i = 1; i < points.length; i++) {
-    const prev = points[i - 1];
-    const curr = points[i];
-    const diff = Math.abs(curr[1] - prev[1]);
-    if (diff > 180) {
-      // Determine the crossing edge based on the previous point.
-      const crossingEdge = prev[1] > 0 ? 180 : -180;
-      // Calculate the fraction along the segment where the crossing occurs.
-      const fraction = (crossingEdge - prev[1]) / (curr[1] - prev[1]);
-      const latCross = prev[0] + fraction * (curr[0] - prev[0]);
-      // Append the crossing point at the edge.
-      currentSegment.push([latCross, crossingEdge]);
-      segments.push(currentSegment);
-      // Start a new segment beginning at the crossing on the opposite edge.
-      const newCrossingLon = crossingEdge === 180 ? -180 : 180;
-      currentSegment = [[latCross, newCrossingLon], curr];
-    } else {
-      currentSegment.push(curr);
+  const lat0 = 0;
+  const centerLon = satellite.longitude; // use as the center for delta adjustments
+
+  const footprintPoints = [];
+  const numPoints = 36;
+  
+  for (let i = 0; i <= numPoints; i++) {
+    const azimuth = i * 360 / numPoints;
+    const azRad = (azimuth * Math.PI) / 180;
+    const lat0Rad = lat0 * Math.PI / 180;
+    const centerLonRad = centerLon * Math.PI / 180;
+    
+    // Calculate the footprint edge using spherical trigonometry
+    const latRad = Math.asin(
+      Math.sin(lat0Rad) * Math.cos(maxCoverageAngleRad) +
+      Math.cos(lat0Rad) * Math.sin(maxCoverageAngleRad) * Math.cos(azRad)
+    );
+    
+    const lonRad = centerLonRad + Math.atan2(
+      Math.sin(azRad) * Math.sin(maxCoverageAngleRad) * Math.cos(lat0Rad),
+      Math.cos(maxCoverageAngleRad) - Math.sin(lat0Rad) * Math.sin(latRad)
+    );
+    
+    const latDeg = latRad * 180 / Math.PI;
+    let lonDeg = lonRad * 180 / Math.PI;
+    
+    // Compute the delta from the satellite's center and adjust to ensure a small offset
+    let delta = lonDeg - centerLon;
+    if (delta > 180) {
+      delta -= 360;
+    } else if (delta < -180) {
+      delta += 360;
     }
+    lonDeg = centerLon + delta;
+    
+    // Finally, normalize back to [-180, 180] if needed
+    lonDeg = normalizeLon(lonDeg);
+    
+    footprintPoints.push([latDeg, lonDeg]);
   }
-  if (currentSegment.length > 0) segments.push(currentSegment);
-  return segments;
+  
+  return footprintPoints;
+}
+
+/**
+ * Draw satellite footprint as a closed polygon.
+ */
+export function drawSatelliteFootprint(satellite, id) {
+  const map = getMap();
+  if (!map) return;
+  
+  const points = calculateSatelliteFootprint(satellite);
+  if (!points || points.length === 0) return;
+
+  const footprint = L.polygon(points, {
+    color: '#1a73e8',
+    weight: 2,
+    opacity: 0.6,
+    dashArray: '4,4',
+    className: 'satellite-footprint',
+    interactive: false
+  }).addTo(map);
+
+  footprint.bindTooltip(`${satellite.name} Coverage Area`, {
+    permanent: false,
+    className: "footprint-label"
+  });
+
+  footprintLayers.push({ id, layer: footprint });
+  return footprint;
 }
 
 /**
@@ -250,78 +299,6 @@ export function removeLine(id) {
       .filter(f => f.id === id)
       .forEach(f => map.removeLayer(f.layer));
     footprintLayers = footprintLayers.filter(f => f.id !== id);
-  }
-}
-
-/**
- * Calculate satellite footprint points and split at the dateline if necessary.
- * Returns an array of segments, each segment is an array of [lat, lon] pairs.
- */
-export function calculateSatelliteFootprint(satellite) {
-  const EARTH_RADIUS = 6371;
-  const SATELLITE_ALTITUDE = 35786;
-  const TOTAL_ALTITUDE = EARTH_RADIUS + SATELLITE_ALTITUDE;
-  const maxCoverageAngleRad = Math.acos(EARTH_RADIUS / TOTAL_ALTITUDE);
-
-  const lat0 = 0;
-  const lon0 = satellite.longitude;
-  
-  const footprintPoints = [];
-  const numPoints = 36;
-  const startAzimuth = 0;
-  const endAzimuth = 360;
-  
-  for (let i = 0; i <= numPoints; i++) {
-    const azimuth = startAzimuth + i * (endAzimuth - startAzimuth) / numPoints;
-    const azRad = (azimuth * Math.PI) / 180;
-    const lat0Rad = lat0 * Math.PI / 180;
-    const lon0Rad = lon0 * Math.PI / 180;
-    
-    const latRad = Math.asin(
-      Math.sin(lat0Rad) * Math.cos(maxCoverageAngleRad) +
-      Math.cos(lat0Rad) * Math.sin(maxCoverageAngleRad) * Math.cos(azRad)
-    );
-    
-    const lonRad = lon0Rad + Math.atan2(
-      Math.sin(azRad) * Math.sin(maxCoverageAngleRad) * Math.cos(lat0Rad),
-      Math.cos(maxCoverageAngleRad) - Math.sin(lat0Rad) * Math.sin(latRad)
-    );
-    
-    const latDeg = latRad * 180 / Math.PI;
-    const lonDeg = normalizeLon(lonRad * 180 / Math.PI);
-    
-    footprintPoints.push([latDeg, lonDeg]);
-  }
-  
-  return splitFootprintAtDateLine(footprintPoints);
-}
-
-/**
- * Draw satellite footprint using a polyline for each segment
- */
-export function drawSatelliteFootprint(satellite, id) {
-  const map = getMap();
-  if (!map) return;
-  
-  const segments = calculateSatelliteFootprint(satellite);
-  if (!segments || segments.length === 0) return;
-
-  for (const segment of segments) {
-    const footprint = L.polyline(segment, {
-      color: '#1a73e8',
-      weight: 2,
-      opacity: 0.6,
-      dashArray: '4,4',
-      className: 'satellite-footprint',
-      interactive: false
-    }).addTo(map);
-
-    footprint.bindTooltip(`${satellite.name} Coverage Area`, {
-      permanent: false,
-      className: "footprint-label"
-    });
-
-    footprintLayers.push({ id, layer: footprint });
   }
 }
 
