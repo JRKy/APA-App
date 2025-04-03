@@ -20,35 +20,27 @@ function normalizeLon(lon) {
 
 /**
  * Given an array of [lat, lon] points, split the footprint into segments by detecting
- * dateline crossings. When a crossing is detected, an intermediate point at the dateline
- * is computed and inserted.
+ * large jumps in longitude (i.e. > 180°) between consecutive points. When a jump is detected,
+ * an interpolated crossing point is computed at the ±180° edge and inserted.
  */
 function splitFootprintAtDateLine(points) {
   const segments = [];
   let currentSegment = [points[0]];
 
   for (let i = 1; i < points.length; i++) {
-    const prev = currentSegment[currentSegment.length - 1];
+    const prev = points[i - 1];
     const curr = points[i];
-
-    // Check for a sign change with both points near the dateline.
-    if (prev[1] * curr[1] < 0 && Math.abs(prev[1]) > 150 && Math.abs(curr[1]) > 150) {
-      // Determine which edge we're crossing.
-      let crossingEdge = prev[1] > 0 ? 180 : -180;
-      // Adjust curr lon if needed for interpolation.
-      let adjustedCurrLon = curr[1];
-      if (prev[1] > 0 && curr[1] < 0) {
-        adjustedCurrLon = curr[1] + 360;
-      } else if (prev[1] < 0 && curr[1] > 0) {
-        adjustedCurrLon = curr[1] - 360;
-      }
-      // Fraction along the segment where crossing occurs.
-      const f = (crossingEdge - prev[1]) / (adjustedCurrLon - prev[1]);
-      const latCross = prev[0] + f * (curr[0] - prev[0]);
-      // Append the crossing point.
+    const diff = Math.abs(curr[1] - prev[1]);
+    if (diff > 180) {
+      // Determine the crossing edge based on the previous point.
+      const crossingEdge = prev[1] > 0 ? 180 : -180;
+      // Calculate the fraction along the segment where the crossing occurs.
+      const fraction = (crossingEdge - prev[1]) / (curr[1] - prev[1]);
+      const latCross = prev[0] + fraction * (curr[0] - prev[0]);
+      // Append the crossing point at the edge.
       currentSegment.push([latCross, crossingEdge]);
       segments.push(currentSegment);
-      // Start new segment with the crossing point on the opposite edge.
+      // Start a new segment beginning at the crossing on the opposite edge.
       const newCrossingLon = crossingEdge === 180 ? -180 : 180;
       currentSegment = [[latCross, newCrossingLon], curr];
     } else {
@@ -116,13 +108,11 @@ export function drawLine(lat, lon, satLon, label, el, id) {
 
   // Handle the 180/-180 boundary for the satellite longitude
   let displaySatLon = satLon;
-  
-  // Check if we need to wrap around the map
   if (Math.abs(lon - satLon) > 180) {
     if (satLon < 0) {
-      displaySatLon += 360; // Shift to a positive longitude beyond 180
+      displaySatLon += 360;
     } else {
-      displaySatLon -= 360; // Shift to a negative longitude below -180
+      displaySatLon -= 360;
     }
   }
 
@@ -194,14 +184,11 @@ export function addSatelliteMarker(satellite, isBelow) {
   // Get current map center longitude
   const centerLon = map.getCenter().lng;
   let satLon = satellite.longitude;
-  
-  // Check if we need to wrap around the map to make the satellite visible
-  // This ensures the satellite will appear on the side of the map closest to current view
   if (Math.abs(centerLon - satLon) > 180) {
     if (satLon < 0) {
-      satLon += 360; // Shift to a positive longitude beyond 180
+      satLon += 360;
     } else {
-      satLon -= 360; // Shift to a negative longitude below -180
+      satLon -= 360;
     }
   }
 
@@ -267,7 +254,7 @@ export function removeLine(id) {
 }
 
 /**
- * Calculate satellite footprint points and split at dateline if necessary.
+ * Calculate satellite footprint points and split at the dateline if necessary.
  * Returns an array of segments, each segment is an array of [lat, lon] pairs.
  */
 export function calculateSatelliteFootprint(satellite) {
@@ -285,7 +272,7 @@ export function calculateSatelliteFootprint(satellite) {
   const endAzimuth = 360;
   
   for (let i = 0; i <= numPoints; i++) {
-    let azimuth = startAzimuth + i * (endAzimuth - startAzimuth) / numPoints;
+    const azimuth = startAzimuth + i * (endAzimuth - startAzimuth) / numPoints;
     const azRad = (azimuth * Math.PI) / 180;
     const lat0Rad = lat0 * Math.PI / 180;
     const lon0Rad = lon0 * Math.PI / 180;
@@ -301,7 +288,7 @@ export function calculateSatelliteFootprint(satellite) {
     );
     
     const latDeg = latRad * 180 / Math.PI;
-    let lonDeg = normalizeLon(lonRad * 180 / Math.PI);
+    const lonDeg = normalizeLon(lonRad * 180 / Math.PI);
     
     footprintPoints.push([latDeg, lonDeg]);
   }
