@@ -1,4 +1,4 @@
-/* APA App Styles - v2.2.0 */
+/* APA App Styles - v2.2.1 */
 
 /* Import modern fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -443,44 +443,49 @@ body.dark-mode .leaflet-control-geocoder-input {
   border-color: var(--color-dark-border);
 }
 
-/* Search container in location drawer */
+/* Improve search container in location drawer */
 .search-container {
   margin-top: var(--space-md);
   margin-bottom: var(--space-md);
+  width: 100%;
 }
 
 .search-input-group {
   display: flex;
   gap: var(--space-xs);
+  width: 100%;
 }
 
 .search-input-group input {
   flex: 1;
+  min-width: 0; /* This ensures the input can shrink below its default min-width */
+  width: 100%;
 }
 
 .search-input-group button {
-  background-color: var(--color-primary);
-  color: white;
-  border: none;
-  padding: var(--space-sm);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm);
 }
 
-.search-input-group button:hover {
-  background-color: var(--color-primary-dark);
-}
-
-.search-input-group button:active {
-  transform: translateY(1px);
-}
-
-/* Media query for mobile geocoder */
+/* Make search button more compact on mobile */
 @media (max-width: 768px) {
-  .leaflet-control-geocoder-input {
-    min-width: 150px;
+  .search-input-group button span {
+    display: none;
   }
+  
+  .search-input-group button {
+    padding: var(--space-sm);
+    min-width: 40px;
+  }
+}
+
+/* Ensure location drawer has proper spacing */
+#location-drawer {
+  padding: var(--space-md);
+  width: 300px;
 }
 
 /* ===== Current Location Indicator ===== */
