@@ -1,3 +1,18 @@
+## [2.3.1] - 2025-04-03
+
+### Added
+- Combatant Command region visualization feature
+- Toggle to display geographic command boundaries on the map
+- Color-coded regions for NORTHCOM, SOUTHCOM, EUCOM, AFRICOM, CENTCOM, and INDOPACOM
+
+### Changed
+- Replaced satellite footprint visualization with command regions
+- Updated map legend to show command region colors
+- Changed "language" icon to "map" icon for the command regions toggle button
+
+### Fixed
+- Resolved issues with visualization near the International Date Line
+
 ## [2.3.0] - 2025-04-02
 
 ### Added
