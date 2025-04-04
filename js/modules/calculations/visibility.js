@@ -1,3 +1,5 @@
+// visibility.js - Antenna angle calculation functions
+
 import { getMap } from '../ui/map.js';
 import { getCoverageStyleClass, LINE_STYLES } from '../core/config.js';
 import { getSatellites } from '../data/satellites.js';
