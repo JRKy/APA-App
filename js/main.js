@@ -54,23 +54,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   
-  // Repurpose polar plot button to show satellite footprints
-  const footprintButton = document.getElementById("toggle-polar-plot");
-  if (footprintButton) {
+  // Repurpose polar plot button to show command regions
+  const commandRegionsButton = document.getElementById("toggle-polar-plot");
+  if (commandRegionsButton) {
     // Update tooltip and icon
-    footprintButton.title = "Toggle Satellite Footprints";
-    footprintButton.setAttribute("aria-label", "Toggle satellite coverage footprints");
-    footprintButton.querySelector(".material-icons-round").textContent = "language";
+    commandRegionsButton.title = "Toggle Command Regions";
+    commandRegionsButton.setAttribute("aria-label", "Toggle combatant command regions");
+    commandRegionsButton.querySelector(".material-icons-round").textContent = "map";
     
     // Update event listener
-    footprintButton.addEventListener("click", () => {
-      const isVisible = toggleSatelliteFootprints();
+    commandRegionsButton.addEventListener("click", () => {
+      const isVisible = toggleSatelliteFootprints(); // Function name kept for backward compatibility
       
       // Show notification
       if (isVisible) {
-        showNotification("Satellite footprints enabled", "info");
+        showNotification("Command regions displayed", "info");
       } else {
-        showNotification("Satellite footprints disabled", "info");
+        showNotification("Command regions hidden", "info");
       }
     });
   }
