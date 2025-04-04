@@ -3,13 +3,14 @@ import { getCoverageStyleClass, LINE_STYLES } from '../core/config.js';
 import { getSatellites } from '../data/satellites.js';
 import { calculateElevation, calculateAzimuth, calculateCoverageRadius } from './angles.js';
 import { showNotification } from '../core/utils.js';
+import { COMMAND_REGIONS } from '../data/commandRegions.js';
 
 let lineLayers = [];
 let satelliteMarkers = [];
 let orbitPaths = [];
 let coverageCones = [];
-let footprintsVisible = false;
-let footprintLayers = []; // array of { id, layer }
+let commandLayers = []; // Store displayed command region layers
+let commandRegionsVisible = false;
 
 /**
  * Normalize longitude to the range [-180, 180]
@@ -37,7 +38,7 @@ export function clearVisualization() {
   coverageCones.forEach(c => map.removeLayer(c.circle));
   coverageCones = [];
 
-  clearFootprints();
+  clearCommandRegions();
 }
 
 /**
@@ -100,11 +101,6 @@ export function drawLine(lat, lon, satLon, label, el, id) {
   lineLayers.push({ id, layer: polyline });
 
   drawCoverageCone(lat, lon, satLon, el, id);
-
-  if (footprintsVisible) {
-    const sat = getSatellites().find(s => s.longitude === satLon);
-    if (sat) drawSatelliteFootprint(sat, id);
-  }
 
   return polyline;
 }
@@ -193,6 +189,11 @@ export function updateSatelliteLines(lat, lon) {
         addSatelliteMarker(sat, el < 0);
       });
     }
+    
+    // Redraw command regions if they were visible
+    if (commandRegionsVisible) {
+      drawCommandRegions();
+    }
   }
 }
 
@@ -212,184 +213,11 @@ export function removeLine(id) {
       .filter(c => c.id === id)
       .forEach(c => map.removeLayer(c.circle));
     coverageCones = coverageCones.filter(c => c.id !== id);
-
-    footprintLayers
-      .filter(f => f.id === id)
-      .forEach(f => map.removeLayer(f.layer));
-    footprintLayers = footprintLayers.filter(f => f.id !== id);
   }
 }
 
 /**
- * Calculate satellite footprint edge points - limiting to standard longitude range
- * This creates the visible footprint with boundaries at +/-180
- */
-export function calculateSatelliteFootprint(satellite) {
-  const EARTH_RADIUS = 6371;
-  const SATELLITE_ALTITUDE = 35786;
-  const TOTAL_ALTITUDE = EARTH_RADIUS + SATELLITE_ALTITUDE;
-  const maxCoverageAngleRad = Math.acos(EARTH_RADIUS / TOTAL_ALTITUDE);
-
-  const lat0 = 0;
-  const lon0 = normalizeLon(satellite.longitude);
-  
-  // Calculate points in western and eastern hemisphere separately
-  const eastHemispherePoints = [];
-  const westHemispherePoints = [];
-  
-  // Use more points for smoother curves
-  const numPoints = 360;
-  
-  for (let i = 0; i <= numPoints; i++) {
-    const azimuth = (i * 360) / numPoints;
-    const azRad = (azimuth * Math.PI) / 180;
-    const lat0Rad = lat0 * Math.PI / 180;
-    const lon0Rad = lon0 * Math.PI / 180;
-    
-    const latRad = Math.asin(
-      Math.sin(lat0Rad) * Math.cos(maxCoverageAngleRad) +
-      Math.cos(lat0Rad) * Math.sin(maxCoverageAngleRad) * Math.cos(azRad)
-    );
-    
-    const lonRad = lon0Rad + Math.atan2(
-      Math.sin(azRad) * Math.sin(maxCoverageAngleRad) * Math.cos(lat0Rad),
-      Math.cos(maxCoverageAngleRad) - Math.sin(lat0Rad) * Math.sin(latRad)
-    );
-    
-    const latDeg = latRad * 180 / Math.PI;
-    const lonDeg = normalizeLon(lonRad * 180 / Math.PI);
-    
-    // Add to the appropriate hemisphere array
-    if (lonDeg >= 0) {
-      eastHemispherePoints.push([latDeg, lonDeg]);
-    } else {
-      westHemispherePoints.push([latDeg, lonDeg]);
-    }
-  }
-  
-  // Check if we cross the date line
-  const crossesDateLine = lon0 > 90 || lon0 < -90;
-  
-  if (crossesDateLine) {
-    // Add boundary points at the date line for proper rendering
-    const eastMaxLat = calculateDatelineCrossingLat(satellite, true);
-    const westMaxLat = calculateDatelineCrossingLat(satellite, false);
-    
-    if (eastMaxLat !== null) {
-      eastHemispherePoints.push([eastMaxLat, 180]);
-      westHemispherePoints.push([eastMaxLat, -180]);
-    }
-    
-    if (westMaxLat !== null) {
-      eastHemispherePoints.push([westMaxLat, 180]);
-      westHemispherePoints.push([westMaxLat, -180]);
-    }
-  }
-  
-  // Return segments based on whether we have points in each hemisphere
-  const segments = [];
-  if (eastHemispherePoints.length > 2) segments.push(sortPointsClockwise(eastHemispherePoints, lon0));
-  if (westHemispherePoints.length > 2) segments.push(sortPointsClockwise(westHemispherePoints, lon0));
-  
-  return segments;
-}
-
-/**
- * Calculate the latitude where the satellite footprint crosses the date line
- * @param {Object} satellite - The satellite object
- * @param {boolean} isEastern - Whether to calculate for the eastern (true) or western (false) date line
- * @returns {number|null} - The latitude of intersection or null if no intersection
- */
-function calculateDatelineCrossingLat(satellite, isEastern) {
-  const EARTH_RADIUS = 6371;
-  const SATELLITE_ALTITUDE = 35786;
-  const TOTAL_ALTITUDE = EARTH_RADIUS + SATELLITE_ALTITUDE;
-  const maxCoverageAngleRad = Math.acos(EARTH_RADIUS / TOTAL_ALTITUDE);
-  
-  const satLon = normalizeLon(satellite.longitude);
-  const satLat = 0;  // Geostationary satellites are at the equator
-  
-  // Determine longitude difference to the date line
-  const lonDiff = isEastern ? 180 - satLon : -180 - satLon;
-  const lonDiffRad = lonDiff * Math.PI / 180;
-  
-  // Calculate the central angle from satellite nadir to date line
-  // Using the spherical law of cosines
-  const satLatRad = satLat * Math.PI / 180;
-  const centralAngle = Math.acos(Math.cos(satLatRad) * Math.cos(lonDiffRad));
-  
-  // If this angle is larger than the max coverage angle, no intersection
-  if (centralAngle > maxCoverageAngleRad) {
-    return null;
-  }
-  
-  // Calculate the latitude of intersection using great circle formulas
-  const latRad = Math.asin(
-    Math.sin(satLatRad) * Math.cos(maxCoverageAngleRad) / Math.sin(centralAngle)
-  );
-  
-  return latRad * 180 / Math.PI;
-}
-
-/**
- * Sort points in clockwise order around a central longitude for proper rendering
- */
-function sortPointsClockwise(points, centerLon) {
-  // Simple center calculation - average of points
-  let centerLat = 0;
-  for (const point of points) {
-    centerLat += point[0];
-  }
-  centerLat /= points.length;
-  
-  // Sort points by angle from center
-  return points.sort((a, b) => {
-    const angleA = Math.atan2(a[0] - centerLat, a[1] - centerLon);
-    const angleB = Math.atan2(b[0] - centerLat, b[1] - centerLon);
-    return angleA - angleB;
-  });
-}
-
-/**
- * Draw satellite footprint using polylines for different hemispheres
- */
-export function drawSatelliteFootprint(satellite, id) {
-  const map = getMap();
-  if (!map) return;
-  
-  const segments = calculateSatelliteFootprint(satellite);
-  if (!segments || segments.length === 0) return;
-
-  // Common options for all footprint polylines
-  const footprintOptions = {
-    color: '#1a73e8',
-    weight: 2,
-    opacity: 0.6,
-    dashArray: '4,4',
-    className: 'satellite-footprint',
-    interactive: false
-  };
-  
-  // Draw each segment as a separate polyline
-  segments.forEach((segment, index) => {
-    if (segment.length < 3) return; // Skip segments with too few points
-    
-    const footprint = L.polyline(segment, footprintOptions).addTo(map);
-    
-    // Add tooltip only to the first segment
-    if (index === 0) {
-      footprint.bindTooltip(`${satellite.name} Coverage Area`, {
-        permanent: false,
-        className: "footprint-label"
-      });
-    }
-    
-    footprintLayers.push({ id, layer: footprint });
-  });
-}
-
-/**
- * Toggle footprint display
+ * Toggle command region display
  */
 export function toggleSatelliteFootprints() {
   const lastLocation = document.getElementById('current-location-indicator');
@@ -398,28 +226,60 @@ export function toggleSatelliteFootprints() {
     return false;
   }
 
-  footprintsVisible = !footprintsVisible;
+  // Repurpose this function to toggle command regions
+  commandRegionsVisible = !commandRegionsVisible;
 
-  if (footprintsVisible) {
-    document.querySelectorAll("input[type=checkbox][data-satlon]:checked").forEach(cb => {
-      const satLon = parseFloat(cb.dataset.satlon);
-      const sat = getSatellites().find(s => s.longitude === satLon);
-      if (sat) drawSatelliteFootprint(sat, cb.id);
-    });
+  if (commandRegionsVisible) {
+    drawCommandRegions();
   } else {
-    clearFootprints();
+    clearCommandRegions();
   }
 
-  return footprintsVisible;
+  return commandRegionsVisible;
 }
 
 /**
- * Clear all satellite footprints
+ * Draw all combatant command regions on the map
  */
-export function clearFootprints() {
+export function drawCommandRegions() {
   const map = getMap();
   if (!map) return;
+  
+  // Clear any existing regions first
+  clearCommandRegions();
+  
+  // Draw each command region
+  COMMAND_REGIONS.features.forEach((feature) => {
+    const { name, color, description } = feature.properties;
+    
+    const layer = L.geoJSON(feature, {
+      style: {
+        color: color || "#1a73e8",
+        weight: 2,
+        opacity: 0.6,
+        fillColor: color || "#1a73e8",
+        fillOpacity: 0.15,
+        className: 'command-region'
+      }
+    }).addTo(map);
+    
+    // Add a tooltip
+    layer.bindTooltip(`${name}: ${description}`, {
+      permanent: false,
+      className: "command-region-label"
+    });
+    
+    commandLayers.push({ name, layer });
+  });
+}
 
-  footprintLayers.forEach(f => map.removeLayer(f.layer));
-  footprintLayers = [];
+/**
+ * Clear all command regions from the map
+ */
+export function clearCommandRegions() {
+  const map = getMap();
+  if (!map) return;
+  
+  commandLayers.forEach(c => map.removeLayer(c.layer));
+  commandLayers = [];
 }
