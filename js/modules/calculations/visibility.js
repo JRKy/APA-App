@@ -31,22 +31,32 @@ function splitFootprintAtDateLine(points) {
     const prev = points[i - 1];
     const curr = points[i];
     const diff = Math.abs(curr[1] - prev[1]);
+    
     if (diff > 180) {
-      // Determine the crossing edge based on the previous point.
+      // Determine the crossing edge based on the previous point
       const crossingEdge = prev[1] > 0 ? 180 : -180;
-      // Calculate the fraction along the segment where the crossing occurs.
-      const fraction = (crossingEdge - prev[1]) / (curr[1] - prev[1]);
+      
+      // Calculate the fraction along the segment where the crossing occurs
+      // We need to adjust the current longitude to account for wrapping
+      const adjustedCurrLon = prev[1] > 0 
+        ? (curr[1] < 0 ? curr[1] + 360 : curr[1]) 
+        : (curr[1] > 0 ? curr[1] - 360 : curr[1]);
+      
+      const fraction = (crossingEdge - prev[1]) / (adjustedCurrLon - prev[1]);
       const latCross = prev[0] + fraction * (curr[0] - prev[0]);
-      // Append the crossing point at the edge.
+      
+      // Append the crossing point at the edge
       currentSegment.push([latCross, crossingEdge]);
       segments.push(currentSegment);
-      // Start a new segment beginning at the crossing on the opposite edge.
+      
+      // Start a new segment beginning at the crossing on the opposite edge
       const newCrossingLon = crossingEdge === 180 ? -180 : 180;
       currentSegment = [[latCross, newCrossingLon], curr];
     } else {
       currentSegment.push(curr);
     }
   }
+  
   if (currentSegment.length > 0) segments.push(currentSegment);
   return segments;
 }
@@ -254,8 +264,8 @@ export function removeLine(id) {
 }
 
 /**
- * Calculate satellite footprint points and split at the dateline if necessary.
- * Returns an array of segments, each segment is an array of [lat, lon] pairs.
+ * Calculate satellite footprint points
+ * Returns an array of [lat, lon] pairs forming the footprint boundary
  */
 export function calculateSatelliteFootprint(satellite) {
   const EARTH_RADIUS = 6371;
@@ -263,16 +273,14 @@ export function calculateSatelliteFootprint(satellite) {
   const TOTAL_ALTITUDE = EARTH_RADIUS + SATELLITE_ALTITUDE;
   const maxCoverageAngleRad = Math.acos(EARTH_RADIUS / TOTAL_ALTITUDE);
 
-  const lat0 = 0;
+  const lat0 = 0; // Geostationary satellites are at equator
   const lon0 = satellite.longitude;
   
   const footprintPoints = [];
-  const numPoints = 36;
-  const startAzimuth = 0;
-  const endAzimuth = 360;
+  const numPoints = 72; // Increased point density for smoother curves
   
   for (let i = 0; i <= numPoints; i++) {
-    const azimuth = startAzimuth + i * (endAzimuth - startAzimuth) / numPoints;
+    const azimuth = (i * 360) / numPoints;
     const azRad = (azimuth * Math.PI) / 180;
     const lat0Rad = lat0 * Math.PI / 180;
     const lon0Rad = lon0 * Math.PI / 180;
@@ -306,20 +314,28 @@ export function drawSatelliteFootprint(satellite, id) {
   const segments = calculateSatelliteFootprint(satellite);
   if (!segments || segments.length === 0) return;
 
-  for (const segment of segments) {
-    const footprint = L.polyline(segment, {
-      color: '#1a73e8',
-      weight: 2,
-      opacity: 0.6,
-      dashArray: '4,4',
-      className: 'satellite-footprint',
-      interactive: false
-    }).addTo(map);
+  // Common style options for all footprint segments
+  const footprintOptions = {
+    color: '#1a73e8',
+    weight: 2,
+    opacity: 0.6,
+    dashArray: '4,4',
+    className: 'satellite-footprint',
+    interactive: false,
+    noWrap: true
+  };
 
-    footprint.bindTooltip(`${satellite.name} Coverage Area`, {
-      permanent: false,
-      className: "footprint-label"
-    });
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
+    const footprint = L.polyline(segment, footprintOptions).addTo(map);
+
+    // Add a tooltip only to the first segment to avoid duplicates
+    if (i === 0) {
+      footprint.bindTooltip(`${satellite.name} Coverage Area`, {
+        permanent: false,
+        className: "footprint-label"
+      });
+    }
 
     footprintLayers.push({ id, layer: footprint });
   }
