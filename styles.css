@@ -1245,6 +1245,35 @@ body.dark-mode .range-slider::-moz-range-thumb {
   color: var(--color-text-secondary);
 }
 
+/* Command Region Styles */
+.command-region {
+  pointer-events: auto;
+  transition: fill-opacity 0.3s;
+}
+
+.command-region:hover {
+  fill-opacity: 0.3 !important;
+  cursor: pointer;
+}
+
+.command-region-label {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+  font-weight: 500 !important;
+  border-radius: var(--radius-sm) !important;
+  padding: var(--space-xs) var(--space-sm) !important;
+  box-shadow: var(--shadow-sm) !important;
+  font-size: var(--font-size-xs) !important;
+  max-width: 200px;
+}
+
+body.dark-mode .command-region-label {
+  background: rgba(55, 65, 81, 0.9) !important;
+  border-color: var(--color-dark-border) !important;
+  color: var(--color-dark-text-primary) !important;
+}
+
 /* ===== Utility Classes ===== */
 .hidden {
   display: none !important;
