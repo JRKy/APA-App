@@ -81,6 +81,22 @@ export function setupLocationFilterHandlers() {
       filterLocations();
       updateLocationFilterSummary();
       
+      // Get the selected location and navigate to it if one is selected
+      if (locationSelect && locationSelect.value) {
+        const selected = locationSelect.options[locationSelect.selectedIndex];
+        const [lat, lon] = selected.value.split(",").map(Number);
+        goToLocation(lat, lon, selected.textContent);
+        
+        // Publish event
+        eventBus.publish('locationSelected', {
+          name: selected.textContent,
+          lat,
+          lon,
+          aor: selected.dataset.aor,
+          country: selected.dataset.country
+        });
+      }
+      
       // Close drawer
       document.getElementById('location-filter-drawer').classList.remove('visible');
       document.getElementById('drawer-overlay').classList.remove('visible');
@@ -100,29 +116,17 @@ export function setupLocationFilterHandlers() {
     const selected = this.options[this.selectedIndex];
     if (!selected || !selected.dataset.aor) return;
     
+    // Just update the filter dropdowns to match the selected location
     const aor = selected.dataset.aor;
     const country = selected.dataset.country;
     aorFilter.value = aor;
     countryFilter.value = country;
     
-    filterLocations();
-    locationSelect.value = selected.value;
+    // Inform the user that they need to click Apply to navigate
+    showNotification("Select a location and click 'Apply Filters' to navigate", "info");
     
-    const [lat, lon] = selected.value.split(",").map(Number);
-    goToLocation(lat, lon, selected.textContent);
-    updateLocationFilterSummary();
-    
-    // Close all drawers
-    eventBus.publish('drawersAllClosed');
-    
-    // Publish event
-    eventBus.publish('locationSelected', {
-      name: selected.textContent,
-      lat,
-      lon,
-      aor,
-      country
-    });
+    // DON'T navigate here - wait for Apply button
+    // The navigation code should ONLY be in the apply button handler
   });
   
   // Reset filters button
